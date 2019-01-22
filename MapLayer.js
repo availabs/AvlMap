@@ -46,6 +46,7 @@ class MapLayer {
 	init(component) {
 		this.component = component;
 		this.updatePopover = component.updatePopover.bind(component);
+    // this.onSelect = component.onSelect.bind(component)
 	}
 
 	onAdd(map) {
@@ -225,7 +226,7 @@ class MapLayer {
       if (e.keyCode === 27) finish();
 	  }
 
-  	function finish(bbox) {
+  	let finish = (bbox) => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('mouseup', onMouseUp);
@@ -258,6 +259,7 @@ class MapLayer {
       }
 
       map.dragPan.enable();
+      this.component.onSelect(this.name, selection);
       // store.dispatch(onLayerSelect(selection, mapLayer.id))
   	}
 	}
