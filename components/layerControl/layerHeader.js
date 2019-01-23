@@ -104,7 +104,12 @@ const ActionBar = ({ layerName, actions, actionMap }) =>
         <IconWrapper key={ i }>
           <a.Icon data-tip
             data-for={ `action-bar-${ i }` }
-            onClick={ typeof a.action === "function" ? a.action : () => actionMap[a.action[0]](layerName, ...a.action.slice(1)) }/>
+            onClick={ e => {
+              e.stopPropagation();
+              typeof a.action === "function" ?
+                a.action() :
+                actionMap[a.action[0]](layerName, ...a.action.slice(1))
+            } }/>
           <Tooltip
             id={ `action-bar-${ i }` }
             effect="solid"
