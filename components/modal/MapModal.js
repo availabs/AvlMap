@@ -7,7 +7,7 @@ import { Tooltip } from 'components/common/styled-components';
 
 import styled from 'styled-components';
 
-import { toggleModal } from "pages/MapView/store/MapStore"
+// import { toggleModal } from "pages/MapView/store/MapStore"
 
 const ModalContainer = styled.div`
 	position: fixed;

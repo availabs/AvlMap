@@ -104,6 +104,18 @@ class AvlMap extends React.Component {
 		}
   	this.forceUpdate();
   }
+
+  onSelect(layerName, selection) {
+  	const layer = this.getLayer(layerName)
+  	if(layer.onSelect) {
+  		layer.onSelect(selection)
+  	} else {
+  		// console.log('onSelect default', layer, selection)
+  		layer.selection = selection;
+  		this.forceUpdate();
+  	}
+  }
+
   toggleInfoBox(layerName, infoBoxName) {
   	const layer = this.getLayer(layerName)
 

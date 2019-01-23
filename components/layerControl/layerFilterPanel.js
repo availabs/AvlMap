@@ -78,7 +78,7 @@ const StyledFilterContent = styled.div`
           break;
           case 'fetch':
             return (
-              <SubmitButton onClick={ dispatchSubmit }>
+              <SubmitButton onClick={ dispatchUpdateFilter }>
                 {filter.name}
               </SubmitButton>
             )
