@@ -129,17 +129,28 @@ class AvlMap extends React.Component {
   }
 
   updateFilter(layerName, filterName, value) {
+  	console.time('onFilterFetch')
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
 
 		layer.filters[filterName].value = value;
-		layer.loading = true;
 		this.forceUpdate();
 
+		console.log('updateFilter', layerName,filterName, value)
+		console.timeEnd('onFilterFetch')
 		layer.onFilterFetch(filterName, oldValue, value)
-			.then(data => layer.receiveData(this.state.map, data))
-			.then(() => layer.loading = false)
-			.then(() => this.forceUpdate());
+			.then(data => {
+				console.log('filter data', data)
+				layer.receiveData(this.state.map, data)
+				console.timeEnd('onFilterFetch')
+				return this.forceUpdate();
+			})
+
+			// .then(() => {
+			// 	//layer.loading = false
+			// 	//this.forceUpdate()
+				
+			// });
   }
 
   updateLegend(layerName, update) {
