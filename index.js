@@ -47,6 +47,7 @@ class AvlMap extends React.Component {
       zoom
     });
     map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    map.boxZoom.disable();
     map.on('load',  () => {
       const activeLayers = [];
       this.props.layers.forEach(layer => {
@@ -107,13 +108,15 @@ class AvlMap extends React.Component {
 
   onSelect(layerName, selection) {
   	const layer = this.getLayer(layerName)
-  	if(layer.onSelect) {
-  		layer.onSelect(selection)
-  	} else {
-  		// console.log('onSelect default', layer, selection)
-  		layer.selection = selection;
-  		this.forceUpdate();
-  	}
+
+    layer.selection = selection;
+    layer.loading = true;
+    this.forceUpdate();
+    
+    layer.onSelect(selection)
+      .then(data => layer.receiveData(this.state.map, data))
+      .then(() => layer.loading = false)
+      .then(() => this.forceUpdate());
   }
 
   toggleInfoBox(layerName, infoBoxName) {
