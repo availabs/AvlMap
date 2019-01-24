@@ -43,6 +43,8 @@ const StyledFilterContent = styled.div`
   
 
   render() {
+    
+    console.log('render layer filter panel')
     const { layer } = this.props,
       filters = layer.filters;
 
@@ -54,6 +56,7 @@ const StyledFilterContent = styled.div`
       }
 
       const dispatchUpdateSlider = (e) => {
+        console.log(filterName, e.target.value)
         this.props.updateFilter(layer.name, filterName, e.target.value)  
       }
 

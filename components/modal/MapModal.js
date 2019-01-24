@@ -20,6 +20,7 @@ const ModalContainer = styled.div`
 `
 
 const ModalWrapper = styled.div`
+	background-color: ${ props => props.theme.panelBackground };
 	display: inline-flex;
 	position: relative;
 	pointer-events: all;
