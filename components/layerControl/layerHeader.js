@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import styled from 'styled-components';
 import PanelHeaderAction from './panelHeaderAction';
@@ -14,14 +14,17 @@ import {
 
 import {Tooltip} from 'components/common/styled-components';
 
-import {InlineInput, StyledPanelHeader} from 'components/common/styled-components';
+import {
+    //InlineInput, 
+    StyledPanelHeader 
+} from 'components/common/styled-components';
 
 const defaultProps = {
   isDragNDropEnabled: true,
-  showRemoveLayer: true,
+  // showRemoveLayer: true,
   className: '',
   idx: 1,
-  isConfigActive: false ,
+  // isConfigActive: false ,
   isVisible: true,
   layerId: 1,
   layerType: '',
