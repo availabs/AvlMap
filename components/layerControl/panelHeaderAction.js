@@ -77,8 +77,7 @@ export default class PanelHeaderAction extends Component {
       hoverColor,
       tooltipType,
       disabled,
-      className,
-      theme
+      className
     } = this.props;
     return (
       <HeaderActionWrapper

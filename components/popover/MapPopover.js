@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import {CenterFlexbox} from 'components/common/styled-components';
 import {Pin, Layers} from 'components/common/icons';
@@ -102,7 +102,7 @@ export class MapPopover extends Component {
     const topOffset = 30;
     const leftOffset = 30;
     // const {mapState} = this.props;
-    const {width, height} = this.state;
+    // const {width, height} = this.state;
     const pos = {};
     // if (x + leftOffset + width > mapState.width) {
     //   pos.right = mapState.width - x + leftOffset;
@@ -126,7 +126,7 @@ export class MapPopover extends Component {
       pos
     } = this.props;
     const hidden = !data.length && !this.state.isMouseOver;
-    const { width } = this.state;
+    // const { width } = this.state;
 
     if (!data.length) {
       return null;

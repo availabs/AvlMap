@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Button, StyledPanelHeader} from 'components/common/styled-components';
 
@@ -44,7 +43,6 @@ const StyledFilterContent = styled.div`
 
   render() {
     
-    console.log('render layer filter panel')
     const { layer } = this.props,
       filters = layer.filters;
 
@@ -56,7 +54,6 @@ const StyledFilterContent = styled.div`
       }
 
       const dispatchUpdateSlider = (e) => {
-        console.log(filterName, e.target.value)
         this.props.updateFilter(layer.name, filterName, e.target.value)  
       }
 

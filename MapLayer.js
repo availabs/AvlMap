@@ -51,7 +51,12 @@ class MapLayer {
 
 	onAdd(map) {
 		this.sources.forEach(source => {
-			map.addSource(source.id, source.source);
+      let duplicate = Object.keys(map.style.sourceCaches)
+        .filter(sourceId => sourceId === source.id)
+      if (duplicate.length === 0) {
+        map.addSource(source.id, source.source) 
+      } 
+       
 		})
 		this.layers.forEach(layer => {
 			map.addLayer(layer);
@@ -83,10 +88,10 @@ class MapLayer {
 	}
 
 	onFilterFetch(filterName, oldValue, newValue) {
-		return Promise.resolve();
+		return this.fetchData();
 	}
 	onLegendChange() {
-		return Promise.resolve();
+		return this.fetchData();
 	}
 	fetchData() {
 		return Promise.resolve();
