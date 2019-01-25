@@ -127,7 +127,7 @@ class MapLayer {
     if (e.features.length) {
       this.updatePopover({
       	pos: [e.point.x, e.point.y],
-      	data: this.popover.dataFunc(e.features[0])
+      	data: this.popover.dataFunc.call(this, e.features[0])
       })
     }
 	}
@@ -147,7 +147,7 @@ class MapLayer {
     	{ pinned } = popover;
 
     if (e.features.length) {
-    	const data = this.popover.dataFunc(e.features[0]);
+    	const data = this.popover.dataFunc.call(this, e.features[0]);
     	if (data.length) {
     		if (pinned) {
     			this.updatePopover({
@@ -234,7 +234,8 @@ class MapLayer {
         var features = map.queryRenderedFeatures(bbox, { layers: selectFrom });
         
         if (features.length >= maxSelection) {
-            return window.alert('Select a smaller number of features');
+          map.dragPan.enable();
+          return window.alert(`Select a smaller number of features. You selected ${ features.length }. The maximum is ${ maxSelection }.`);
         }
 
         var filter = features.reduce(function(filter, feature) {

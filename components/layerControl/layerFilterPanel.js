@@ -44,7 +44,6 @@ const StyledFilterContent = styled.div`
 
   render() {
     
-    console.log('render layer filter panel')
     const { layer } = this.props,
       filters = layer.filters;
 
