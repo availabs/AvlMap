@@ -75,7 +75,7 @@ class ColorSelector extends Component {
         { !this.state.editing ? null :
           <StyledPanelDropdown className="color-selector__dropdown">
             <div style={{height:"5px"}}/>
-            { legend.types.length <= 1 ? null :
+            { legend.types && legend.types.length <= 1 ? null :
               <SingleSelectFilter filter={ {
                   name: "Scale Type",
                   domain: legend.types,

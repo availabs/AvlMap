@@ -11,8 +11,8 @@ const DEFAULT_OPTIONS = {
 	infoBoxes: false,
 	legend: false,
 	filters: false,
-	select: false
-
+	select: false,
+  selection: []
 }
 
 class MapLayer {
@@ -35,28 +35,26 @@ class MapLayer {
 		this.legend = options.legend;
 		this.filters = options.filters;
 		this.select = options.select;
+    this.selection = [];
 
 		this.loading = options.loading;
 
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
 		this._click = this._click.bind(this);
+    this._mousedown = this._mousedown.bind(this);
 	}
 
 	init(component) {
 		this.component = component;
 		this.updatePopover = component.updatePopover.bind(component);
-    // this.onSelect = component.onSelect.bind(component)
 	}
 
 	onAdd(map) {
 		this.sources.forEach(source => {
-      let duplicate = Object.keys(map.style.sourceCaches)
-        .filter(sourceId => sourceId === source.id)
-      if (duplicate.length === 0) {
-        map.addSource(source.id, source.source) 
-      } 
-       
+      if (!map.getSource(source.id)) {
+        map.addSource(source.id, source.source);
+      }
 		})
 		this.layers.forEach(layer => {
 			map.addLayer(layer);
@@ -69,6 +67,9 @@ class MapLayer {
 		}
 	}
 	onRemove(map) {
+    if (this.select) {
+      this.removeBoxSelect(map);
+    }
 		if (this.popover) {
 			this.removePopover(map);
 		}
@@ -91,12 +92,19 @@ class MapLayer {
 		return this.fetchData();
 	}
 	onLegendChange() {
+<<<<<<< HEAD
 		return this.fetchData();
+=======
+		return this.onFilterFetch();
+>>>>>>> bfde00cf8d0af28fb1e660c42a075039eebea6cc
 	}
 	fetchData() {
-		return Promise.resolve();
+		return this.onFilterFetch();
 	}
-	receiveData(data, map) {
+  onSelect(selection) {
+    return this.onFilterFetch();
+  }
+	receiveData(map, data) {
 	}
 
 	addPopover(map) {
@@ -165,46 +173,31 @@ class MapLayer {
     }
 	}
 
-	addBoxSelect(map) {
-		map.boxZoom.disable();
-		const canvas = map.getCanvasContainer(),
-			selectFrom = this.select.fromLayers,
-			toHighlight = this.select.highlightLayers,
-			selectProperty = this.select.property,
-			selectFilter = ['in', selectProperty],
-			maxSelection = this.select.maxSelection || 5000;
-		
-		toHighlight.forEach(layer => {
-			map.setFilter(
-        layer.id, 
-        ["in", selectProperty]
-      );  
-		})
+  _mousedown(e) {
+    if (!(e.shiftKey && e.button === 0)) return;
 
-		let start, current, box = null, selection = [];
+    const { map } = this.component.state;
 
-		const onMouseDown = e => {
-      if (!(e.shiftKey && e.button === 0)) return;
+    map.dragPan.disable();
 
-      map.dragPan.disable();
+    const canvas = map.getCanvasContainer(),
+      selectFrom = this.select.fromLayers,
+      toHighlight = this.select.highlightLayers,
+      selectProperty = this.select.property,
+      selectFilter = ['in', selectProperty],
+      maxSelection = this.select.maxSelection || 5000;
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-      document.addEventListener('keydown', onKeyDown);
+    const mousePos = e => {
+      const rect = canvas.getBoundingClientRect();
+      return [
+        e.clientX - rect.left - canvas.clientLeft,
+        e.clientY - rect.top - canvas.clientTop
+      ]
+    }
 
-      start = mousePos(e);
-		}
+    let start = mousePos(e), current, box = null, selection = [];
 
-		canvas.addEventListener('mousedown', onMouseDown, true);
-
-		const mousePos = e => {
-			const rect = canvas.getBoundingClientRect();
-			return [
-				e.clientX - rect.left - canvas.clientLeft,
-				e.clientY - rect.top - canvas.clientTop
-			]
-		}
-  	function onMouseMove(e) {
+    const onMouseMove = e => {
       current = mousePos(e);
 
       if (!box) {
@@ -223,15 +216,15 @@ class MapLayer {
       box.style.WebkitTransform = pos;
       box.style.width = maxX - minX + 'px';
       box.style.height = maxY - minY + 'px';
-	  }
-	  function onMouseUp(e) {
+    }
+    const onMouseUp = e => {
       finish([start, mousePos(e)]);
-	  }
-	  function onKeyDown(e) {
+    }
+    const onKeyDown = e => {
       if (e.keyCode === 27) finish();
-	  }
+    }
 
-  	let finish = (bbox) => {
+    const finish = (bbox) => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('mouseup', onMouseUp);
@@ -265,146 +258,27 @@ class MapLayer {
 
       map.dragPan.enable();
       this.component.onSelect(this.name, selection);
-      // store.dispatch(onLayerSelect(selection, mapLayer.id))
-  	}
-	}
-	removeBoxSelect(map) {
+    }
 
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('keydown', onKeyDown);
+  }
+  addBoxSelect(map) {
+    this.select.highlightLayers.forEach(layer => {
+      map.setFilter(
+        layer.id, 
+        ["in", this.select.property]
+      );  
+    })
+
+    const canvas = map.getCanvasContainer();
+    canvas.addEventListener('mousedown', this._mousedown, true);
+  }
+	removeBoxSelect(map) {
+    const canvas = map.getCanvasContainer();
+    canvas.removeEventListener('mousedown', this._mousedown, true);
 	}
 }
 
 export default MapLayer
-
-/*
-
-export const boxSelect = (mapLayer, map) => {
-  map.boxZoom.disable();
-  let canvas = map.getCanvasContainer();
-  let selectLayers = mapLayer.selectLayers;
-  let selectFilter = mapLayer.selectFilter;
-  let selectProperty = mapLayer.selectProperty;
-  let renderLayers = mapLayer.selectRenderLayers;
-  let selection = [];
-
-  // Variable to hold the starting xy coordinates
-  // when `mousedown` occured.
-  var start;
-
-  // Variable to hold the current xy coordinates
-  // when `mousemove` or `mouseup` occurs.
-  var current;
-
-  // Variable for the draw box element.
-  var box;
-  // Set `true` to dispatch the event before other functions
-  // call it. This is necessary for disabling the default map
-  // dragging behaviour.
-  canvas.addEventListener('mousedown', mouseDown, true);
-
-  
-  // Return the xy coordinates of the mouse position
-  function mousePos(e) {
-      var rect = canvas.getBoundingClientRect();
-      return new mapboxgl.Point(
-          e.clientX - rect.left - canvas.clientLeft,
-          e.clientY - rect.top - canvas.clientTop
-      );
-  }
-
-  function mouseDown(e) {
-      // Continue the rest of the function if the shiftkey is pressed.
-      if (!(e.shiftKey && e.button === 0)) return;
-
-      // Disable default drag zooming when the shift key is held down.
-      map.dragPan.disable();
-
-      // Call functions for the following events
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-      document.addEventListener('keydown', onKeyDown);
-
-      // Capture the first xy coordinates
-      start = mousePos(e);
-  }
-
-  function onMouseMove(e) {
-      // Capture the ongoing xy coordinates
-      current = mousePos(e);
-
-      // Append the box element if it doesnt exist
-      if (!box) {
-          box = document.createElement('div');
-          box.classList.add('boxdraw');
-          canvas.appendChild(box);
-      }
-
-      var minX = Math.min(start.x, current.x),
-          maxX = Math.max(start.x, current.x),
-          minY = Math.min(start.y, current.y),
-          maxY = Math.max(start.y, current.y);
-
-      // Adjust width and xy position of the box element ongoing
-      var pos = 'translate(' + minX + 'px,' + minY + 'px)';
-      box.style.transform = pos;
-      box.style.WebkitTransform = pos;
-      box.style.width = maxX - minX + 'px';
-      box.style.height = maxY - minY + 'px';
-  }
-
-  function onMouseUp(e) {
-      // Capture xy coordinates
-      finish([start, mousePos(e)]);
-  }
-
-  function onKeyDown(e) {
-      // If the ESC key is pressed
-      if (e.keyCode === 27) finish();
-  }
-
-  function finish(bbox) {
-      // Remove these events now that finish has been called.
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('mouseup', onMouseUp);
-
-      if (box) {
-          box.parentNode.removeChild(box);
-          box = null;
-      }
-
-      // If bbox exists. use this value as the argument for `queryRenderedFeatures`
-      if (bbox) {
-          //console.log('queryRenderedFeatures',  bbox, renderLayers)
-          var features = map.queryRenderedFeatures(bbox, { layers: renderLayers });
-          
-          if (features.length >= 5000) {
-              return window.alert('Select a smaller number of features');
-          }
-
-          // Run through the selected features and set a filter
-          // to match features with unique FIPS codes to activate
-          // the `counties-highlighted` layer.
-          var filter = features.reduce(function(memo, feature) {
-              memo.push(feature.properties[selectProperty]);
-              return memo;
-          }, selectFilter.slice(0));
-
-          selection = features.map(d => d.properties[selectProperty])
-          
-
-          //map.setFilter("npmrds_primary_selected", filter);
-          selectLayers.forEach( layer => {
-            //console.log(["all",...layer.defaultFilters,filter])
-            map.setFilter(
-              layer.name, 
-              ["all",...layer.defaultFilters,filter]
-            );  
-          })
-          
-      }
-
-      map.dragPan.enable();
-      store.dispatch(onLayerSelect(selection, mapLayer.id))
-  }
-}
-*/
