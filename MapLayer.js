@@ -92,11 +92,7 @@ class MapLayer {
 		return this.fetchData();
 	}
 	onLegendChange() {
-<<<<<<< HEAD
 		return this.fetchData();
-=======
-		return this.onFilterFetch();
->>>>>>> bfde00cf8d0af28fb1e660c42a075039eebea6cc
 	}
 	fetchData() {
 		return this.onFilterFetch();
