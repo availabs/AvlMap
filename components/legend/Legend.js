@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 // import deepEqual from 'deep-equal'
 // import LegendHeader from './LegendHeader'
@@ -93,6 +93,8 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title }) =>
         return d3scale.scaleQuantize();
       case "threshold":
         return d3scale.scaleThreshold();
+      default:
+        return d3scale.scaleLinear();
     }
   }
   

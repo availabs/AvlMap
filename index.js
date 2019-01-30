@@ -53,8 +53,9 @@ class AvlMap extends React.Component {
       this.props.layers.forEach(layer => {
       	layer.init(this);
       	if (layer.active) {
-					layer.onAdd(map);
+					layer.onAdd(map)
 					activeLayers.push(layer.name);
+
       	}
       })
       this.setState({ map, activeLayers })
@@ -71,6 +72,7 @@ class AvlMap extends React.Component {
   		layer.active = true;
   		layer.onAdd(this.state.map);
   		this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
+  		console.log('layer added', layerName)
   	}
   }
   removeLayer(layerName) {
@@ -136,6 +138,11 @@ class AvlMap extends React.Component {
   		oldValue = layer.filters[filterName].value;
 
 		layer.filters[filterName].value = value;
+
+		if(layer.filters[filterName].onChange) {
+			layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
+		}
+
 		this.forceUpdate();
 
 		layer.onFilterFetch(filterName, oldValue, value)

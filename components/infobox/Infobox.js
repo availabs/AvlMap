@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 import Legend from '../legend/Legend'
-import TMCInspector from './tmcInspector'
+// import TMCInspector from './tmcInspector'
 
  class InfoBox extends Component {
 

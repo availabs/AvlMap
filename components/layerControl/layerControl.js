@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 import styled from 'styled-components';
 import {
-  PanelLabel,
-  StyledPanelDropdown,
+  // PanelLabel,
+  // StyledPanelDropdown,
   Button
 } from 'components/common/styled-components';
 
