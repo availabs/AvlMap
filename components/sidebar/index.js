@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 // import deepEqual from 'deep-equal'
 import SidebarContainer from './sidebar'
