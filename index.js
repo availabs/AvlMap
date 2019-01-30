@@ -8,9 +8,11 @@ import Infobox from './components/infobox/Infobox'
 import MapPopover from "./components/popover/MapPopover"
 import MapModal from "./components/modal/MapModal"
 
-import LightTheme from 'components/common/themes/dark'
+import theme from 'components/common/themes/dark'
 
 import './avlmap.css'
+
+import TimeRangeSldier from "./components/time-range-slider/time-range-slider"
 
 mapboxgl.accessToken = MAPBOX_TOKEN
 
@@ -235,8 +237,8 @@ AvlMap.defaultProps = {
 	minZoom: 2,
 	zoom: 10,
 	layers: [],
-	theme: LightTheme,
-	header: () => <h4 style={ { color: LightTheme.textColorHl } }>Sidebar</h4>
+	theme: theme,
+	header: () => <h4 style={ { color: theme.textColorHl } }>Sidebar</h4>
 }
 
 export default AvlMap

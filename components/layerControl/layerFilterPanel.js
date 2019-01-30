@@ -4,6 +4,7 @@ import { Button, StyledPanelHeader} from 'components/common/styled-components';
 
 //import * as Filters from 'components/filters';
 import {SingleSelectFilter,MultiSelectFilter, DateFilter} from 'components/filters'
+import TimeRangeSldier from "../time-range-slider/time-range-slider"
 // import deepEqual from 'deep-equal'
 
 const sliderStyle =  {
@@ -38,6 +39,16 @@ const StyledFilterContent = styled.div`
   padding: 12px;
 `;
 
+const TimeRangeSliderContainer = styled.div`
+  background-color: ${ props => props.theme.panelBackground };
+  padding: 20px;
+  z-index: 1000;
+  position: fixed;
+  bottom: 30px;
+  right: 50px;
+  width: 750px;
+`
+
  class LayerFilterPanel extends Component {
   
 
@@ -68,21 +79,18 @@ const StyledFilterContent = styled.div`
             return <SingleSelectFilter 
               setFilter={ dispatchUpdateFilter } 
               filter={ filter }
-            />
-          break;
+            />;
           case 'multi':
             return <MultiSelectFilter 
               setFilter={ dispatchUpdateFilter } 
               filter={ filter }
-            />
-          break;
+            />;
           case 'fetch':
             return (
               <SubmitButton onClick={ dispatchUpdateFilter }>
                 {filter.name}
               </SubmitButton>
-            )
-          break;
+            );
           case 'slider':
             return (
               <div>
@@ -96,16 +104,29 @@ const StyledFilterContent = styled.div`
                   onChange={dispatchUpdateSlider} 
                 />
               </div>
-            )
-          break;
+            );
           case 'date':
             return (
               <DateFilter 
               setFilter={ dispatchUpdateFilter } 
               filter={ filter }
               />
-            )
-          break;
+            );
+          case "time-range":
+            return (
+              <TimeRangeSliderContainer>
+                <TimeRangeSldier
+                  onChange={ dispatchUpdateFilter }
+                  histogram={ filter.histogram }
+                  domain={ filter.domain }
+                  value={ filter.value }
+                  step={ filter.step }
+                  toggleAnimation={ () => console.log("toggleAnimation") }
+                  isEnlarged={ true }
+                  isAnimatable={ true }
+                  speed={ filter.speed || 1 }/>
+              </TimeRangeSliderContainer>
+            );
         }
       }
 

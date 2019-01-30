@@ -68,11 +68,10 @@ const ModalToggle = ({ layer, toggle }) =>
 
     return (
       <div >
-        <div 
-            draggable={ true }
-            onDragStart={ e => this.onDragStart(e, layer.name, index) }
-            onDragOver={ e => this.onDragOver(e, index) }
-            className='active-layer-container' style={LayerControlStyle}
+        <div draggable={ true }
+          onDragStart={ e => this.onDragStart(e, layer.name, index) }
+          onDragOver={ e => this.onDragOver(e, index) }
+          className='active-layer-container' style={LayerControlStyle}
         >
           <LayerHeader
             layer={ layer }
