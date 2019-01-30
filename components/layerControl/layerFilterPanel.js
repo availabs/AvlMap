@@ -25,10 +25,10 @@ const StyledFilterPanel = styled.div`
   }
 `;
 
-const StyledFilterHeader = StyledPanelHeader.extend`
-  cursor: pointer;
-  padding: 10px 12px;
-`;
+// const StyledFilterHeader = StyledPanelHeader.extend`
+//   cursor: pointer;
+//   padding: 10px 12px;
+// `;
 
 const SubmitButton = Button.extend`
   width: 100%
@@ -69,9 +69,9 @@ const TimeRangeSliderContainer = styled.div`
       }
 
 
-      const dispatchSubmit = () => {
-        this.props.fetchLayerData(layer.name)
-      }
+      // const dispatchSubmit = () => {
+      //   this.props.fetchLayerData(layer.name)
+      // }
 
       const getFilter = (filter) => {
         switch(filter.type) {

@@ -45,9 +45,9 @@ import React, {Component} from 'react';
               { 
                 layers.filter(layer => !layer.active)
                 .map(layer =>
-                  <a key={ layer.name } className="dropdown-item" value={ layer.name } onClick={ this.addLayer }>
+                  <span key={ layer.name } className="dropdown-item" value={ layer.name } onClick={ this.addLayer }>
                     { layer.name }
-                  </a>
+                  </span>
                 )
               }
               
