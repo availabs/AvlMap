@@ -139,16 +139,16 @@ class AvlMap extends React.Component {
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
 
-	layer.filters[filterName].value = value;
+	   layer.filters[filterName].value = value;
 
-	if(layer.filters[filterName].onChange) {
-		layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
-	}
+  	if(layer.filters[filterName].onChange) {
+  		layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
+  	}
 
-	layer.loading = true;
-	this.forceUpdate();
+  	layer.loading = true;
+  	this.forceUpdate();
 
-	layer.onFilterFetch(filterName, oldValue, value)
+  	layer.onFilterFetch(filterName, oldValue, value)
       .then(data => layer.receiveData(this.state.map, data))
       .then(() => layer.loading = false)
       .then(() => this.forceUpdate());

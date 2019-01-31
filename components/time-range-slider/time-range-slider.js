@@ -99,16 +99,18 @@ export default class TimeRangeSlider extends Component {
   };
 
   render() {
-    const {domain, value, isEnlarged} = this.props;
-    const {isAnimating} = this.state;
+    const { domain, value, isEnlarged, Title } = this.props;
+    const { isAnimating } = this.state;
 
     return (
       <div className="time-range-slider">
-        <TimeTitle
-          timeFormat={ this.titleFormatter(this.props) }
-          value={value}
-          isEnlarged={isEnlarged}
-        />
+        { Title ? <Title /> :
+          <TimeTitle
+            timeFormat={ this.titleFormatter(this.props) }
+            value={value}
+            isEnlarged={isEnlarged}
+          />
+        }
         <StyledSliderContainer
           className="time-range-slider__container"
           isEnlarged={isEnlarged}>
