@@ -13,11 +13,14 @@ export function getTimeWidgetTitleFormatter(domain) {
   }
 
   const diff = domain[1] - domain[0];
+console.log("<getTimeWidgetTitleFormatter>",domain,diff)
   return diff > durationYear
     ? 'MM/DD/YY'
-    : diff > durationDay
-      ? 'MM/DD hha'
-      : 'MM/DD hh:mma';
+    : diff > durationWeek
+      ? 'MM/DD/YY'
+      : diff > durationDay
+        ? 'MM/DD hha'
+        : 'MM/DD hh:mma';
 }
 
 export function preciseRound(num, decimals) {

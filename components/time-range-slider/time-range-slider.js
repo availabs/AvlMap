@@ -105,7 +105,7 @@ export default class TimeRangeSlider extends Component {
     return (
       <div className="time-range-slider">
         <TimeTitle
-          timeFormat={'MM/DD/YY'/*this.titleFormatter(this.props)*/}
+          timeFormat={ this.titleFormatter(this.props) }
           value={value}
           isEnlarged={isEnlarged}
         />
