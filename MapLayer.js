@@ -12,6 +12,8 @@ const DEFAULT_OPTIONS = {
 	legend: false,
 	filters: false,
 	select: false,
+  onClick: false,
+
   selection: []
 }
 
@@ -35,14 +37,19 @@ class MapLayer {
 		this.legend = options.legend;
 		this.filters = options.filters;
 		this.select = options.select;
-    this.selection = [];
+    this.onClick = options.onClick;
+
+    this.selection = options.selection;
 
 		this.loading = options.loading;
 
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
-		this._click = this._click.bind(this);
+		this._popoverClick = this._popoverClick.bind(this);
+
     this._mousedown = this._mousedown.bind(this);
+
+    this._mapClick = this._mapClick.bind(this);
 	}
 
 	init(component) {
@@ -51,22 +58,28 @@ class MapLayer {
 	}
 
 	onAdd(map) {
-		this.sources.forEach(source => {
-      if (!map.getSource(source.id)) {
-        map.addSource(source.id, source.source);
-      }
-		})
-		this.layers.forEach(layer => {
-			map.addLayer(layer);
-		})
+		// this.sources.forEach(source => {
+  //     if (!map.getSource(source.id)) {
+  //       map.addSource(source.id, source.source);
+  //     }
+		// })
+		// this.layers.forEach(layer => {
+		// 	map.addLayer(layer);
+		// })
 		if (this.popover) {
 			this.addPopover(map);
 		}
 		if (this.select) {
 			this.addBoxSelect(map);
 		}
+    if (this.onClick) {
+      this.addOnClick(map);
+    }
 	}
 	onRemove(map) {
+    if (this.onClick) {
+      this.removeOnClick(map);
+    }
     if (this.select) {
       this.removeBoxSelect(map);
     }
@@ -89,10 +102,10 @@ class MapLayer {
 	}
 
 	onFilterFetch(filterName, oldValue, newValue) {
-		return this.fetchData();
+		return Promise.resolve(null);
 	}
 	onLegendChange() {
-		return this.fetchData();
+		return this.onFilterFetch();
 	}
 	fetchData() {
 		return this.onFilterFetch();
@@ -103,18 +116,38 @@ class MapLayer {
 	receiveData(map, data) {
 	}
 
+  addOnClick(map) {
+    this.onClick.layers.forEach(layer => {
+      map.on("click", layer, this._mapClick)
+    })
+  }
+  removeOnClick(map) {
+    this.onClick.layers.forEach(layer => {
+      map.off("click", layer, this._mapClick)
+    })
+  }
+  _mapClick(e) {
+    if (e.features.length) {
+      this.onClick.dataFunc.call(this, e.features[0]);
+    }
+  }
+
 	addPopover(map) {
 		this.popover.layers.forEach(layer => {
 			map.on("mousemove", layer, this._mousemove);
 			map.on("mouseleave", layer, this._mouseleave);
-			map.on("click", layer, this._click);
+      if (!this.popover.noSticky && !this.onClick) {
+        map.on("click", layer, this._popoverClick);
+      }
 		})
 	}
 	removePopover(map) {
 		this.popover.layers.forEach(layer => {
 			map.off("mousemove", layer, this._mousemove);
 			map.off("mouseleave", layer, this._mouseleave);
-			map.off("click", layer, this._click);
+      if (!this.popover.noSticky && !this.onClick) {
+        map.off("click", layer, this._popoverClick);
+      }
 		})
 	}
 	_mousemove(e) {
@@ -142,7 +175,7 @@ class MapLayer {
         data: []
     })
 	}
-	_click(e) {
+	_popoverClick(e) {
 		const { map, popover } = this.component.state,
     	{ pinned } = popover;
 
