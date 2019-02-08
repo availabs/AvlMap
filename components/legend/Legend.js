@@ -99,7 +99,7 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title }) =>
   }
   
   render() {
-    const { domain, range, vertical } = this.props
+    const { vertical } = this.props // domain, range
 
     const scale = this.getScale()
       .domain(this.props.domain)
