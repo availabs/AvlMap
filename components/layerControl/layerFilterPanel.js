@@ -124,7 +124,9 @@ const TimeRangeSliderContainer = styled.div`
                   toggleAnimation={ () => console.log("toggleAnimation") }
                   isEnlarged={ true }
                   isAnimatable={ true }
-                  speed={ filter.speed || 1 }/>
+                  speed={ filter.speed || 1 }
+                  hideTitle={ filter.hideTitle }
+                  Title={ filter.Title }/>
               </TimeRangeSliderContainer>
             )
           default: 

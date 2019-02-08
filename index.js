@@ -55,9 +55,9 @@ class AvlMap extends React.Component {
       this.props.layers.forEach(layer => {
       	layer.init(this);
       	if (layer.active) {
+          this._addLayer(map, layer);
 					layer.onAdd(map)
 					activeLayers.push(layer.name);
-
       	}
       })
       this.setState({ map, activeLayers })
@@ -68,13 +68,48 @@ class AvlMap extends React.Component {
   	return this.props.layers.reduce((a, c) => c.name === layerName ? c : a, null);
   }
 
+  _addLayer(map, newLayer) {
+    newLayer.sources.forEach(source => {
+      if (!map.getSource(source.id)) {
+        map.addSource(source.id, source.source);
+      }
+    })
+
+    const activeMBLayers = this.state.activeLayers.reduce((a, ln) => {
+      const layer = this.props.layers.reduce((a, c) => c.name === ln ? c : a);
+      return [...a, ...layer.layers];
+    }, [])
+
+    const newMBLayers = newLayer.layers.slice();
+    newMBLayers.sort((a, b) => {
+      const azi = a.zIndex || 0,
+        bzi = b.zIndex || 0;
+      return azi - bzi;
+    })
+
+    newMBLayers.forEach(mbLayer => {
+      const zIndex = mbLayer.zIndex || 0;
+      let layerAdded = false;
+      activeMBLayers.forEach(aMBL => {
+        const aMBLzIndex = aMBL.zIndex || 0;
+        if (aMBLzIndex > zIndex) {
+          map.addLayer(mbLayer, aMBL.id);
+          layerAdded = true;
+        }
+      })
+      if (!layerAdded) {
+        map.addLayer(mbLayer);
+      }
+    })
+  }
+
   addLayer(layerName) {
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && !layer.active) {
   		layer.active = true;
-  		layer.onAdd(this.state.map);
+      this._addLayer(this.state.map, layer);
+      layer.onAdd(this.state.map);
   		this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
-  		console.log('layer added', layerName)
   	}
   }
   removeLayer(layerName) {
@@ -139,19 +174,41 @@ class AvlMap extends React.Component {
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
 
-	layer.filters[filterName].value = value;
+	  layer.filters[filterName].value = value;
 
-	if(layer.filters[filterName].onChange) {
-		layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
-	}
+  	if (layer.filters[filterName].onChange) {
+  		layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
+  	}
 
-	layer.loading = true;
-	this.forceUpdate();
+  	layer.loading = true;
+  	this.forceUpdate();
 
-	layer.onFilterFetch(filterName, oldValue, value)
+  	layer.onFilterFetch(filterName, oldValue, value)
       .then(data => layer.receiveData(this.state.map, data))
       .then(() => layer.loading = false)
       .then(() => this.forceUpdate());
+
+    if (layer.filters[filterName].refLayers) {
+      layer.filters[filterName].refLayers.forEach(refLayerName => {
+        const layer = this.getLayer(refLayerName);
+        layer.filters[filterName].value = value;
+        if (layer.active) {
+
+          if (layer.filters[filterName].onChange) {
+            layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
+          }
+
+          layer.loading = true;
+          this.forceUpdate();
+
+          layer.onFilterFetch(filterName, oldValue, value)
+            .then(data => layer.receiveData(this.state.map, data))
+            .then(() => layer.loading = false)
+            .then(() => this.forceUpdate());
+
+        }
+      })
+    }
   }
 
   updateLegend(layerName, update) {
@@ -192,7 +249,7 @@ class AvlMap extends React.Component {
 		const activeLayers = this.state.activeLayers.filter(l => l !== this.state.dragging),
 			insertBefore = activeLayers[this.state.dragover];
 		activeLayers.splice(this.state.dragover, 0, this.state.dragging)
-		const draggingLayer =  this.getLayer(this.state.dragging),
+		const draggingLayer = this.getLayer(this.state.dragging),
 			beforeLayer = this.getLayer(insertBefore);
 		let beforeLayerId = null;
 		if (beforeLayer) {
@@ -202,6 +259,18 @@ class AvlMap extends React.Component {
 			this.state.map.moveLayer(id, beforeLayerId)
 		})
 		this.setState({ activeLayers });
+
+    const layersWithZIndex = activeLayers.reduce((a, c) => {
+      const layer = this.getLayer(c),
+        mbLayers = layer.layers.reduce((a, c) => {
+          return c.zIndex ? [...a, c] : a;
+        }, []);
+      return [...a, ...mbLayers];
+    }, [])
+    layersWithZIndex.sort((a, b) => a.zIndex - b.zIndex);
+    layersWithZIndex.forEach(mbLayer => {
+      this.state.map.moveLayer(mbLayer.id);
+    })
   }
 
 	render() {

@@ -45,7 +45,7 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) 
           : type === "linear" ?
             scale.ticks(5).map(t => <div key={ t } style={ textBlock }>{ format(t) }</div>)
           :
-            range.map((r, i) => <div key={ i } style={ textBlock }>{ format(scale.invertExtent(r)[1]) }</div>)
+            range.map((r, i) => <div key={ i } style={ textBlock }>{ typeof scale.invertExtent(r)[1] === "number" ? format(scale.invertExtent(r)[1]) : null }</div>)
         }
       </div>
     </div>
