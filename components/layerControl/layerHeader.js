@@ -100,7 +100,7 @@ const IconWrapper = styled.div`
   margin-left: 5px;
 `
 
-const ActionBar = ({ layerName, actions, actionMap }) =>
+const ActionBar = ({ layer, actions, actionMap }) =>
   <ActionBarContainer>
     {
       actions.map((a, i) =>
@@ -110,8 +110,8 @@ const ActionBar = ({ layerName, actions, actionMap }) =>
             onClick={ e => {
               e.stopPropagation();
               typeof a.action === "function" ?
-                a.action() :
-                actionMap[a.action[0]](layerName, ...a.action.slice(1))
+                a.action.call(layer) :
+                actionMap[a.action[0]](layer.name, ...a.action.slice(1))
             } }/>
           <Tooltip
             id={ `action-bar-${ i }` }
@@ -175,7 +175,7 @@ const LayerPanelHeader = ({
               !layer.actions ? null :
               <ActionBar actionMap={ actionMap }
                 actions={ layer.actions }
-                layerName={ layer.name }/>
+                layer={ layer }/>
             }
           </div>
         </div>

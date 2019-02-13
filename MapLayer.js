@@ -52,9 +52,10 @@ class MapLayer {
     this._mapClick = this._mapClick.bind(this);
 	}
 
-	init(component) {
+	init(component, map) {
 		this.component = component;
 		this.updatePopover = component.updatePopover.bind(component);
+    this.map = map;
 	}
 
 	onAdd(map) {
@@ -118,18 +119,27 @@ class MapLayer {
 
   addOnClick(map) {
     this.onClick.layers.forEach(layer => {
-      map.on("click", layer, this._mapClick)
+      if (layer === 'map') {
+        map.on('click', this._mapClick);
+      }
+      else {
+        map.on("click", layer, this._mapClick)
+      }
     })
   }
   removeOnClick(map) {
     this.onClick.layers.forEach(layer => {
-      map.off("click", layer, this._mapClick)
+      if (layer === 'map') {
+        map.off('click', this._mapClick);
+      }
+      else {
+        map.off("click", layer, this._mapClick)
+      }
     })
   }
   _mapClick(e) {
-    if (e.features.length) {
-      this.onClick.dataFunc.call(this, e.features[0]);
-    }
+console.log("MAP CLICK:",e);
+    this.onClick.dataFunc.call(this, e.features, e.point, e.lngLat);
   }
 
 	addPopover(map) {
