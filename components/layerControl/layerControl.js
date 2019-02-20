@@ -91,7 +91,8 @@ const ModalToggle = ({ layer, toggle }) =>
         }
         { !showConfig || !layer.filters ? null :
           <LayerFilterPanel layer={ layer }
-            updateFilter={ this.props.updateFilter }/>
+            updateFilter={ this.props.updateFilter }
+            fetchLayerData={ this.props.fetchLayerData }/>
         }
       </div>
     );

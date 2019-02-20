@@ -69,9 +69,9 @@ const TimeRangeSliderContainer = styled.div`
       }
 
 
-      // const dispatchSubmit = () => {
-      //   this.props.fetchLayerData(layer.name)
-      // }
+      const dispatchFetch = () => {
+        this.props.fetchLayerData(layer.name)
+      }
 
       const getFilter = (filter) => {
         switch(filter.type) {
@@ -87,7 +87,7 @@ const TimeRangeSliderContainer = styled.div`
             />;
           case 'fetch':
             return (
-              <SubmitButton onClick={ dispatchUpdateFilter }>
+              <SubmitButton onClick={ dispatchFetch }>
                 {filter.name}
               </SubmitButton>
             );

@@ -53,7 +53,7 @@ class AvlMap extends React.Component {
     map.on('load',  () => {
       const activeLayers = [];
       this.props.layers.forEach(layer => {
-      	layer.init(this);
+      	layer.init(this, map);
       	if (layer.active) {
           this._addLayer(map, layer);
 					layer.onAdd(map)
