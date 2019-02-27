@@ -68,14 +68,14 @@ class AvlMap extends React.Component {
   	return this.props.layers.reduce((a, c) => c.name === layerName ? c : a, null);
   }
 
-  _addLayer(map, newLayer, activeLayers=null) {
+  _addLayer(map, newLayer, activeLayers=this.state.activeLayers) {
     newLayer.sources.forEach(source => {
       if (!map.getSource(source.id)) {
         map.addSource(source.id, source.source);
       }
     })
 
-    const activeMBLayers = (activeLayers || this.state.activeLayers).reduce((a, ln) => {
+    const activeMBLayers = activeLayers.reduce((a, ln) => {
       const layer = this.props.layers.reduce((a, c) => c.name === ln ? c : a);
       return [...a, ...layer.layers];
     }, [])
