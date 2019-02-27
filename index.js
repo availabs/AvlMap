@@ -53,7 +53,7 @@ class AvlMap extends React.Component {
     map.on('load',  () => {
       const activeLayers = [];
       this.props.layers.forEach(layer => {
-      	layer.init(this, map);
+        layer.init(this, map);
       	if (layer.active) {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
@@ -86,6 +86,8 @@ class AvlMap extends React.Component {
         bzi = b.zIndex || 0;
       return azi - bzi;
     })
+
+    //console.log('mbLayers', newMBLayers)
 
     newMBLayers.forEach(mbLayer => {
       const zIndex = mbLayer.zIndex || 0;
@@ -153,6 +155,7 @@ class AvlMap extends React.Component {
     this.forceUpdate();
     
     layer.onSelect(selection)
+      .then(() => layer.fetchData())
       .then(data => layer.receiveData(this.state.map, data))
       .then(() => layer.loading = false)
       .then(() => this.forceUpdate());
