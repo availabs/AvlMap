@@ -103,7 +103,7 @@ class MapLayer {
 	}
 
 	onFilterFetch(filterName, oldValue, newValue) {
-		return Promise.resolve(null);
+		return this.fetchData();
 	}
 	onLegendChange() {
 		return this.onFilterFetch();
