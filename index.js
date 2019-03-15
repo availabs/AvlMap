@@ -8,7 +8,7 @@ import Infobox from './components/infobox/Infobox'
 import MapPopover from "./components/popover/MapPopover"
 import MapModal from "./components/modal/MapModal"
 
-import theme from 'components/common/themes/dark'
+import DEFAULT_THEME from 'components/common/themes/dark'
 
 import './avlmap.css'
 
@@ -30,7 +30,9 @@ class AvlMap extends React.Component {
 			data: []
 		},
 		dragging: null,
-		dragover: null
+		dragover: null,
+    width: 0,
+    height: 0
 	}
 
   componentDidMount() {
@@ -62,6 +64,20 @@ class AvlMap extends React.Component {
       })
       this.setState({ map, activeLayers })
     })
+    this.setContainerSize();
+  }
+
+  componentDidUpdate(oldProps, oldState) {
+    this.setContainerSize();
+  }
+  setContainerSize() {
+    const div = document.getElementById(this.props.id),
+      rect = div.getBoundingClientRect(),
+      width = rect.right - rect.left,
+      height = rect.bottom - rect.top;
+    if (width !== this.state.width || height !== this.state.height) {
+      this.setState({ width, height })
+    }
   }
 
   getLayer(layerName) {
@@ -297,7 +313,11 @@ class AvlMap extends React.Component {
 				<Infobox layers={ this.props.layers }
 					theme={ this.props.theme }/>
 				<MapPopover { ...this.state.popover }
-					updatePopover={ this.updatePopover.bind(this) }/>
+					updatePopover={ this.updatePopover.bind(this) }
+          mapSize={ {
+            width: this.state.width,
+            height: this.state.height
+          } }/>
 				<MapModal layers={ this.props.layers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 			</div>
@@ -313,8 +333,8 @@ AvlMap.defaultProps = {
 	minZoom: 2,
 	zoom: 10,
 	layers: [],
-	theme: theme,
-	header: () => <h4 style={ { color: theme.textColorHl } }>Sidebar</h4>
+	theme: DEFAULT_THEME,
+	header: () => <h4 style={ { color: DEFAULT_THEME.textColorHl } }>Sidebar</h4>
 }
 
 export default AvlMap

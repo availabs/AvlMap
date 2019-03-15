@@ -12,7 +12,8 @@ import styled from 'styled-components';
 const ModalContainer = styled.div`
 	position: fixed;
 	width: 100%;
-	bottom: 30px;
+	bottom: ${ props => props.position === "bottom" ? "30px" : "auto" };
+	top: ${ props => props.position === "top" ? "20px" : "auto" };
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -39,9 +40,13 @@ const CloseWrapper = styled.div`
 class MapModal extends React.Component {
 	render() {
 		const layers = this.props.layers,
-			modal = layers.reduce((a, c) => c.modal && c.modal.show ? { comp: c.modal.comp, layerName: c.name } : a, null);
+			modal = layers.reduce((a, c) => c.modal && c.modal.show ? { ...c.modal, layerName: c.name } : a, null);
+		let position = "bottom";
+		if (modal && modal.position) {
+			position = modal.position;
+		}
 		return !modal ? null : (
-			<ModalContainer>
+			<ModalContainer position={ position }>
 				<ModalWrapper>
 					<CloseWrapper onClick={ e => { e.preventDefault(); e.stopPropagation(); this.props.toggleModal(modal.layerName); } }>
 						<Close data-tip data-for="close-modal-btn"/>

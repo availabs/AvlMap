@@ -101,20 +101,21 @@ export class MapPopover extends Component {
   _getPosition(x, y) {
     const topOffset = 30;
     const leftOffset = 30;
-    // const {mapState} = this.props;
-    // const {width, height} = this.state;
+    const {mapSize} = this.props;
+    const {width, height} = this.state;
+    
     const pos = {};
-    // if (x + leftOffset + width > mapState.width) {
-    //   pos.right = mapState.width - x + leftOffset;
-    // } else {
+    if (x + leftOffset + width > mapSize.width) {
+      pos.right = mapSize.width - x + leftOffset;
+    } else {
       pos.left = x + leftOffset;
-    // }
+    }
 
-    // if (y + topOffset + height > mapState.height) {
-    //   pos.bottom = 10;
-    // } else {
+    if (y + topOffset + height > mapSize.height) {
+      pos.bottom = 10;
+    } else {
       pos.top = y + topOffset;
-    // }
+    }
 
     return pos;
   }
@@ -183,10 +184,15 @@ export class MapPopover extends Component {
   }
 }
 
-const Row = ([name, value]) =>
-  <tr key={ name }>
-    <td className="row__name">{ name }</td>
-    <td className="row__value">{ value }</td>
-  </tr>
+const Row = ([name, value], i) =>
+  value ?
+    <tr key={ name }>
+      <td className="row__name" style={ { maxWidth: "150" } }>{ name }</td>
+      <td className="row__value" style={ { maxWidth: "150" } }>{ value }</td>
+    </tr>
+  :
+    <tr key={ i }>
+      <td colSpan={ 2 } className="row__value" style={ { maxWidth: "300px" } }>{ name }</td>
+    </tr>
 
 export default MapPopover

@@ -95,6 +95,13 @@ class MapLayer {
 		})
 	}
 
+  doAction(action) {
+    const type = action[0];
+    if (this.component[type]) {
+      this.component[type](this.name, ...action.slice(1))
+    }
+  }
+
 	toggleVisibility(map) {
 		this.layers.forEach(layer => {
 			const visible = map.getLayoutProperty(layer.id, 'visibility');
