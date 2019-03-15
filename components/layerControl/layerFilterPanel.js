@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
-import { Button, StyledPanelHeader} from 'components/common/styled-components';
+import { Button  } from 'components/common/styled-components'; // StyledPanelHeader
 
 //import * as Filters from 'components/filters';
-import {SingleSelectFilter,MultiSelectFilter, DateFilter} from 'components/filters'
+import { SingleSelectFilter,MultiSelectFilter, DateFilter } from 'components/filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
 // import deepEqual from 'deep-equal'
 
@@ -128,7 +128,9 @@ const TimeRangeSliderContainer = styled.div`
                   hideTitle={ filter.hideTitle }
                   Title={ filter.Title }/>
               </TimeRangeSliderContainer>
-            );
+            )
+          default: 
+            return (<span >Invalid Filter Type {filter.type}</span>);
         }
       }
 
