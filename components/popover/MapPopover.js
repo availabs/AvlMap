@@ -184,15 +184,15 @@ export class MapPopover extends Component {
   }
 }
 
-const Row = ([name, value], i) =>
-  value ?
-    <tr key={ name }>
-      <td className="row__name" style={ { maxWidth: "150" } }>{ name }</td>
-      <td className="row__value" style={ { maxWidth: "150" } }>{ value }</td>
+const Row = (row, i) =>
+  row.length === 2 ?
+    <tr key={ i }>
+      <td className="row__name" style={ { maxWidth: "150" } }>{ row[0] }</td>
+      <td className="row__value" style={ { maxWidth: "150" } }>{ row[1] }</td>
     </tr>
   :
     <tr key={ i }>
-      <td colSpan={ 2 } className="row__value" style={ { maxWidth: "300px" } }>{ name }</td>
+      <td colSpan={ 2 } className="row__value" style={ { maxWidth: "300px" } }>{ row[0] }</td>
     </tr>
 
 export default MapPopover

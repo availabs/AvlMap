@@ -21,19 +21,23 @@ const getUniqueId = () =>
 	`avl-map-${ ++UNIQUE_ID }`
 
 class AvlMap extends React.Component {
-	state = {
-		map: null,
-		activeLayers: [],
-		popover: {
-			pos: [0, 0],
-			pinned: false,
-			data: []
-		},
-		dragging: null,
-		dragover: null,
-    width: 0,
-    height: 0
-	}
+  constructor(props) {
+    super(props);
+  	this.state = {
+  		map: null,
+  		activeLayers: [],
+  		popover: {
+  			pos: [0, 0],
+  			pinned: false,
+  			data: []
+  		},
+  		dragging: null,
+  		dragover: null,
+      width: 0,
+      height: 0
+  	}
+    this.container = React.createRef();
+  }
 
   componentDidMount() {
     const {
@@ -71,11 +75,10 @@ class AvlMap extends React.Component {
     this.setContainerSize();
   }
   setContainerSize() {
-    const div = document.getElementById(this.props.id),
-      rect = div.getBoundingClientRect(),
-      width = rect.right - rect.left,
-      height = rect.bottom - rect.top;
-    if (width !== this.state.width || height !== this.state.height) {
+    const div = this.container.current,
+      width = div.scrollWidth,
+      height = div.scrollHeight;
+    if ((width !== this.state.width) || (height !== this.state.height)) {
       this.setState({ width, height })
     }
   }
@@ -298,7 +301,7 @@ class AvlMap extends React.Component {
 			toggleInfoBox: this.toggleInfoBox.bind(this)
 		}
 		return (
-			<div id={ this.props.id } style={ { height: this.props.height } }>
+			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 				<Sidebar layers={ this.props.layers }
 					activeLayers={ this.state.activeLayers }
 					theme={ this.props.theme }
