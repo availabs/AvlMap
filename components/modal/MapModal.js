@@ -39,16 +39,26 @@ const CloseWrapper = styled.div`
 
 class MapModal extends React.Component {
 	render() {
-		const layers = this.props.layers,
-			modal = layers.reduce((a, c) => c.modal && c.modal.show ? { ...c.modal, layerName: c.name } : a, null);
-		let position = "bottom";
-		if (modal && modal.position) {
-			position = modal.position;
-		}
-		return !modal ? null : (
+		const modal = this.props.layers.reduce((a, layer) => {
+			let m = null;
+			if (layer.modals) {
+				for (const key in layer.modals) {
+					if (layer.modals[key].show) {
+						m = {
+							...layer.modals[key],
+							layerName: layer.name,
+							modalName: key
+						}
+					}
+				}
+			}
+			return m || a;
+		}, {});
+		const { position="bottom" } = modal;
+		return !modal.comp ? null : (
 			<ModalContainer position={ position }>
 				<ModalWrapper>
-					<CloseWrapper onClick={ e => { e.preventDefault(); e.stopPropagation(); this.props.toggleModal(modal.layerName); } }>
+					<CloseWrapper onClick={ e => { e.preventDefault(); e.stopPropagation(); this.props.toggleModal(modal.layerName, modal.modalName); } }>
 						<Close data-tip data-for="close-modal-btn"/>
 	          <Tooltip
 	            id="close-modal-btn"
@@ -57,7 +67,7 @@ class MapModal extends React.Component {
 	            <span>Close Modal</span>
 	          </Tooltip>
 					</CloseWrapper>
-					<modal.comp />
+					<modal.comp theme={ this.props.theme }/>
 				</ModalWrapper>
 			</ModalContainer>
 		)

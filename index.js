@@ -152,17 +152,18 @@ class AvlMap extends React.Component {
   	this.setState({ popover: { ...this.state.popover, ...update }});
   }
 
-  toggleModal(layerName) {
+  toggleModal(layerName, modalName) {
   	const layer = this.getLayer(layerName),
-  		show = layer.modal ? !layer.modal.show : false;
+      modal = layer.modals[modalName],
+      show = !modal.show;
 		this.props.layers.forEach(layer => {
-			if (layer.modal) {
-				layer.modal.show = false;
+			if (layer.modals) {
+        for (const modal in layer.modals) {
+				  layer.modals[modal].show = false;
+        }
 			}
 		})
-		if (layer.modal) {
-			layer.modal.show = show;
-		}
+    modal.show = show;
   	this.forceUpdate();
   }
 
@@ -325,7 +326,8 @@ class AvlMap extends React.Component {
             height: this.state.height
           } }/>
 				<MapModal layers={ this.props.layers }
-					toggleModal={ this.toggleModal.bind(this) }/>
+					toggleModal={ this.toggleModal.bind(this) }
+          theme={ this.props.theme }/>
 			</div>
 		)
 	}

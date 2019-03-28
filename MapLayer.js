@@ -7,7 +7,7 @@ const DEFAULT_OPTIONS = {
 
 	popover: false,
 	actions: false,
-	modal: false,
+  modals: false,
 	infoBoxes: false,
 	legend: false,
 	filters: false,
@@ -25,23 +25,26 @@ class MapLayer {
 
 		this.name = name;
 
-		this.sources = options.sources;
-		this.layers = options.layers;
+    for (const key in options) {
+      this[key] = options[key];
+    }
 
-		this.active = options.active;
+		// this.sources = options.sources;
+		// this.layers = options.layers;
 
-		this.popover = options.popover;
-		this.actions = options.actions;
-		this.modal = options.modal;
-		this.infoBoxes = options.infoBoxes;
-		this.legend = options.legend;
-		this.filters = options.filters;
-		this.select = options.select;
-    this.onClick = options.onClick;
+		// this.active = options.active;
+  //   this.loading = options.loading;
 
-    this.selection = options.selection;
+		// this.popover = options.popover;
+		// this.actions = options.actions;
+		// this.modals = options.modals;
+		// this.infoBoxes = options.infoBoxes;
+		// this.legend = options.legend;
+		// this.filters = options.filters;
+		// this.select = options.select;
+  //   this.onClick = options.onClick;
 
-		this.loading = options.loading;
+  //   this.selection = options.selection;
 
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
@@ -54,8 +57,8 @@ class MapLayer {
 
 	init(component, map) {
 		this.component = component;
-		this.updatePopover = component.updatePopover.bind(component);
     this.map = map;
+		this.updatePopover = component.updatePopover.bind(component);
 	}
 
 	onAdd(map) {
@@ -95,10 +98,10 @@ class MapLayer {
 		})
 	}
 
-  doAction(action) {
-    const type = action[0];
-    if (this.component[type]) {
-      this.component[type](this.name, ...action.slice(1))
+  doAction([action, ...args]) {
+console.log(this.name, action, ...args)
+    if (this.component[action]) {
+      this.component[action](this.name, ...args)
     }
   }
 
@@ -145,7 +148,6 @@ class MapLayer {
     })
   }
   _mapClick(e) {
-console.log("MAP CLICK:",e);
     this.onClick.dataFunc.call(this, e.features, e.point, e.lngLat);
   }
 

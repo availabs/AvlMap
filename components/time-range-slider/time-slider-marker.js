@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { scaleUtc } from 'd3-scale';
+import { scaleUtc, scaleTime } from 'd3-scale';
 import { select } from 'd3-selection';
 import { axisBottom } from 'd3-axis';
 import { createSelector } from 'reselect';
@@ -61,9 +61,11 @@ export default class TimeSliderMarker extends Component {
     this.widthSelector,
     (domain, width) =>
       Array.isArray(domain)
-        ? scaleUtc()
+        // ? scaleUtc()
+        ? scaleTime()
             .domain(domain)
             .range([0, width])
+            .clamp(true)
         : null
   );
 
@@ -71,6 +73,9 @@ export default class TimeSliderMarker extends Component {
     if (!scale) {
       return;
     }
+// console.log("<time-slider-marker> DOMAIN:",scale.domain())
+// console.log("<time-slider-marker> RANGE:",scale.range())
+// console.log("?????", scale.invert(0), scale.invert(this.props.width))
     const xAxis = axisBottom(scale)
       .ticks(4)
       .tickSize(8)

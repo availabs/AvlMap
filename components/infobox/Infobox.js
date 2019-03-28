@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
-// import { connect } from 'react-redux';
 
 import Legend from '../legend/Legend'
-// import TMCInspector from './tmcInspector'
 
  class InfoBox extends Component {
 
@@ -53,7 +51,7 @@ import Legend from '../legend/Legend'
                 activeLegends.map((l, i) => <Legend key={ i } theme={ this.props.theme } { ...l }/>)
               }
               {
-                activeInfoBoxes.map(i => <i.comp key={ i }/>)
+                activeInfoBoxes.map((b, i) => <b.comp key={ i } theme={ this.props.theme }/>)
               }
             </div>
           </div>

@@ -1,11 +1,21 @@
 import React, {Component} from 'react';
 // import { connect } from 'react-redux';
 
+import styled from "styled-components"
+
 // import deepEqual from 'deep-equal'
 import SidebarContainer from './sidebar'
 import SidebarHeader from './SidebarHeader'
 import LayerSelector from './LayerSelector'
 import ActiveLayers from './ActiveLayers'
+
+const SidebarContent = styled.div`
+  ${ props => props.theme.scrollBar };
+  flex-grow: 1;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+`
 
 class Sidebar extends Component {
   render() {
@@ -18,10 +28,10 @@ class Sidebar extends Component {
     return (
       <SidebarContainer>
         <SidebarHeader header={ this.props.header }/>
-        <div className='sidebar-content' style={ sidebarContentStyle }>
+        <SidebarContent className='sidebar-content' theme={ this.props.theme }>
           <LayerSelector { ...this.props }/>
           <ActiveLayers { ...this.props }/>
-        </div>
+        </SidebarContent>
       </SidebarContainer>
     );
   }
