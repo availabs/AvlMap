@@ -99,7 +99,7 @@ class MapLayer {
 	}
 
   doAction([action, ...args]) {
-console.log(this.name, action, ...args)
+// console.log(this.name, action, ...args)
     if (this.component[action]) {
       this.component[action](this.name, ...args)
     }

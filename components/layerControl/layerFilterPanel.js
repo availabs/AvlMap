@@ -5,6 +5,7 @@ import { Button  } from 'components/common/styled-components'; // StyledPanelHea
 //import * as Filters from 'components/filters';
 import { SingleSelectFilter,MultiSelectFilter, DateFilter } from 'components/filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
+import BigEpochSlider from "../big-epoch-slider"
 // import deepEqual from 'deep-equal'
 
 const sliderStyle =  {
@@ -118,6 +119,23 @@ const TimeRangeSliderContainer = styled.div`
                 <TimeRangeSldier
                   onChange={ dispatchUpdateFilter }
                   histogram={ filter.histogram }
+                  domain={ filter.domain }
+                  value={ filter.value }
+                  step={ filter.step }
+                  toggleAnimation={ () => console.log("toggleAnimation") }
+                  isEnlarged={ true }
+                  isAnimatable={ true }
+                  speed={ filter.speed || 1 }
+                  hideTitle={ filter.hideTitle }
+                  Title={ filter.Title }/>
+              </TimeRangeSliderContainer>
+            )
+          case "big-epoch-slider":
+            return (
+              <TimeRangeSliderContainer>
+                <BigEpochSlider
+                  onChange={ dispatchUpdateFilter }
+                  bargraph={ filter.bargraph }
                   domain={ filter.domain }
                   value={ filter.value }
                   step={ filter.step }

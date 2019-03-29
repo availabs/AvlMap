@@ -152,7 +152,7 @@ class AvlMap extends React.Component {
   	this.setState({ popover: { ...this.state.popover, ...update }});
   }
 
-  toggleModal(layerName, modalName) {
+  toggleModal(layerName, modalName, props={}) {
   	const layer = this.getLayer(layerName),
       modal = layer.modals[modalName],
       show = !modal.show;
@@ -164,7 +164,14 @@ class AvlMap extends React.Component {
 			}
 		})
     modal.show = show;
+    modal.props = props;
   	this.forceUpdate();
+  }
+  updateModal(layerName, modalName, props={}) {
+    const layer = this.getLayer(layerName),
+      modal = layer.modals[modalName];
+    modal.props = props;
+    this.forceUpdate();
   }
 
   onSelect(layerName, selection) {
@@ -299,6 +306,7 @@ class AvlMap extends React.Component {
 	render() {
 		const actionMap = {
 			toggleModal: this.toggleModal.bind(this),
+      updateModal: this.updateModal.bind(this),
 			toggleInfoBox: this.toggleInfoBox.bind(this)
 		}
 		return (
@@ -312,6 +320,7 @@ class AvlMap extends React.Component {
 					actionMap= { actionMap }
 					header={ this.props.header }
 					toggleModal={ this.toggleModal.bind(this) }
+          updateModal={ this.updateModal.bind(this) }
 					updateFilter={ this.updateFilter.bind(this) }
 					updateLegend={ this.updateLegend.bind(this) }
 					fetchLayerData={ this.fetchLayerData.bind(this) }
