@@ -87,7 +87,7 @@ export default class TimeRangeSlider extends Component {
   };
 
   render() {
-    const { domain, value, isEnlarged, Title } = this.props;
+    const { domain, value, isEnlarged, Title, Comp } = this.props;
     const { isAnimating } = this.state;
 
     return (
@@ -105,6 +105,7 @@ export default class TimeRangeSlider extends Component {
             startAnimation={this._startAnimation}
           /> : null}
           <div style={{width: isEnlarged ? `calc(100% - ${animationControlWidth}px)` : '100%'}}>
+            { Comp ? <Comp /> : null }
             <BigSlider
               range={domain}
               value={value}
