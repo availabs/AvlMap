@@ -70,10 +70,12 @@ export default class Slider extends Component {
   };
 
   slide1Listener = x => {
-    const xPercent = x / this.ref.offsetWidth;
-    const maxDelta = this.props.maxValue - this.props.minValue;
-    const val = xPercent * maxDelta;
-    this.props.onSlider1Change(val + this.props.value1);
+    if (this.ref) {
+      const xPercent = x / this.ref.offsetWidth;
+      const maxDelta = this.props.maxValue - this.props.minValue;
+      const val = xPercent * maxDelta;
+      this.props.onSlider1Change(val + this.props.value1);
+    }
   };
 
   sliderBarListener = x => {

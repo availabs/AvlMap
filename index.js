@@ -119,7 +119,7 @@ class AvlMap extends React.Component {
         }
       })
       if (!layerAdded) {
-        map.addLayer(mbLayer);
+        mbLayer.beneath ? map.addLayer(mbLayer, mbLayer.beneath) : map.addLayer(mbLayer);
       }
     })
   }
