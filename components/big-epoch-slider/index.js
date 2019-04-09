@@ -50,6 +50,7 @@ export default class TimeRangeSlider extends Component {
       width: 288
     };
     this._animation = null;
+    this._sliderThrottle = throttle(value => this.props.onChange(value), 20);
   }
 
   componentDidUpdate() {
@@ -57,6 +58,11 @@ export default class TimeRangeSlider extends Component {
       this._animation = setTimeout(this._nextFrame, BASE_SPEED);
     }
   }
+
+  _sliderUpdate = value => {
+    this._sliderThrottle.cancel();
+    this._sliderThrottle(value);
+  };
 
   _resetAnimation = () => {
     const {domain} = this.props;
@@ -87,7 +93,7 @@ export default class TimeRangeSlider extends Component {
   };
 
   render() {
-    const { domain, value, isEnlarged, Title } = this.props;
+    const { domain, value, isEnlarged, Title, Comp } = this.props;
     const { isAnimating } = this.state;
 
     return (
@@ -105,13 +111,14 @@ export default class TimeRangeSlider extends Component {
             startAnimation={this._startAnimation}
           /> : null}
           <div style={{width: isEnlarged ? `calc(100% - ${animationControlWidth}px)` : '100%'}}>
+            { Comp ? <Comp /> : null }
             <BigSlider
               range={domain}
               value={value}
               bargraph={this.props.bargraph}
               isEnlarged={isEnlarged}
               step={this.props.step}
-              onChange={this.props.onChange}
+              onChange={this._sliderUpdate}
               xAxis={TimeSliderMarker}
             />
           </div>

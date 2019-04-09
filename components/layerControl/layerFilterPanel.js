@@ -144,6 +144,7 @@ const TimeRangeSliderContainer = styled.div`
                   isAnimatable={ true }
                   speed={ filter.speed || 1 }
                   hideTitle={ filter.hideTitle }
+                  Comp={ filter.Comp }
                   Title={ filter.Title }/>
               </TimeRangeSliderContainer>
             )
