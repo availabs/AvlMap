@@ -87,8 +87,8 @@ export default class TimeRangeSlider extends Component {
 
   _nextFrame = () => {
     this._animation = null;
-    const { value, domain } = this.props;
-    const newValue = value + 1 > domain[1] ? domain[0] : value + 1;
+    const { value, domain, step } = this.props;
+    const newValue = value + step > domain[1] ? domain[0] : value + 1;
     this.props.onChange(newValue);
   };
 

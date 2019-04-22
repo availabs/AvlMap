@@ -31,7 +31,6 @@ export default class Slider extends Component {
     onInput0Change: PropTypes.func,
     onSlider1Change: PropTypes.func,
     onInput1Change: PropTypes.func,
-    onSliderBarChange: PropTypes.func,
     step: PropTypes.number
   };
 
@@ -61,14 +60,6 @@ export default class Slider extends Component {
     const maxDelta = this.props.maxValue - this.props.minValue;
     const val = xPercent * maxDelta;
     this.props.onSliderChange.call(this, val + this.props.value);
-  };
-
-  sliderBarListener = x => {
-    const xPercent = x / this.ref.offsetWidth;
-    const maxDelta = this.props.maxValue - this.props.minValue;
-    const val = xPercent * maxDelta;
-    const value = val + this.props.value;
-    this.props.onSliderBarChange(value);
   };
 
   calcHandleLeft = l => {

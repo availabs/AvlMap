@@ -174,11 +174,6 @@ export default class RangeSlider extends Component {
             value={value}
             handleWidth={sliderHandleWidth}
             onSliderChange={this._setRangeVal}
-            onSliderBarChange={(val) => {
-              if (this._isValInRange(val)) {
-                onChange(this._roundValToStep(val));
-              }
-            }}
           />
         </SliderWrapper>
       </div>
