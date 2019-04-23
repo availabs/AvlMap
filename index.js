@@ -14,6 +14,26 @@ import './avlmap.css'
 
 import TimeRangeSldier from "./components/time-range-slider/time-range-slider"
 
+let emptyStyle = {
+  "version": 8,
+  "name": "Empty",
+  "metadata": {
+    "mapbox:autocomposite": true,
+    "mapbox:type": "template"
+  },
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(0,0,0,0)"
+      }
+    }
+  ]
+}
+
 mapboxgl.accessToken = MAPBOX_TOKEN
 
 let UNIQUE_ID = 0;
@@ -52,10 +72,14 @@ class AvlMap extends React.Component {
       style,
       center,
       minZoom,
-      zoom
+      zoom,
+      attributionControl: false
     });
     map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     map.boxZoom.disable();
+    if(!this.props.scrollZoom) {
+      map.scrollZoom.disable();
+    }
     map.on('load',  () => {
       const activeLayers = [];
       this.props.layers.forEach(layer => {
@@ -66,7 +90,15 @@ class AvlMap extends React.Component {
 					layer.onAdd(map)
       	}
       })
+
+      if(this.props.fitBounds){
+        map.fitBounds(this.props.fitBounds)
+      }
       this.setState({ map, activeLayers })
+      let logo = document.getElementsByClassName("mapboxgl-ctrl-logo")
+      console.log('test', logo)
+      logo[0].style.display = 'none'
+
     })
     this.setContainerSize();
   }
@@ -311,21 +343,24 @@ class AvlMap extends React.Component {
 		}
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
-				<Sidebar layers={ this.props.layers }
-					activeLayers={ this.state.activeLayers }
-					theme={ this.props.theme }
-					addLayer={ this.addLayer.bind(this) }
-					removeLayer={ this.removeLayer.bind(this) }
-					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
-					actionMap= { actionMap }
-					header={ this.props.header }
-					toggleModal={ this.toggleModal.bind(this) }
-          updateModal={ this.updateModal.bind(this) }
-					updateFilter={ this.updateFilter.bind(this) }
-					updateLegend={ this.updateLegend.bind(this) }
-					fetchLayerData={ this.fetchLayerData.bind(this) }
-					updateDrag={ this.updateDrag.bind(this) }
-					dropLayer={ this.dropLayer.bind(this) }/>
+				{this.props.sidebar ? 
+          <Sidebar layers={ this.props.layers }
+  					activeLayers={ this.state.activeLayers }
+  					theme={ this.props.theme }
+  					addLayer={ this.addLayer.bind(this) }
+  					removeLayer={ this.removeLayer.bind(this) }
+  					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
+  					actionMap= { actionMap }
+  					header={ this.props.header }
+  					toggleModal={ this.toggleModal.bind(this) }
+            updateModal={ this.updateModal.bind(this) }
+  					updateFilter={ this.updateFilter.bind(this) }
+  					updateLegend={ this.updateLegend.bind(this) }
+  					fetchLayerData={ this.fetchLayerData.bind(this) }
+  					updateDrag={ this.updateDrag.bind(this) }
+  					dropLayer={ this.dropLayer.bind(this) }/>
+            : <React.Fragment />
+        }
 				<Infobox layers={ this.props.layers }
 					theme={ this.props.theme }/>
 				<MapPopover { ...this.state.popover }
@@ -351,6 +386,8 @@ AvlMap.defaultProps = {
 	zoom: 10,
 	layers: [],
 	theme: DEFAULT_THEME,
+  scrollZoom: true,
+  sidebar: true,
 	header: () => <h4 style={ { color: DEFAULT_THEME.textColorHl } }>Sidebar</h4>
 }
 

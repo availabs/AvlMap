@@ -31,7 +31,7 @@ const StyledFilterPanel = styled.div`
 //   padding: 10px 12px;
 // `;
 
-const SubmitButton = Button.extend`
+const SubmitButton = styled(Button)`
   width: 100%
 `
 

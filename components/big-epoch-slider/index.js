@@ -181,7 +181,7 @@ const StyledAnimationControls = styled.div`
   }
 `;
 
-const IconButton = Button.extend`
+const IconButton = styled(Button)`
   svg {
     margin: 0 6px;
   }
