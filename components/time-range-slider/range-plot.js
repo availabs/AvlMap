@@ -16,7 +16,7 @@ const chartMargin = {top: 18, bottom: 0, left: 0, right: 0};
 const chartH = 52;
 const containerH = 78;
 const histogramStyle = {
-  highlightW: 0.7,
+  highlightW: 1,
   unHighlightedW: 0.4,
   highlightedColor: theme.activeColor,
   unHighlightedColor: theme.sliderBarColor

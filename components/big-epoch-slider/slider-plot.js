@@ -37,16 +37,14 @@ export default class RangePlot extends Component {
   componentDidMount() {
     const selection = d3selection.select(this.container.current)
       .on("click", e => {
-        const { width, onClick } = this.props,
+        const { width, onClick, range } = this.props,
           pos = d3selection.mouse(this.container.current);
-        onClick(Math.floor(287 * (pos[0] / width)))
+        onClick(Math.floor(range[0] + (range[1] - range[0]) * (pos[0] / width)))
       });
   }
 
   render() {
     const {
-      onClick,
-      range,
       value,
       width,
       bargraph
@@ -59,13 +57,15 @@ export default class RangePlot extends Component {
           position: 'relative'
         }}
       >
-      <BarGraph
-        width={width}
-        height={chartH}
-        value={value}
-        margin={chartMargin}
-        bargraph={bargraph}
-      />
+      { !bargraph || !bargraph.length ? null :
+        <BarGraph
+          width={width}
+          height={chartH}
+          value={value}
+          margin={chartMargin}
+          bargraph={bargraph}
+        />
+      }
       </div>
     );
   }
@@ -96,17 +96,18 @@ const BarGraph = ({
           const inRange = bar.x == value;
           const fill = inRange ? histogramStyle.highlightedColor : histogramStyle.unHighlightedColor;
           const wRatio = inRange ? histogramStyle.highlightW : histogramStyle.unHighlightedW;
+          const h = y(bar.y);
 
           return (
             <rect
               key={bar.x}
               fill={fill}
-              height={y(bar.y)}
+              height={h}
               width={barWidth * wRatio}
               x={x(bar.x) + barWidth * (1 - wRatio) / 2}
               rx={1}
               ry={1}
-              y={height - y(bar.y)}
+              y={height - h}
             />
           );
         })}

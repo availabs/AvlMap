@@ -48,7 +48,8 @@ class MapModal extends React.Component {
 							...layer.modals[key],
 							layerName: layer.name,
 							modalName: key,
-							props: layer.modals[key].props || {}
+							props: layer.modals[key].props || {},
+							layer
 						}
 					}
 				}
@@ -68,7 +69,9 @@ class MapModal extends React.Component {
 	            <span>Close Modal</span>
 	          </Tooltip>
 					</CloseWrapper>
-					<modal.comp theme={ this.props.theme } { ...modal.props }/>
+					<modal.comp { ...modal.props }
+						theme={ this.props.theme }
+						layer={ modal.layer }/>
 				</ModalWrapper>
 			</ModalContainer>
 		)
