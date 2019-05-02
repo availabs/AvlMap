@@ -54,7 +54,7 @@ class AvlMap extends React.Component {
   		dragging: null,
   		dragover: null,
       width: 0,
-      height: 0
+      height: 0,
   	}
     this.container = React.createRef();
   }
@@ -105,6 +105,20 @@ class AvlMap extends React.Component {
 
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
+    if (oldProps.update !== this.props.update){
+        let filterName = [];
+        let value = '';
+        const layer = Object.values(oldProps.layers)[0];
+        Object.values(oldProps.layers).forEach(function(prop){
+            filterName = Object.keys(prop.filters);
+            value = prop.filters[filterName].value;
+        });
+        layer.onFilterFetch(filterName,oldProps.update,value)
+        .then(data => layer.receiveData(this.state.map, data))
+        .then(() => layer.loading = false)
+        .then(() => this.forceUpdate());
+    }
+    //may use update prop to call filter fetch here if oldprps.update !== this.props.update
   }
   setContainerSize() {
     const div = this.container.current,
@@ -386,8 +400,9 @@ AvlMap.defaultProps = {
 	zoom: 10,
 	layers: [],
 	theme: DEFAULT_THEME,
-  scrollZoom: true,
-  sidebar: true,
+    scrollZoom: true,
+    sidebar: true,
+    update: [],
 	header: () => <h4 style={ { color: DEFAULT_THEME.textColorHl } }>Sidebar</h4>
 }
 
