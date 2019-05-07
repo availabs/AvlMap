@@ -106,20 +106,24 @@ class AvlMap extends React.Component {
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
     if (oldProps.update !== this.props.update){
-        let filterName = [];
-        let value = '';
-        const layer = Object.values(oldProps.layers)[0];
-        Object.values(oldProps.layers).forEach(function(prop){
-            filterName = Object.keys(prop.filters);
-            value = prop.filters[filterName].value;
+        let self = this;
+        let filters = [];
+        filters.push({
+            'layer': oldProps.layers,
+            'filters': oldProps.layers[0].filters,
+            'filterName': Object.keys(oldProps.layers[0].filters)
         });
-        layer.onFilterFetch(filterName,oldProps.update,value)
-        .then(data => layer.receiveData(this.state.map, data))
-        .then(() => layer.loading = false)
-        .then(() => this.forceUpdate());
+        filters.forEach(function(a){
+            Object.keys(a.filters).forEach(function(each_filter){
+                a.layer[0].onFilterFetch(each_filter,oldProps.update,a.filters[each_filter].value)
+                    .then(data => a.layer[0].receiveData(self.state.map, data))
+                    .then(() => a.layer[0].loading = false)
+                    .then(() => self.forceUpdate);
+            })
+        })
     }
-    //may use update prop to call filter fetch here if oldprps.update !== this.props.update
   }
+
   setContainerSize() {
     const div = this.container.current,
       width = div.scrollWidth,
