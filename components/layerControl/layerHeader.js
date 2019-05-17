@@ -37,7 +37,7 @@ const defaultProps = {
   showRemoveLayer: () => {}
 };
 
-const StyledLayerPanelHeader = StyledPanelHeader.extend`
+const StyledLayerPanelHeader = styled(StyledPanelHeader)`
   .layer__remove-layer {
     opacity: 0;
   }
