@@ -311,7 +311,8 @@ class AvlMap extends React.Component {
 		}
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
-				<Sidebar layers={ this.props.layers }
+				<Sidebar 
+          layers={ this.props.layers }
 					activeLayers={ this.state.activeLayers }
 					theme={ this.props.theme }
 					addLayer={ this.addLayer.bind(this) }
