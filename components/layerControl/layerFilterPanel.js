@@ -86,6 +86,8 @@ const TimeRangeSliderContainer = styled.div`
               setFilter={ dispatchUpdateFilter } 
               filter={ filter }
             />;
+          case 'hidden':
+            return (<span />)
           case 'fetch':
             return (
               <SubmitButton onClick={ dispatchFetch }>
