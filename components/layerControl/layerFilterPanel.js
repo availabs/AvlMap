@@ -31,7 +31,7 @@ const StyledFilterPanel = styled.div`
 //   padding: 10px 12px;
 // `;
 
-const SubmitButton = Button.extend`
+const SubmitButton = styled(Button)`
   width: 100%
 `
 
@@ -86,6 +86,8 @@ const TimeRangeSliderContainer = styled.div`
               setFilter={ dispatchUpdateFilter } 
               filter={ filter }
             />;
+          case 'hidden':
+            return (<span />)
           case 'fetch':
             return (
               <SubmitButton onClick={ dispatchFetch }>

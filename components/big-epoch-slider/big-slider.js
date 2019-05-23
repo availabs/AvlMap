@@ -8,7 +8,7 @@ import { Input } from 'components/common/styled-components';
 
 import { roundValToStep } from '../time-range-slider/utils';
 
-const SliderInput = Input.extend`
+const SliderInput = styled(Input)`
   height: 24px;
   width: 40px;
   padding: 4px 6px;
