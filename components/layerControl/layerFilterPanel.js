@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Button  } from 'components/common/styled-components'; // StyledPanelHeader
 
 //import * as Filters from 'components/filters';
-import { SingleSelectFilter,MultiSelectFilter, DateFilter } from 'components/filters'
+import { SingleSelectFilter,MultiSelectFilter, DateFilter, Switch } from 'components/filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
 import BigEpochSlider from "../big-epoch-slider"
 // import deepEqual from 'deep-equal'
@@ -62,7 +62,13 @@ const TimeRangeSliderContainer = styled.div`
       const filter = filters[filterName];
 
       const dispatchUpdateFilter = (value) => {
+
         this.props.updateFilter(layer.name, filterName, value)  
+      }
+
+      const dispatchUpdateCheckbox = () => {
+        console.log('test', layer.name, filterName)
+        this.props.updateFilter(layer.name, filterName, !filter.value)
       }
 
       const dispatchUpdateSlider = (e) => {
@@ -94,6 +100,17 @@ const TimeRangeSliderContainer = styled.div`
                 {filter.name}
               </SubmitButton>
             );
+          case 'checkbox': 
+            return (
+              <Switch 
+                onChange={dispatchUpdateCheckbox} 
+                checked={filter.value} 
+                value={filter.value} 
+                id={filter.id} 
+                label={filter.name} 
+              />
+            )
+          break;
           case 'slider':
             return (
               <div>

@@ -79,7 +79,8 @@ class InfoBox extends Component {
       position: 'absolute',
       top: 0,
       right: 0,
-      padding: "20px"
+      padding: "20px",
+      maxHeight: '100vh'
     }
 
     let sidebarStyle = {

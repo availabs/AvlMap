@@ -96,9 +96,12 @@ class AvlMap extends React.Component {
         map.fitBounds(this.props.fitBounds)
       }
       this.setState({ map, activeLayers })
+      
       let logo = document.getElementsByClassName("mapboxgl-ctrl-logo")
-      console.log('test', logo)
-      logo[0].style.display = 'none'
+      //console.log('test', logo)
+      if(logo[0]){
+        logo[0].style.display = 'none'
+      }
 
     })
     this.setContainerSize();
@@ -165,8 +168,10 @@ class AvlMap extends React.Component {
       activeMBLayers.forEach(aMBL => {
         const aMBLzIndex = aMBL.zIndex || 0;
         if (aMBLzIndex > zIndex) {
-          map.addLayer(mbLayer, aMBL.id);
-          layerAdded = true;
+          if(!map.getLayer(mbLayer.id)) {
+            map.addLayer(mbLayer, aMBL.id);
+            layerAdded = true;
+          }
         }
       })
       if (!layerAdded) {
@@ -252,6 +257,7 @@ class AvlMap extends React.Component {
   }
 
   updateFilter(layerName, filterName, value) {
+    console.log('updateFilter')
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
 
