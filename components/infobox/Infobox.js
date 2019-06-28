@@ -27,6 +27,33 @@ const CollapsedInfoBox = styled.div`
   font-size: 1.5rem;
 `
 
+const SidebarContainer = styled.div`
+  ${ props => props.theme.scrollBar };
+  width: ${ props => props.isOpen ? 400 : 0 }px;
+  z-index: 99;
+  display: flex;
+  position: absolute;
+  padding: 20px;
+  top: 0px;
+  right: 0px;
+  max-height: calc(100vh - 100px);
+`
+const SidebarInner = styled.div`
+  ${ props => props.theme.scrollBar };
+  background-color: ${ props => props.theme.sidePanelBg };
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`
+const SidebarContent = styled.div`
+  ${ props => props.theme.scrollBar };
+  flexGrow: 1;
+  padding: ${ props => props.isOpen ? 10 : 0 }px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #efefef;
+`
+
 class InfoBox extends Component {
 
   state = {
@@ -60,7 +87,7 @@ class InfoBox extends Component {
             a.concat(
               Object.keys(c.infoBoxes)
                 .map((key, i) => ({
-                  title: `Info Box ${ key }`,
+                  title: `${ c.name } ${ key }`,
                   ...c.infoBoxes[key],
                   id: `${ c.name }-${ key }`,
                   layer: c
@@ -72,41 +99,16 @@ class InfoBox extends Component {
 
       isOpen = activeLegends.length || activeInfoBoxes.length;
 
-    let sideBarContainerStyle = {
-      width: isOpen ? "400px" : "0px",
-      zIndex: 99,
-      display: 'flex',
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      padding: "20px",
-      maxHeight: '100vh'
-    }
-
     let sidebarStyle = {
       alignItems: 'stretch',
       flexGrow: 1
     }
 
-    let sidebarInnerStyle = {
-      backgroundColor: theme.sidePanelBg,
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%'
-    }
-
-    let sidebarContentStyle = {
-      flexGrow: 1,
-      padding: isOpen ? "10px" : "0px",
-      overflowY: 'auto',
-      overflowX: 'hidden',
-      color: '#efefef'
-    }
     return (
-      <div className='sidebar-container' style={sideBarContainerStyle}>
+      <SidebarContainer className='sidebar-container' isOpen={ isOpen }>
         <div className='sidebar' style={sidebarStyle}>
-          <div className='sidebar-inner' style={sidebarInnerStyle}>
-            <div className='sidebar-content' style={sidebarContentStyle}>
+          <SidebarInner className='sidebar-inner' isOpen={ isOpen }>
+            <SidebarContent className='sidebar-content' isOpen={ isOpen }>
               {
                 activeLegends.map((l, i) => <Legend key={ i } theme={ this.props.theme } { ...l }/>)
               }
@@ -124,10 +126,10 @@ class InfoBox extends Component {
                   </InfoBoxContainer>
                 )
               }
-            </div>
-          </div>
+            </SidebarContent>
+          </SidebarInner>
         </div>
-      </div>
+      </SidebarContainer>
     );
   }
 }
