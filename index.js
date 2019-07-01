@@ -7,6 +7,7 @@ import Sidebar from './components/sidebar'
 import Infobox from './components/infobox/Infobox'
 import MapPopover from "./components/popover/MapPopover"
 import MapModal from "./components/modal/MapModal"
+import MapActions from "./components/MapActions"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
@@ -371,7 +372,7 @@ class AvlMap extends React.Component {
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
-				{this.props.sidebar ? 
+				{ this.props.sidebar ? 
           <Sidebar 
             layers={ this.props.layers }
   					activeLayers={ this.state.activeLayers }
@@ -402,6 +403,9 @@ class AvlMap extends React.Component {
 				<MapModal layers={ this.props.layers }
 					toggleModal={ this.toggleModal.bind(this) }
           theme={ this.props.theme }/>
+        <MapActions layers={ this.props.layers }
+          sidebar={ this.props.sidebar }
+          theme={ this.props.theme }/>
 			</div>
 		)
 	}
@@ -417,9 +421,9 @@ AvlMap.defaultProps = {
 	layers: [],
   mapControl: 'bottom-right',
 	theme: DEFAULT_THEME,
-    scrollZoom: true,
-    sidebar: true,
-    update: [],
+  scrollZoom: true,
+  sidebar: true,
+  update: [],
 	header: () => <h4 style={ { color: DEFAULT_THEME.textColorHl } }>Sidebar</h4>
 }
 

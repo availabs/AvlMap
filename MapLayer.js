@@ -14,6 +14,8 @@ const DEFAULT_OPTIONS = {
 	select: false,
   onClick: false,
 
+  mapActions: [],
+
   selection: []
 }
 
@@ -28,23 +30,6 @@ class MapLayer {
     for (const key in options) {
       this[key] = options[key];
     }
-
-		// this.sources = options.sources;
-		// this.layers = options.layers;
-
-		// this.active = options.active;
-  //   this.loading = options.loading;
-
-		// this.popover = options.popover;
-		// this.actions = options.actions;
-		// this.modals = options.modals;
-		// this.infoBoxes = options.infoBoxes;
-		// this.legend = options.legend;
-		// this.filters = options.filters;
-		// this.select = options.select;
-  //   this.onClick = options.onClick;
-
-  //   this.selection = options.selection;
 
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
@@ -100,9 +85,12 @@ class MapLayer {
 
   doAction([action, ...args]) {
 // console.log(this.name, action, ...args)
-    if (this.component[action]) {
+    if (this.component && this.component[action]) {
       this.component[action](this.name, ...args)
     }
+  }
+  forceUpdate() {
+    this.component && this.component.forceUpdate();
   }
 
 	toggleVisibility(map) {
