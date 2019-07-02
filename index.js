@@ -68,7 +68,8 @@ class AvlMap extends React.Component {
     	style,
     	center,
     	minZoom,
-    	zoom
+    	zoom,
+      mapControl
     } = this.props;
     const map = new mapboxgl.Map({
       container: id,
@@ -79,7 +80,10 @@ class AvlMap extends React.Component {
       attributionControl: false
     });
 
-    map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    if(mapControl) {
+      map.addControl(new mapboxgl.NavigationControl(), mapControl);  
+    }
+    
     map.boxZoom.disable();
 
     if(!this.props.scrollZoom) {
@@ -459,6 +463,7 @@ AvlMap.defaultProps = {
 	minZoom: 2,
 	zoom: 10,
 	layers: [],
+  mapControl: 'bottom-right',
 	theme: DEFAULT_THEME,
   scrollZoom: true,
   sidebar: true,
