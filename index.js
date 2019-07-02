@@ -8,6 +8,7 @@ import Infobox from './components/infobox/Infobox'
 import MapPopover from "./components/popover/MapPopover"
 import MapModal from "./components/modal/MapModal"
 import MapActions from "./components/MapActions"
+import MapMessages from "./components/MapMessages"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
@@ -39,7 +40,7 @@ mapboxgl.accessToken = MAPBOX_TOKEN
 
 let UNIQUE_ID = 0;
 const getUniqueId = () =>
-	`avl-map-${ ++UNIQUE_ID }`
+	`unique-id-${ ++UNIQUE_ID }`
 
 class AvlMap extends React.Component {
   constructor(props) {
@@ -56,6 +57,7 @@ class AvlMap extends React.Component {
   		dragover: null,
       width: 0,
       height: 0,
+      messages: []
   	}
     this.container = React.createRef();
   }
@@ -76,15 +78,28 @@ class AvlMap extends React.Component {
       zoom,
       attributionControl: false
     });
+
     map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     map.boxZoom.disable();
+
     if(!this.props.scrollZoom) {
       map.scrollZoom.disable();
-    }
+    };
+
+    ([...document.getElementsByClassName("mapboxgl-ctrl-logo")])
+      .forEach(logo => {
+        logo.parentElement.style.margin = '0';
+        logo.style.display = 'none';
+      })
+
+    this.props.layers.forEach(layer => layer.initComponent(this));
+
     map.on('load',  () => {
       const activeLayers = [];
       this.props.layers.forEach(layer => {
-        layer.init(this, map);
+
+        layer.initMap(map);
+
       	if (layer.active) {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
@@ -96,12 +111,6 @@ class AvlMap extends React.Component {
         map.fitBounds(this.props.fitBounds)
       }
       this.setState({ map, activeLayers })
-      
-      let logo = document.getElementsByClassName("mapboxgl-ctrl-logo")
-      //console.log('test', logo)
-      if(logo[0]){
-        logo[0].style.display = 'none'
-      }
 
     })
     this.setContainerSize();
@@ -126,6 +135,34 @@ class AvlMap extends React.Component {
             })
         })
     }
+  }
+
+  sendMessage(layerName, data) {
+    data = {
+      id: getUniqueId(),
+      duration: data.onConfirm ? 0 : 6000,
+      ...data,
+      update: false,
+      layer: this.getLayer(layerName)
+    }
+    const update = this.state.messages.reduce((a, c) => a || (c.id === data.id), false);
+    let messages = [...this.state.messages];
+    if (update) {
+      messages = messages.map(({ id, Message, ...rest }) => ({
+        Message: id === data.id ? data.Message : Message,
+        id,
+        ...rest,
+        update: id === data.id ? Date.now() : false
+      }))
+    }
+    else {
+      messages = [...messages, data];
+    }
+    this.setState({ messages });
+  }
+  dismissMessage(id) {
+    const messages = this.state.messages.filter(m => m.id !== id);
+    this.setState({ messages });
   }
 
   setContainerSize() {
@@ -369,7 +406,7 @@ class AvlMap extends React.Component {
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
-				{ this.props.sidebar ? 
+				{ !this.props.sidebar ? null :
           <Sidebar 
             layers={ this.props.layers }
   					activeLayers={ this.state.activeLayers }
@@ -386,23 +423,29 @@ class AvlMap extends React.Component {
   					fetchLayerData={ this.fetchLayerData.bind(this) }
   					updateDrag={ this.updateDrag.bind(this) }
   					dropLayer={ this.dropLayer.bind(this) }/>
-            : <React.Fragment />
         }
 
 				<Infobox layers={ this.props.layers }
 					theme={ this.props.theme }/>
+
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
           mapSize={ {
             width: this.state.width,
             height: this.state.height
           } }/>
+
 				<MapModal layers={ this.props.layers }
 					toggleModal={ this.toggleModal.bind(this) }
           theme={ this.props.theme }/>
+
         <MapActions layers={ this.props.layers }
           sidebar={ this.props.sidebar }
           theme={ this.props.theme }/>
+
+        <MapMessages
+          messages={ this.state.messages }
+          dismiss={ this.dismissMessage.bind(this) }/>
 			</div>
 		)
 	}

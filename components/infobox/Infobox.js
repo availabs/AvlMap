@@ -6,13 +6,13 @@ import Legend from '../legend/Legend'
 
 const InfoBoxContainer = styled.div`
   position: relative;
-  min-height: 22px;
+  min-height: 25px;
 `
 const ToggleButton = styled.span`
   position: absolute;
   top: 0px;
   right: 0px;
-  padding: 5px;
+  padding: 5px 8px 8px 8px;
   border-radius: 4px;
   background-color: transparent;
   transition: background-color 0.15s;
@@ -52,6 +52,13 @@ const SidebarContent = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   color: #efefef;
+
+  > * {
+    margin-bottom: 10px;
+  }
+  > *:last-child {
+    margin-bottom: 0px;
+  }
 `
 
 class InfoBox extends Component {
@@ -110,7 +117,9 @@ class InfoBox extends Component {
           <SidebarInner className='sidebar-inner' isOpen={ isOpen }>
             <SidebarContent className='sidebar-content' isOpen={ isOpen }>
               {
-                activeLegends.map((l, i) => <Legend key={ i } theme={ this.props.theme } { ...l }/>)
+                activeLegends.map((l, i) =>
+                  <Legend key={ i } theme={ this.props.theme } { ...l }/>
+                )
               }
               {
                 activeInfoBoxes.map((b, i) =>
@@ -119,7 +128,7 @@ class InfoBox extends Component {
                         (typeof b.title === "function") ?
                           <b.title layer={ b.layer }/>
                         : <CollapsedInfoBox>{ b.title }</CollapsedInfoBox>
-                      : <b.comp theme={ this.props.theme }/>
+                      : <b.comp theme={ this.props.theme } layer={ b.layer }/>
                     }
                     <ToggleButton className={ this.getToggleButton(b.id) }
                       onClick={ () => this.toggleInfoBox(b.id) }/>

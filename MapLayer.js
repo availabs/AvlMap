@@ -40,10 +40,12 @@ class MapLayer {
     this._mapClick = this._mapClick.bind(this);
 	}
 
-	init(component, map) {
-		this.component = component;
+  initComponent(component) {
+    this.component = component;
+    this.updatePopover = component.updatePopover.bind(component);
+  }
+	initMap(map) {
     this.map = map;
-		this.updatePopover = component.updatePopover.bind(component);
 	}
 
 	onAdd(map) {

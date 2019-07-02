@@ -8,7 +8,7 @@ const ActionContainer = styled.div`
 	position: absolute;
 	top: ${ props => props.sidebar ? 50 : 20 }px;
 	left: ${ props => props.sidebar ? 340 : 20 }px;
-	z-index: 99;
+	z-index: 50;
 	display: flex;
 	flex-direction: column;
 `
