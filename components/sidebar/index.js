@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 // import { connect } from 'react-redux';
 
 import styled from "styled-components"
-
+import { ThemeProvider } from 'styled-components'
+import theme from 'components/common/themes/dark'
 // import deepEqual from 'deep-equal'
 import SidebarContainer from './sidebar'
 import SidebarHeader from './SidebarHeader'
@@ -26,6 +27,7 @@ class Sidebar extends Component {
       overflowX: 'hidden'
     }
     return (
+      <ThemeProvider theme={theme}>
       <SidebarContainer>
         <SidebarHeader header={ this.props.header }/>
         <SidebarContent className='sidebar-content' theme={ this.props.theme }>
@@ -33,6 +35,7 @@ class Sidebar extends Component {
           <ActiveLayers { ...this.props }/>
         </SidebarContent>
       </SidebarContainer>
+      </ThemeProvider>
     );
   }
 }
