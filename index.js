@@ -7,6 +7,8 @@ import Sidebar from './components/sidebar'
 import Infobox from './components/infobox/Infobox'
 import MapPopover from "./components/popover/MapPopover"
 import MapModal from "./components/modal/MapModal"
+import MapActions from "./components/MapActions"
+import MapMessages from "./components/MapMessages"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
@@ -38,7 +40,7 @@ mapboxgl.accessToken = MAPBOX_TOKEN
 
 let UNIQUE_ID = 0;
 const getUniqueId = () =>
-	`avl-map-${ ++UNIQUE_ID }`
+	`unique-id-${ ++UNIQUE_ID }`
 
 class AvlMap extends React.Component {
   constructor(props) {
@@ -54,7 +56,8 @@ class AvlMap extends React.Component {
   		dragging: null,
   		dragover: null,
       width: 0,
-      height: 0
+      height: 0,
+      messages: []
   	}
     this.container = React.createRef();
   }
@@ -65,7 +68,8 @@ class AvlMap extends React.Component {
     	style,
     	center,
     	minZoom,
-    	zoom
+    	zoom,
+      mapControl
     } = this.props;
     const map = new mapboxgl.Map({
       container: id,
@@ -75,15 +79,31 @@ class AvlMap extends React.Component {
       zoom,
       attributionControl: false
     });
-    map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+
+    if(mapControl) {
+      map.addControl(new mapboxgl.NavigationControl(), mapControl);  
+    }
+    
     map.boxZoom.disable();
+
     if(!this.props.scrollZoom) {
       map.scrollZoom.disable();
-    }
+    };
+
+    ([...document.getElementsByClassName("mapboxgl-ctrl-logo")])
+      .forEach(logo => {
+        logo.parentElement.style.margin = '0';
+        logo.style.display = 'none';
+      })
+
+    this.props.layers.forEach(layer => layer.initComponent(this));
+
     map.on('load',  () => {
       const activeLayers = [];
       this.props.layers.forEach(layer => {
-        layer.init(this, map);
+
+        layer.initMap(map);
+
       	if (layer.active) {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
@@ -95,9 +115,6 @@ class AvlMap extends React.Component {
         map.fitBounds(this.props.fitBounds)
       }
       this.setState({ map, activeLayers })
-      let logo = document.getElementsByClassName("mapboxgl-ctrl-logo")
-      console.log('test', logo)
-      logo[0].style.display = 'none'
 
     })
     this.setContainerSize();
@@ -105,7 +122,53 @@ class AvlMap extends React.Component {
 
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
+    if (oldProps.update !== this.props.update){
+        let self = this;
+        let filters = [];
+        filters.push({
+            'layer': oldProps.layers,
+            'filters': oldProps.layers[0].filters,
+            'filterName': Object.keys(oldProps.layers[0].filters)
+        });
+        filters.forEach(function(a){
+            Object.keys(a.filters).forEach(function(each_filter){
+                a.layer[0].onFilterFetch(each_filter,oldProps.update,a.filters[each_filter].value)
+                    .then(data => a.layer[0].receiveData(self.state.map, data))
+                    .then(() => a.layer[0].loading = false)
+                    .then(() => self.forceUpdate);
+            })
+        })
+    }
   }
+
+  sendMessage(layerName, data) {
+    data = {
+      id: getUniqueId(),
+      duration: data.onConfirm ? 0 : 6000,
+      ...data,
+      update: false,
+      layer: this.getLayer(layerName)
+    }
+    const update = this.state.messages.reduce((a, c) => a || (c.id === data.id), false);
+    let messages = [...this.state.messages];
+    if (update) {
+      messages = messages.map(({ id, Message, ...rest }) => ({
+        Message: id === data.id ? data.Message : Message,
+        id,
+        ...rest,
+        update: id === data.id ? Date.now() : false
+      }))
+    }
+    else {
+      messages = [...messages, data];
+    }
+    this.setState({ messages });
+  }
+  dismissMessage(id) {
+    const messages = this.state.messages.filter(m => m.id !== id);
+    this.setState({ messages });
+  }
+
   setContainerSize() {
     const div = this.container.current,
       width = div.scrollWidth,
@@ -146,8 +209,10 @@ class AvlMap extends React.Component {
       activeMBLayers.forEach(aMBL => {
         const aMBLzIndex = aMBL.zIndex || 0;
         if (aMBLzIndex > zIndex) {
-          map.addLayer(mbLayer, aMBL.id);
-          layerAdded = true;
+          if(!map.getLayer(mbLayer.id)) {
+            map.addLayer(mbLayer, aMBL.id);
+            layerAdded = true;
+          }
         }
       })
       if (!layerAdded) {
@@ -233,6 +298,7 @@ class AvlMap extends React.Component {
   }
 
   updateFilter(layerName, filterName, value) {
+    console.log('updateFilter')
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
 
@@ -343,8 +409,10 @@ class AvlMap extends React.Component {
 		}
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
-				{this.props.sidebar ? 
-          <Sidebar layers={ this.props.layers }
+
+				{ !this.props.sidebar ? null :
+          <Sidebar 
+            layers={ this.props.layers }
   					activeLayers={ this.state.activeLayers }
   					theme={ this.props.theme }
   					addLayer={ this.addLayer.bind(this) }
@@ -359,19 +427,29 @@ class AvlMap extends React.Component {
   					fetchLayerData={ this.fetchLayerData.bind(this) }
   					updateDrag={ this.updateDrag.bind(this) }
   					dropLayer={ this.dropLayer.bind(this) }/>
-            : <React.Fragment />
         }
+
 				<Infobox layers={ this.props.layers }
 					theme={ this.props.theme }/>
+
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
           mapSize={ {
             width: this.state.width,
             height: this.state.height
           } }/>
+
 				<MapModal layers={ this.props.layers }
 					toggleModal={ this.toggleModal.bind(this) }
           theme={ this.props.theme }/>
+
+        <MapActions layers={ this.props.layers }
+          sidebar={ this.props.sidebar }
+          theme={ this.props.theme }/>
+
+        <MapMessages
+          messages={ this.state.messages }
+          dismiss={ this.dismissMessage.bind(this) }/>
 			</div>
 		)
 	}
@@ -385,9 +463,11 @@ AvlMap.defaultProps = {
 	minZoom: 2,
 	zoom: 10,
 	layers: [],
+  mapControl: 'bottom-right',
 	theme: DEFAULT_THEME,
   scrollZoom: true,
   sidebar: true,
+  update: [],
 	header: () => <h4 style={ { color: DEFAULT_THEME.textColorHl } }>Sidebar</h4>
 }
 

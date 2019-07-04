@@ -14,6 +14,8 @@ const DEFAULT_OPTIONS = {
 	select: false,
   onClick: false,
 
+  mapActions: [],
+
   selection: []
 }
 
@@ -29,23 +31,6 @@ class MapLayer {
       this[key] = options[key];
     }
 
-		// this.sources = options.sources;
-		// this.layers = options.layers;
-
-		// this.active = options.active;
-  //   this.loading = options.loading;
-
-		// this.popover = options.popover;
-		// this.actions = options.actions;
-		// this.modals = options.modals;
-		// this.infoBoxes = options.infoBoxes;
-		// this.legend = options.legend;
-		// this.filters = options.filters;
-		// this.select = options.select;
-  //   this.onClick = options.onClick;
-
-  //   this.selection = options.selection;
-
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
 		this._popoverClick = this._popoverClick.bind(this);
@@ -55,10 +40,12 @@ class MapLayer {
     this._mapClick = this._mapClick.bind(this);
 	}
 
-	init(component, map) {
-		this.component = component;
+  initComponent(component) {
+    this.component = component;
+    this.updatePopover = component.updatePopover.bind(component);
+  }
+	initMap(map) {
     this.map = map;
-		this.updatePopover = component.updatePopover.bind(component);
 	}
 
 	onAdd(map) {
@@ -100,9 +87,12 @@ class MapLayer {
 
   doAction([action, ...args]) {
 // console.log(this.name, action, ...args)
-    if (this.component[action]) {
+    if (this.component && this.component[action]) {
       this.component[action](this.name, ...args)
     }
+  }
+  forceUpdate() {
+    this.component && this.component.forceUpdate();
   }
 
 	toggleVisibility(map) {

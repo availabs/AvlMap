@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-// import { connect } from 'react-redux';
+import clickOutside from 'react-onclickoutside'
 
  class LayerSelector extends Component {
   constructor(props) {
@@ -12,13 +12,16 @@ import React, {Component} from 'react';
     this.addLayer = this.addLayer.bind(this)
   }
 
-  toggleDropdown () { this.setState({ open: !this.state.open }) }
+  toggleDropdown() { this.setState({ open: !this.state.open }) }
 
-  closeDropdown () { this.setState({ open: false }) }
+  closeDropdown() { this.setState({ open: false }) }
 
-  addLayer (e) {
-    this.props.addLayer(e.target.getAttribute("value"))
-    this.closeDropdown()
+  addLayer(layerName) {
+    this.props.addLayer(layerName);
+    this.closeDropdown();
+  }
+  handleClickOutside() {
+    this.closeDropdown();
   }
 
   render() {
@@ -30,12 +33,14 @@ import React, {Component} from 'react';
     }
 
     return (
-      <div className='sidebar-header' style={LayerSelectorStyle}>
-        <div className='dropdown' style={{ width: '100%'}}>
-          <button 
-            onClick={this.toggleDropdown}
-            onFocusOut={this.closeDropdown}
-            style={{borderRadius: 0,  backgroundColor: theme.sidePanelBg, color: theme.textColorHl}}
+      <div className='sidebar-header' style={ LayerSelectorStyle }>
+        <div className='dropdown' style={ { width: '100%'} }>
+          <button onClick={ this.toggleDropdown }
+            style={ {
+              borderRadius: 0,
+              backgroundColor: theme.sidePanelBg,
+              color: theme.textColorHl
+            } }
             className="btn btn-block dropdown-toggle" 
             type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true">
             Add Layer
@@ -44,11 +49,13 @@ import React, {Component} from 'react';
             style={this.state.open ? {display:'block'} : {display:'none'}}>
               { 
                 layers.filter(layer => !layer.active)
-                .map(layer =>
-                  <span key={ layer.name } className="dropdown-item" value={ layer.name } onClick={ this.addLayer }>
-                    { layer.name }
-                  </span>
-                )
+                  .map(layer =>
+                    <span key={ layer.name }
+                      className="dropdown-item"
+                      onClick={ e => this.addLayer(layer.name) }>
+                      { layer.name }
+                    </span>
+                  )
               }
               
           </div>
@@ -58,4 +65,4 @@ import React, {Component} from 'react';
   }
 }
 
-export default LayerSelector
+export default clickOutside(LayerSelector)

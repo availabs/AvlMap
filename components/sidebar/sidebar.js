@@ -77,12 +77,12 @@ class SideBar extends Component {
     const horizontalOffset = isOpen ? 0 : minifiedWidth - width;
 
     return (
-      <StyledSidePanelContainer
+      <StyledSidePanelContainer theme={theme}
         width={isOpen ? width : 0}
         className="side-panel--container"
         
       >
-        <SideBarContainer theme={theme}
+        <SideBarContainer
          className="side-bar" style={{width: `${width}px`}}
                           left={horizontalOffset}>
           {isOpen ? (
