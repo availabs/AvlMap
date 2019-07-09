@@ -57,7 +57,9 @@ class AvlMap extends React.Component {
   		dragover: null,
       width: 0,
       height: 0,
-      messages: []
+      messages: [],
+      isOpen: true,
+      transitioning: false
   	}
     this.container = React.createRef();
   }
@@ -401,6 +403,13 @@ class AvlMap extends React.Component {
     })
   }
 
+  onTransitionStart() {
+    this.setState({ transitioning: true });
+  }
+  onOpenOrClose(isOpen) {
+    this.setState({ isOpen, transitioning: false });
+  }
+
 	render() {
 		const actionMap = {
 			toggleModal: this.toggleModal.bind(this),
@@ -411,7 +420,10 @@ class AvlMap extends React.Component {
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
 				{ !this.props.sidebar ? null :
-          <Sidebar 
+          <Sidebar isOpen={ this.state.isOpen }
+            transitioning={ this.state.transitioning }
+            onOpenOrClose={ this.onOpenOrClose.bind(this) }
+            onTransitionStart={ this.onTransitionStart.bind(this) }
             layers={ this.props.layers }
   					activeLayers={ this.state.activeLayers }
   					theme={ this.props.theme }
@@ -445,6 +457,7 @@ class AvlMap extends React.Component {
 
         <MapActions layers={ this.props.layers }
           sidebar={ this.props.sidebar }
+          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
           theme={ this.props.theme }/>
 
         <MapMessages
@@ -468,7 +481,7 @@ AvlMap.defaultProps = {
   scrollZoom: true,
   sidebar: true,
   update: [],
-	header: () => <h4 style={ { color: DEFAULT_THEME.textColorHl } }>Sidebar</h4>
+	header: "AVAIL Map"
 }
 
 export default AvlMap

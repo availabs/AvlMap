@@ -79,7 +79,8 @@ const ModalToggle = ({ layer, toggle }) =>
             onToggleVisibility={ toggleVisibility }
             isVisible={ layer.visible }
             onToggleEnableConfig={ toggleConfig }
-            actionMap={ actionMap }/>
+            actionMap={ actionMap }
+            showRemoveLayer={ this.props.showRemoveLayer }/>
         </div>
         { !showConfig || !layer.modal || !layer.modal.controlButton ? null :
           <ModalToggle layer={ layer }

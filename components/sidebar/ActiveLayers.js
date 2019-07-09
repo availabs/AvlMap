@@ -25,7 +25,11 @@ import LayerControl from '../layerControl/layerControl'
     })
 
     const toRender = activeLayers.map((d, i) =>
-      <LayerControl key={ d } index={ i } layer={ layersMap[d] } { ...this.props }/>
+      <LayerControl key={ d }
+        index={ i }
+        layer={ layersMap[d] }
+        showRemoveLayer={ (layersMap[d].removeableIfSingle === false) && (activeLayers.length === 1) ? false : (layersMap[d].removeable === false) ? false : true }
+        { ...this.props }/>
     )
 
     return (

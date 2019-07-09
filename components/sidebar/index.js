@@ -26,14 +26,19 @@ class Sidebar extends Component {
       overflowX: 'hidden'
     }
     return (
-      <SidebarContainer>
+      <SidebarContainer isOpen={ this.props.isOpen }
+        transitioning={ this.props.transitioning }
+        onOpenOrClose={ this.props.onOpenOrClose }
+        onTransitionStart={ this.props.onTransitionStart }>
+
         <SidebarHeader header={ this.props.header }/>
         <SidebarContent className='sidebar-content' theme={ this.props.theme }>
-        { !this.props.layers.reduce((a, c) => a || !c.active, false) ? null :
-          <LayerSelector { ...this.props }/>
-        }
-        <ActiveLayers { ...this.props }/>
+          { !this.props.layers.reduce((a, c) => a || !c.active, false) ? null :
+            <LayerSelector { ...this.props }/>
+          }
+          <ActiveLayers { ...this.props }/>
         </SidebarContent>
+
       </SidebarContainer>
     );
   }

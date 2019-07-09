@@ -21,7 +21,7 @@ import {
 
 const defaultProps = {
   isDragNDropEnabled: true,
-  // showRemoveLayer: true,
+  showRemoveLayer: true,
   className: '',
   idx: 1,
   // isConfigActive: false ,
@@ -33,8 +33,7 @@ const defaultProps = {
   onToggleVisibility: () => {},
   onUpdateLayerLabel: () => {},
   onToggleEnableConfig: () => {},
-  onRemoveLayer: () => {},
-  showRemoveLayer: () => {}
+  onRemoveLayer: () => {}
 };
 
 const StyledLayerPanelHeader = styled(StyledPanelHeader)`

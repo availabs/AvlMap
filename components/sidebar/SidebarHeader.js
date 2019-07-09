@@ -1,22 +1,22 @@
 import React, {Component} from 'react';
-// import deepEqual from 'deep-equal'
 
- class SidebarHeader extends Component {
-  
+import styled from "styled-components"
+
+const DefaultHeader = styled.div`
+  font-size: 1.5rem;
+  color: ${ props => props.theme.textColorHl };
+`
+
+class SidebarHeader extends Component {
   render() {
-    
-    let sidebarHeaderStyle = {
-      width: '100%',
-      flexBasis: 75,
-      display: 'flex',
-      padding: 15,
-      backgroundColor: '#29323C' //theme.sidePanelHeaderBg// '#323c58', //'#29323C'
-    }
-
-
+    const { header } = this.props,
+      Header = typeof header === "function" ?
+        header :
+        () => <DefaultHeader>{ header }</DefaultHeader>;
+        
     return (
-      <div className='sidebar-header' style={sidebarHeaderStyle}>
-        <this.props.header />
+      <div style={ { padding: "20px" } }>
+        <Header />
       </div>
     );
   }
