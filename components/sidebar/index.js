@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 // import { connect } from 'react-redux';
 
 import styled from "styled-components"
-
 // import deepEqual from 'deep-equal'
 import SidebarContainer from './sidebar'
 import SidebarHeader from './SidebarHeader'
