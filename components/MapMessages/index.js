@@ -7,12 +7,17 @@ import classnames from "classnames"
 import deepequal from "deep-equal"
 
 const MessageContainer = styled.div`
+	left: 0px;
+	top: 0px;
 	position: fixed;
 	width: 100vw;
 	height: 100vh;
 	z-index: 50;
-	text-align: center;
 	pointer-events: none;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 
 	> * {
 		transition: top 0.5s;
@@ -20,17 +25,23 @@ const MessageContainer = styled.div`
 `
 const MessageStyled = styled.div`
 	pointer-events: all;
+
 	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+
 	min-width: 400px;
 	display: inline-block;
-	padding: 10px 40px 10px 10px;
+	padding: 15px 50px 15px 15px;
 	color: ${ props => props.theme.textColor };
 	background-color: ${ props => props.theme.sidePanelBg };
 	text-align: left;
 	border-radius: 4px;
 
+	font-size: 1rem;
+
 	&.confirm {
-		padding-right: 10px;
+		padding-right: 15px;
 
 		.confirm-buttons-div {
 			margin-top: 5px;
@@ -51,11 +62,11 @@ const MessageStyled = styled.div`
 	@keyframes entering {
 		from {
 			top: -${ props => props.height }px;
-			transform: scale(0.25, 0.25);
+			transform: translateX(-50%) scale(0.25, 0.25);
 		}
 		to {
 			top: ${ props => props.top }px;
-			transform: scale(1, 1);
+			transform: translateX(-50%) scale(1, 1);
 		}
 	}
 	&.entering {
@@ -66,11 +77,11 @@ const MessageStyled = styled.div`
 	@keyframes dismissing {
 		from {
 			top: ${ props => props.top }px;
-			transform: scale(1, 1);
+			transform: translateX(-50%) scale(1, 1);
 		}
 		to {
 			top: -${ props => props.height }px;
-			transform: scale(0.25, 0.25);
+			transform: translateX(-50%) scale(0.25, 0.25);
 		}
 	}
 	&.dismissing {
@@ -80,11 +91,11 @@ const MessageStyled = styled.div`
 `
 const DismissButton = styled.div`
 	position: absolute;
-	top: 7px;
-	right: 7px;
+	top: 10px;
+	right: 10px;
 	padding: 5px;
-	width: 26px;
-	height: 26px;
+	width: 30px;
+	height: 30px;
 	display: flex;
   justify-content: center;
   align-items: center;
@@ -191,6 +202,7 @@ class MapMessages extends React.Component {
 		dismissing.forEach((data, id) => {
 			Messages.splice(data.i, 0, data.message);
 		})
+// console.log("<MapMessages.render>", this.props.messages, dismissing)
 
 		let current = 0;
 		const getTop = (id, dismissing) => {
@@ -226,8 +238,6 @@ class Message extends React.Component {
 	comp = null;
 	timeout = null;
 	state = {
-		left: 0,
-		width: 0,
 		entering: !this.props.dismissing
 	}
 	componentDidMount() {
@@ -243,11 +253,7 @@ class Message extends React.Component {
 	checkWidth() {
 		const comp = this.comp;
 		if (!comp) return;
-		const width = comp.scrollWidth,
-			height = comp.scrollHeight;
-		if (width !== this.state.width) {
-			this.setState({ left: width * 0.5, width });
-		}
+		const height = comp.clientHeight;
 		if (height !== this.props.height) {
 			this.props.reportHeight(this.props.id, height);
 		}
@@ -287,7 +293,6 @@ class Message extends React.Component {
 				height={ height }
 				style={ {
 					top: `${ top }px`,
-					left: `calc(50% - ${ this.state.left }px)`,
 					zIndex
 				} }>
 				{ this.renderMessage() }
@@ -315,7 +320,7 @@ class ConfirmMessage extends Message {
 						Dismiss
 					</button>
 					<button className="btn btn-sm btn-outline-success"
-						onClick={ () => (dismiss(id), onConfirm()) }>
+						onClick={ () => { onConfirm(); dismiss(id); } }>
 						Confirm
 					</button>
 				</div>

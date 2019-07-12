@@ -54,26 +54,28 @@ const ActionItem = styled.div`
   &.disabled:hover {
   	border-color: #900;
   }
-`
-const SVG = styled.svg`
-	width: 40px;
-	height: 40px;
-	border-radius: 18px;
 
-	display: block;
-	position: absolute;
-	top: -2px;
-	left: -2px;
+	svg {
+		width: 40px;
+		height: 40px;
+		border-radius: 20px;
 
-	line {
-		stroke: #900;
-		stroke-width: 2px;
-		transition: stroke 0.15s;
-	}
-	:hover line {
-		stroke: #900;
+		display: block;
+		position: absolute;
+		top: -2px;
+		left: -2px;
+
+		line {
+			stroke: #900;
+			stroke-width: 2px;
+			transition: stroke 0.15s;
+		}
+		:hover line {
+			stroke: #900;
+		}
 	}
 `
+
 const noop = () => {};
 
 class MapActions extends React.Component {
@@ -81,9 +83,10 @@ class MapActions extends React.Component {
 		const actions = this.props.layers.reduce((actions, layer) => {
 			if (layer.active) {
 				actions.push(
-					...layer.mapActions.map(({ action=noop, disabled=false, ...rest }) =>
-						({ action: action.bind(layer), disabled, ...rest })
-					)
+					...Object.values(layer.mapActions)
+						.map(({ action=noop, disabled=false, ...rest }) =>
+							({ action: action.bind(layer), layer, disabled, ...rest })
+						)
 				);
 			}
 			return actions;
@@ -91,13 +94,13 @@ class MapActions extends React.Component {
 		return (
 			<ActionContainer sidebar={ this.props.sidebar } isOpen={ this.props.isOpen }>
 				{
-					actions.map(({ Icon, tooltip, action, disabled }, i) =>
+					actions.map(({ Icon, tooltip, action, disabled, layer }, i) =>
 						<ActionItem key={ i } data-tip
           		data-for={ `action-item-${ i }` }
           		onClick={ disabled ? null : action }
           		className={ classnames({ disabled }) }>
 
-							<Icon />
+							<Icon layer={ layer }/>
 		          <Tooltip
 		            id={ `action-item-${ i }` }
 		            effect="solid"
@@ -106,9 +109,9 @@ class MapActions extends React.Component {
 		          </Tooltip>
 
 		          { !disabled ? null :
-			          <SVG>
+			          <svg>
 			          	<line x1="40" x2="0" y1="0" y2="40"/>
-			          </SVG>
+			          </svg>
 			        }
 
 						</ActionItem>

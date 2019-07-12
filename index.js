@@ -151,6 +151,7 @@ class AvlMap extends React.Component {
       update: false,
       layer: this.getLayer(layerName)
     }
+console.log("<AvlMap.sendMessage>", layerName, data, [...this.state.messages]);
     const update = this.state.messages.reduce((a, c) => a || (c.id === data.id), false);
     let messages = [...this.state.messages];
     if (update) {
@@ -168,6 +169,7 @@ class AvlMap extends React.Component {
   }
   dismissMessage(id) {
     const messages = this.state.messages.filter(m => m.id !== id);
+console.log("<AvlMap.dismissMessage>", id, messages);
     this.setState({ messages });
   }
 
