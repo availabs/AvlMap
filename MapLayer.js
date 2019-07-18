@@ -60,12 +60,6 @@ class MapLayer {
   initComponent(component) {
     this.component = component;
     this.updatePopover = component.updatePopover.bind(component);
-  }
-	initMap(map) {
-    this.map = map;
-	}
-
-	onAdd(map) {
 		if (this.showAttributesModal !== false) {
 			const modals = this.modals || {};
 			this.modals = {
@@ -108,6 +102,15 @@ class MapLayer {
 				]
 			}
 		}
+  }
+	initMap(map) {
+    this.map = map;
+	}
+
+	onAdd(map) {
+		this._onAdd(map);
+	}
+	_onAdd(map) {
 		if (this.popover) {
 			this.addPopover(map);
 		}
@@ -122,6 +125,9 @@ class MapLayer {
     }
 	}
 	onRemove(map) {
+		this._onRemove(map);
+	}
+	_onRemove(map) {
     if (this.onHover) {
       this.removeOnHover(map);
     }
@@ -140,6 +146,10 @@ class MapLayer {
 		this.sources.forEach(source => {
 			map.removeSource(source.id);
 		})
+	}
+	onStyleChange(map) {
+		// this._onRemove(map);
+		this._onAdd(map);
 	}
 
   addOnHover(map) {

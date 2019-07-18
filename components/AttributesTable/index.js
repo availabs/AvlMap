@@ -49,6 +49,7 @@ class AttributesTable extends React.Component {
 			map.off("sourcedata", this.checkSourcesLoaded);
 			map.off("zoomend", this.setNeedsUpdate);
 			map.off("moveend", this.setNeedsUpdate);
+			map.off("style.load", this.setNeedsUpdate);
 		}
 		clearTimeout(this.timeout);
 	}
@@ -59,6 +60,7 @@ class AttributesTable extends React.Component {
 			map.on("sourcedata", this.checkSourcesLoaded);
 			map.on("zoomend", this.setNeedsUpdate);
 			map.on("moveend", this.setNeedsUpdate);
+			map.on("style.load", this.setNeedsUpdate);
 		}
 		if (Object.values(this.state.sourcesLoaded).reduce((a, c) => a && c, true)) {
 			map.off("sourcedata", this.checkSourcesLoaded);

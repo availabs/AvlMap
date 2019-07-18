@@ -27,11 +27,13 @@ const CollapsedInfoBox = styled.div`
   color: ${ props => props.theme.textColor };
   font-weight: bold;
   font-size: 1.5rem;
+  line-height: 1.5rem;
 `
 const OpenInfoBoxTitle = styled.div`
   color: ${ props => props.theme.textColorHl };
   font-weight: bold;
   font-size: 1.5rem;
+  line-height: 1.5rem;
 `
 
 const SidebarContainer = styled.div`
@@ -135,7 +137,8 @@ class InfoBox extends Component {
                         (typeof b.title === "function") ?
                           <CollapsedInfoBox><b.title layer={ b.layer }/></CollapsedInfoBox>
                         : <CollapsedInfoBox>{ b.title }</CollapsedInfoBox>
-                      : <>
+                      :
+                        <>
                           {
                             (typeof b.title === "function") ?
                               <OpenInfoBoxTitle><b.title layer={ b.layer }/></OpenInfoBoxTitle>

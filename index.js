@@ -60,7 +60,7 @@ class AvlMap extends React.Component {
       messages: [],
       isOpen: true,
       transitioning: false,
-      style: props.style ? { name: "deprecated", style: props.style } : props.styles[0]
+      style: props.style ? { name: "Use Styles Prop", style: props.style } : props.styles[0]
   	}
     this.container = React.createRef();
   }
@@ -109,7 +109,7 @@ class AvlMap extends React.Component {
       	if (layer.active) {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
-					layer.onAdd(map)
+					layer.onAdd(map);
       	}
       })
 
@@ -232,7 +232,7 @@ console.log("<AvlMap.dismissMessage>", id, messages);
   		layer.active = true;
       this._addLayer(this.state.map, layer);
       layer.onAdd(this.state.map);
-  		this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
+      this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
   	}
   }
   removeLayer(layerName) {
@@ -415,10 +415,22 @@ console.log("<AvlMap.dismissMessage>", id, messages);
 
   setMapStyle(style) {
     const { map } = this.state;
-    if (Boolean(map)) {
+    if (Boolean(map) && (style.style !== this.state.style.style)) {
+      map.once('style.load', e => {
+        const activeLayers = [];
+        this.state.activeLayers.forEach(layerName => {
+        	const layer = this.getLayer(layerName);
+          this._addLayer(map, layer, activeLayers);
+          activeLayers.push(layerName);
+          layer.onStyleChange(map);
+        });
+      })
+      this.state.activeLayers.forEach(layerName => {
+        this.getLayer(layerName)._onRemove(map);
+      })
       map.setStyle(style.style);
-      this.setState({ style });
     }
+    this.setState({ style });
   }
 
 	render() {
@@ -427,6 +439,12 @@ console.log("<AvlMap.dismissMessage>", id, messages);
       updateModal: this.updateModal.bind(this),
 			toggleInfoBox: this.toggleInfoBox.bind(this)
 		}
+    const mapStyles = [
+      ...this.props.styles
+    ]
+    if (this.props.style) {
+      mapStyles.unshift({ name: "Use styles prop!", style: this.props.style });
+    }
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
@@ -451,9 +469,10 @@ console.log("<AvlMap.dismissMessage>", id, messages);
   					updateDrag={ this.updateDrag.bind(this) }
   					dropLayer={ this.dropLayer.bind(this) }
             pages={ this.props.sidebarPages }
-            mapStyles={ this.props.styles }
+            mapStyles={ mapStyles }
             style={ this.state.style }
-            setMapStyle={ this.setMapStyle.bind(this) }/>
+            setMapStyle={ this.setMapStyle.bind(this) }
+            map={ this.state.map }/>
         }
 
 				<Infobox layers={ this.props.layers }
