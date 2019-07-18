@@ -3,7 +3,7 @@ import React from "react"
 import styled from "styled-components"
 import deepequal from "deep-equal"
 
-import AvlTable from "components/AvlTable"
+import AvlTable from "./AvlTable"
 
 class AttributesTable extends React.Component {
 	static defaultProps = {
