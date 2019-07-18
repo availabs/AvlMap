@@ -59,7 +59,8 @@ class AvlMap extends React.Component {
       height: 0,
       messages: [],
       isOpen: true,
-      transitioning: false
+      transitioning: false,
+      style: props.style ? { name: "deprecated", style: props.style } : props.styles[0]
   	}
     this.container = React.createRef();
   }
@@ -67,7 +68,6 @@ class AvlMap extends React.Component {
   componentDidMount() {
     const {
     	id,
-    	style,
     	center,
     	minZoom,
     	zoom,
@@ -75,7 +75,7 @@ class AvlMap extends React.Component {
     } = this.props;
     const map = new mapboxgl.Map({
       container: id,
-      style,
+      style: this.state.style.style,
       center,
       minZoom,
       zoom,
@@ -83,9 +83,9 @@ class AvlMap extends React.Component {
     });
 
     if(mapControl) {
-      map.addControl(new mapboxgl.NavigationControl(), mapControl);  
+      map.addControl(new mapboxgl.NavigationControl(), mapControl);
     }
-    
+
     map.boxZoom.disable();
 
     if(!this.props.scrollZoom) {
@@ -119,6 +119,7 @@ class AvlMap extends React.Component {
       this.setState({ map, activeLayers })
 
     })
+    // map.on('sourcedata', () => this.foceUpdate());
     this.setContainerSize();
   }
 
@@ -281,7 +282,7 @@ console.log("<AvlMap.dismissMessage>", id, messages);
     layer.selection = selection;
     layer.loading = true;
     this.forceUpdate();
-    
+
     layer.onSelect(selection)
       .then(() => layer.fetchData())
       .then(data => layer.receiveData(this.state.map, data))
@@ -412,6 +413,14 @@ console.log("<AvlMap.dismissMessage>", id, messages);
     this.setState({ isOpen, transitioning: false });
   }
 
+  setMapStyle(style) {
+    const { map } = this.state;
+    if (Boolean(map)) {
+      map.setStyle(style.style);
+      this.setState({ style });
+    }
+  }
+
 	render() {
 		const actionMap = {
 			toggleModal: this.toggleModal.bind(this),
@@ -440,7 +449,11 @@ console.log("<AvlMap.dismissMessage>", id, messages);
   					updateLegend={ this.updateLegend.bind(this) }
   					fetchLayerData={ this.fetchLayerData.bind(this) }
   					updateDrag={ this.updateDrag.bind(this) }
-  					dropLayer={ this.dropLayer.bind(this) }/>
+  					dropLayer={ this.dropLayer.bind(this) }
+            pages={ this.props.sidebarPages }
+            mapStyles={ this.props.styles }
+            style={ this.state.style }
+            setMapStyle={ this.setMapStyle.bind(this) }/>
         }
 
 				<Infobox layers={ this.props.layers }
@@ -460,7 +473,8 @@ console.log("<AvlMap.dismissMessage>", id, messages);
         <MapActions layers={ this.props.layers }
           sidebar={ this.props.sidebar }
           isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          theme={ this.props.theme }/>
+          theme={ this.props.theme }
+          actionMap={ actionMap }/>
 
         <MapMessages
           messages={ this.state.messages }
@@ -470,10 +484,22 @@ console.log("<AvlMap.dismissMessage>", id, messages);
 	}
 }
 
+const DEFAULT_STYLES = [
+  {
+    name: "Dark",
+    style: "mapbox://styles/am3081/cjqqukuqs29222sqwaabcjy29"
+  },
+  {
+    name: "Light",
+    style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te'
+  }
+]
+
 AvlMap.defaultProps = {
 	id: getUniqueId(),
 	height: "100%",
-	style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te',
+	// style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te',
+  styles: [...DEFAULT_STYLES],
 	center: [-73.680647, 42.68],
 	minZoom: 2,
 	zoom: 10,
@@ -483,7 +509,8 @@ AvlMap.defaultProps = {
   scrollZoom: true,
   sidebar: true,
   update: [],
-	header: "AVAIL Map"
+	header: "AVAIL Map",
+  sidebarPages: ["layers", "basemaps"]
 }
 
 export default AvlMap

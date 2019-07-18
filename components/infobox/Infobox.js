@@ -14,15 +14,22 @@ const ToggleButton = styled.span`
   right: 0px;
   padding: 5px 8px 8px 8px;
   border-radius: 4px;
+  color: ${ props => props.theme.textColor };
   background-color: transparent;
-  transition: background-color 0.15s;
+  transition: colors 0.15s, background-color 0.15s;
 
   :hover {
+    color: ${ props => props.theme.textColorHl };
     background-color: #666;
   }
 `
 const CollapsedInfoBox = styled.div`
   color: ${ props => props.theme.textColor };
+  font-weight: bold;
+  font-size: 1.5rem;
+`
+const OpenInfoBoxTitle = styled.div`
+  color: ${ props => props.theme.textColorHl };
   font-weight: bold;
   font-size: 1.5rem;
 `
@@ -89,7 +96,7 @@ class InfoBox extends Component {
       activeLayers = layers.filter(l => l.active),
       activeLegends = activeLayers.reduce((a, c) => c.legend && c.legend.active && c.legend.domain.length ? a.concat(c.legend) : a, []),
       activeInfoBoxes = activeLayers
-        .reduce((a, c) => 
+        .reduce((a, c) =>
           c.infoBoxes ?
             a.concat(
               Object.keys(c.infoBoxes)
@@ -124,11 +131,18 @@ class InfoBox extends Component {
               {
                 activeInfoBoxes.map((b, i) =>
                   <InfoBoxContainer key={ i }>
-                    { this.state.collapsedInfoBoxes.includes(b.id) ?  
+                    { this.state.collapsedInfoBoxes.includes(b.id) ?
                         (typeof b.title === "function") ?
-                          <b.title layer={ b.layer }/>
+                          <CollapsedInfoBox><b.title layer={ b.layer }/></CollapsedInfoBox>
                         : <CollapsedInfoBox>{ b.title }</CollapsedInfoBox>
-                      : <b.comp theme={ this.props.theme } layer={ b.layer }/>
+                      : <>
+                          {
+                            (typeof b.title === "function") ?
+                              <OpenInfoBoxTitle><b.title layer={ b.layer }/></OpenInfoBoxTitle>
+                            : <OpenInfoBoxTitle>{ b.title }</OpenInfoBoxTitle>
+                          }
+                          <b.comp theme={ this.props.theme } layer={ b.layer }/>
+                        </>
                     }
                     <ToggleButton className={ this.getToggleButton(b.id) }
                       onClick={ () => this.toggleInfoBox(b.id) }/>

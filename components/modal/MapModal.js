@@ -10,31 +10,42 @@ import styled from 'styled-components';
 // import { toggleModal } from "pages/MapView/store/MapStore"
 
 const ModalContainer = styled.div`
+	color: ${ props => props.theme.textColor };
 	position: fixed;
 	width: 100%;
-	bottom: ${ props => props.position === "bottom" ? "30px" : "auto" };
+	bottom: ${ props => props.position === "bottom" ? "20px" : "auto" };
 	top: ${ props => props.position === "top" ? "20px" : "auto" };
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	pointer-events: none;
+	z-index: 500;
 `
 
 const ModalWrapper = styled.div`
+	${ props => props.theme.scrollBar };
 	background-color: ${ props => props.theme.panelBackground };
 	display: inline-flex;
 	position: relative;
 	pointer-events: all;
 	padding: 20px;
+	overflow: auto;
 `
 
 const CloseWrapper = styled.div`
 	display: inline-block;
 	color: ${ props => props.theme.textColor };
 	position: absolute;
-	right: 5px;
-	top: 5px;
+	right: 10px;
+	top: 10px;
 	cursor: pointer;
+	padding: 0px 4px 0px 4px;
+	border-radius: 4px;
+
+	:hover {
+		color: ${ props => props.theme.textColorHl };
+		background-color: #666;
+	}
 `
 
 class MapModal extends React.Component {
@@ -56,12 +67,14 @@ class MapModal extends React.Component {
 			}
 			return m || a;
 		}, {});
-		const { position="bottom" } = modal;
+
+		const { position = "bottom" } = modal;
+
 		return !modal.comp ? null : (
 			<ModalContainer position={ position }>
 				<ModalWrapper>
 					<CloseWrapper onClick={ e => { e.preventDefault(); e.stopPropagation(); this.props.toggleModal(modal.layerName, modal.modalName); } }>
-						<Close data-tip data-for="close-modal-btn"/>
+						<span className="fa fa-2x fa-close" data-tip data-for="close-modal-btn"/>
 	          <Tooltip
 	            id="close-modal-btn"
 	            effect="solid"

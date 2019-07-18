@@ -1,3 +1,9 @@
+import React from "react"
+
+import AttributesTable from "./components/AttributesTable"
+
+import get from "lodash.get"
+
 const DEFAULT_OPTIONS = {
 	sources: [],
 	layers: [],
@@ -17,7 +23,9 @@ const DEFAULT_OPTIONS = {
   onHover: false,
   hoveredFeatureIds: new Set(),
 
-  mapActions: [],
+	showAttributesModal: true,
+
+  mapActions: {},
 
   selection: []
 }
@@ -58,14 +66,48 @@ class MapLayer {
 	}
 
 	onAdd(map) {
-		// this.sources.forEach(source => {
-  //     if (!map.getSource(source.id)) {
-  //       map.addSource(source.id, source.source);
-  //     }
-		// })
-		// this.layers.forEach(layer => {
-		// 	map.addLayer(layer);
-		// })
+		if (this.showAttributesModal !== false) {
+			const modals = this.modals || {};
+			this.modals = {
+				...modals,
+				attributes: {
+					title: "Attributes",
+					comp: ({ layer }) =>
+						<div style={ { width: "800px" } }>
+							<AttributesTable layer={ layer }/>
+						</div>,
+					show: false,
+					position: "bottom"
+				}
+			};
+
+			if (!get(this, 'component.props.sidebar', false)) {
+				this.mapActions = {
+					...this.mapActions,
+					attributes: {
+						Icon: ({ layer }) => <span className={ `fa fa-lg fa-eye` }/>,
+						tooltip: "Toggle Attributes",
+						action: function() {
+							this.doAction([
+								"toggleModal",
+								"attributes"
+							])
+						}
+					}
+				}
+			}
+			else {
+				const actions = this.actions || [];
+				this.actions = [
+					...actions,
+			    {
+			      Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
+			      action: ["toggleModal", "attributes"],
+			      tooltip: "Toggle Attributes"
+			    }
+				]
+			}
+		}
 		if (this.popover) {
 			this.addPopover(map);
 		}
@@ -110,11 +152,11 @@ class MapLayer {
 
       let func = e => this.onHoverMove(e, layer);
       this.boundFunctions[`on-hover-move-${ layer }`] = func;
-      map.on("mousemove", layer, e => this.onHoverMove(e, layer));
+      map.on("mousemove", layer, func);
 
       func = e => this.onHoverLeave(e, layer);
       this.boundFunctions[`on-hover-leave-${ layer }`] = func;
-      map.on("mouseleave", layer, e => this.onHoverLeave(e, layer));
+      map.on("mouseleave", layer, func);
     })
   }
   removeOnHover(map) {
@@ -356,7 +398,7 @@ class MapLayer {
 
       if (bbox) {
         var features = map.queryRenderedFeatures(bbox, { layers: selectFrom });
-        
+
         if (features.length >= maxSelection) {
           map.dragPan.enable();
           return window.alert(`Select a smaller number of features. You selected ${ features.length }. The maximum is ${ maxSelection }.`);
@@ -368,12 +410,12 @@ class MapLayer {
         }, selectFilter.slice());
 
         selection = features.map(d => d.properties[selectProperty])
-        
+
         toHighlight.forEach(layer => {
           map.setFilter(
             layer.id,
             layer.filter ? ['all', layer.filter, filter] : filter
-          );  
+          );
         })
       }
 
@@ -388,9 +430,9 @@ class MapLayer {
   addBoxSelect(map) {
     this.select.highlightLayers.forEach(layer => {
       map.setFilter(
-        layer.id, 
+        layer.id,
         ["in", this.select.property]
-      );  
+      );
     })
 
     const canvas = map.getCanvasContainer();

@@ -15,8 +15,8 @@ import {
 import {Tooltip} from 'components/common/styled-components';
 
 import {
-    //InlineInput, 
-    StyledPanelHeader 
+    //InlineInput,
+    StyledPanelHeader
 } from 'components/common/styled-components';
 
 const defaultProps = {
@@ -44,15 +44,15 @@ const StyledLayerPanelHeader = styled(StyledPanelHeader)`
   :hover {
     cursor: pointer;
     background-color: ${props => props.theme.panelBackgroundHover};
-    
+
     .layer__drag-handle {
       opacity: 1;
     }
-    
+
     .layer__remove-layer {
-      opacity: 1;  
+      opacity: 1;
     }
-    
+
     .layer__enable-config {
       color: white
     }
@@ -83,7 +83,7 @@ const DragHandle = styled.div`
   display: flex;
   align-items: center;
   opacity: 0;
-  
+
   :hover {
     cursor: move;
     color: ${props => props.theme.textColorHl};
@@ -104,14 +104,16 @@ const ActionBar = ({ layer, actions, actionMap }) =>
     {
       actions.map((a, i) =>
         <IconWrapper key={ i }>
-          <a.Icon data-tip
+          <div data-tip
             data-for={ `action-bar-${ i }` }
             onClick={ e => {
               e.stopPropagation();
               typeof a.action === "function" ?
                 a.action.call(layer) :
                 actionMap[a.action[0]](layer.name, ...a.action.slice(1))
-            } }/>
+            } }>
+            <a.Icon />
+          </div>
           <Tooltip
             id={ `action-bar-${ i }` }
             effect="solid"
@@ -179,7 +181,7 @@ const LayerPanelHeader = ({
           </div>
         </div>
       </LayerTitleSection>
-      { layer.loading ? 
+      { layer.loading ?
         <PanelHeaderAction
           className="layer__loading-layer"
           id={layerId}
@@ -187,7 +189,7 @@ const LayerPanelHeader = ({
           onClick={null}
           tooltipType="error"
           IconComponent={Clock}
-          
+
         />
         : null
       }
@@ -201,7 +203,7 @@ const LayerPanelHeader = ({
           onClick={onRemoveLayer}
           tooltipType="error"
           IconComponent={Trash}
-          
+
         />
       ) : null}
       <PanelHeaderAction
@@ -210,7 +212,7 @@ const LayerPanelHeader = ({
         tooltip={'Layer settings'}
         onClick={onToggleEnableConfig}
         IconComponent={ArrowDown}
-        
+
       />
     </HeaderActionSection>
   </StyledLayerPanelHeader>
