@@ -190,18 +190,18 @@ class Sidebar extends Component {
 export default Sidebar
 
 class BaseMapsSelector extends React.Component {
-  onSelect(index) {
-    const style = this.props.styles.reduce((a, c, i) => i === index ? c : a);
+  onSelect(name) {
+    const style = this.props.styles.reduce((a, c) => c.name === name ? c : a);
     this.props.setMapStyle(style);
   }
   render() {
     const { styles, style, setMapStyle } = this.props,
-      value = styles.reduce((a, c, i) => c.name === style.name ? i : a, 0);
+      options = styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url }/> }));
     return (
       <div>
-        <AccordionSelector value={ value }
-          options={ styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url }/> })) }
-          onSelect={ this.onSelect.bind(this) }/>
+        <AccordionSelector value={ style.name }
+          options={ options }
+          onSelect={ v => this.onSelect(v) }/>
       </div>
     )
   }
