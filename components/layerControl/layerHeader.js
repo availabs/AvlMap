@@ -97,6 +97,10 @@ const IconWrapper = styled.div`
   color: ${ props => props.theme.textColor };
   display: inline-flex;
   margin-left: 5px;
+  transition: color 0.15s;
+  :hover {
+    color: ${ props => props.theme.textColorHl };
+  }
 `
 
 const ActionBar = ({ layer, actions, actionMap }) =>
@@ -148,6 +152,7 @@ const LayerPanelHeader = ({
     className={classnames('layer-panel__header', {
       'sort--handle': !isConfigActive
     })}
+    style={ layer.actions ? { height: "32px" } : null }
     active={isConfigActive}
     labelRCGColorValues={labelRCGColorValues}
     onClick={onToggleEnableConfig}
@@ -170,15 +175,14 @@ const LayerPanelHeader = ({
       />
       <LayerTitleSection className="layer__title" theme={theme}>
         <div>
-          <div>{ layer.name }</div>
-          <div className="layer__title__type">
-            {
-              !layer.actions ? null :
+          <div style={ { lineHeight: layer.actions ? "16px" : "26px" } }>{ layer.name }</div>
+          { !layer.actions ? null :
+            <div style={ { lineHeight: "16px" } }>
               <ActionBar actionMap={ actionMap }
                 actions={ layer.actions }
                 layer={ layer }/>
-            }
-          </div>
+            </div>
+          }
         </div>
       </LayerTitleSection>
       { layer.loading ?

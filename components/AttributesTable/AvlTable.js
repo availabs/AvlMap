@@ -49,7 +49,7 @@ export default class AvlTable extends React.Component {
 	}
 	setSortKey(sortKey = null) {
 		let sortDirection = 1;
-		if (sortKey === this.state.sortKey) {
+		if ((sortKey !== null) && (sortKey === this.state.sortKey)) {
 			sortDirection = this.state.sortDirection * -1;
 		}
 		this.setState({ sortKey, sortDirection });

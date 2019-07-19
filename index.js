@@ -12,6 +12,8 @@ import MapMessages from "./components/MapMessages"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
+import geoViewport from "@mapbox/geo-viewport"
+
 import './avlmap.css'
 
 import TimeRangeSldier from "./components/time-range-slider/time-range-slider"
@@ -221,7 +223,12 @@ console.log("<AvlMap.dismissMessage>", id, messages);
         }
       })
       if (!layerAdded) {
-        mbLayer.beneath ? map.addLayer(mbLayer, mbLayer.beneath) : map.addLayer(mbLayer);
+        if (mbLayer.beneath && Boolean(map.getLayer(mbLayer.beneath))) {
+          map.addLayer(mbLayer, mbLayer.beneath);
+        }
+        else {
+          map.addLayer(mbLayer);
+        }
       }
     })
   }
@@ -426,7 +433,8 @@ console.log("<AvlMap.dismissMessage>", id, messages);
         });
       })
       this.state.activeLayers.forEach(layerName => {
-        this.getLayer(layerName)._onRemove(map);
+        const layer = this.getLayer(layerName);
+        layer._onRemove(map);
       })
       map.setStyle(style.style);
     }
@@ -503,16 +511,32 @@ console.log("<AvlMap.dismissMessage>", id, messages);
 	}
 }
 
+const getMapPreview = (map, style, size=[60, 40]) => {
+  if (!Boolean(map)) return "";
+
+  return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
+    `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
+    `${ size.join('x') }?` +
+    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
+}
+const getStaticImageUrl = style =>
+  `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
+    `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
+    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`
+
 const DEFAULT_STYLES = [
-  {
-    name: "Dark",
-    style: "mapbox://styles/am3081/cjqqukuqs29222sqwaabcjy29"
-  },
-  {
-    name: "Light",
-    style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te'
-  }
+  { name: "Dark",
+    style: "mapbox://styles/am3081/cjqqukuqs29222sqwaabcjy29" },
+  { name: "Light",
+    style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te' },
+  { name: "Satellite",
+    style: 'mapbox://styles/am3081/cjya6wla3011q1ct52qjcatxg' },
+  { name: "Satellite Streets",
+    style: `mapbox://styles/am3081/cjya70364016g1cpmbetipc8u` }
 ]
+DEFAULT_STYLES.forEach(style => {
+  style.url = getStaticImageUrl(style.style.slice(23));
+})
 
 AvlMap.defaultProps = {
 	id: getUniqueId(),

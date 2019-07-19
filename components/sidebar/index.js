@@ -9,9 +9,10 @@ import { Layers, Crosshairs } from "components/common/icons"
 
 import { Tooltip } from 'components/common/styled-components';
 
+import AccordionSelector from "components/AvlStuff/AccordionSelector"
+
 import deepequal from "deep-equal"
 import styled from "styled-components"
-import classnames from "classnames"
 import get from "lodash.get"
 
 const SidebarContent = styled.div`
@@ -37,6 +38,7 @@ const Pages = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: color 0.15s, background-color 0.15s;
 
     :hover {
       color: ${ props => props.theme.textColorHl };
@@ -72,7 +74,6 @@ class Sidebar extends Component {
       if (page === "layers") {
         return {
           page,
-          tooltip: "Layer Controls",
           Icon: () => (
             <div className={ this.state.activePage === page ? "active" : "" }
               onClick={ () => this.setActivePage(page) }
@@ -199,136 +200,9 @@ class BaseMapsSelector extends React.Component {
     return (
       <div>
         <AccordionSelector value={ value }
-          options={ styles.map(({ style, name }) => ({ label: name })) }
+          options={ styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url }/> })) }
           onSelect={ this.onSelect.bind(this) }/>
       </div>
     )
   }
 }
-
-const Button = styled.button`
-	background-color: rgb(50, 60, 70);
-	color: ${ props => props.theme.textColorHl };
-	border-radius: 4px;
-	border: none;
-	cursor: pointer;
-	font-weight: 400;
-
-	:hover {
-		background-color: rgb(60, 70, 80);
-	}
-	:disabled {
-		cursor: not-allowed;
-		background-color: rgb(40, 50, 60);
-		color: ${ props => props.theme.textColor };
-	}
-
-	&.active {
-		background-color: ${ props => props.theme.textColor };
-		color: rgb(50, 50, 70);
-	}
-`
-
-const PADDING = 10;
-class AccordionSelector extends React.Component {
-  static defaultProps = {
-    value: 0,
-    options: [],
-    onSelect: () => {}
-  }
-  state = {
-    open: false,
-    transitioning: false
-  }
-  timeout = null;
-  componentsWillUnmount() {
-    clearTimeout(this.timeout);
-  }
-  onSelect(e, value) {
-    e.stopPropagation();
-    if (!this.state.open) {
-      return this.toggleAccordion();
-    }
-    if (value !== this.props.value) {
-      this.props.onSelect(value);
-    }
-    this.toggleAccordion();
-  }
-  toggleAccordion() {
-    const open = !this.state.open;
-    this.setState({ open, transitioning: true });
-    this.timeout = setTimeout(() => this.setState({ transitioning: false }), 500);
-  }
-  render() {
-    const { open, transitioning } = this.state,
-      { options, value } = this.props;
-    return (
-      <AccordionContainer
-        style={ { height: `${ open ? options.length * 40 + (options.length - 1) * 10 + PADDING * 2 : 40 + PADDING * 2 }px` } }>
-        {
-          options
-            .map(({ label, Icon }, i) =>
-              <AccordionOption key={ i }
-                className={ classnames({ open, transitioning, selected: i === value }) }
-                style={ {
-                  top: `${ open ? i * 50 + PADDING : PADDING }px`,
-                  zIndex: i === value ? 10 : 5 - i
-                } }
-                onClick={ e => this.onSelect(e, i) }
-                top={ i * 50 + PADDING }>
-                <div>{ Boolean(Icon) ? <Icon /> : <span className="fa fa-2x fa-map"/> }</div>
-                <div>{ label }</div>
-              </AccordionOption>
-            )
-        }
-      </AccordionContainer>
-    )
-  }
-}
-const AccordionContainer = styled.div`
-  position: relative;
-  width: 100%;
-  transition: height 0.5s;
-  background-color: #303336;
-`
-const AccordionOption = styled.div`
-  background-color: ${ props => props.theme.sidePanelBg };
-  color: ${ props => props.theme.textColor };
-  cursor: pointer;
-  position: absolute;
-  left: ${ PADDING }px;
-  height: 40px;
-  width: calc(100% - ${ PADDING * 2 }px - 2px);
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
-  border-right: 2px solid ${ props => props.theme.sidePanelBg };
-  transition: top 0.5s, color 0.15s, background-color 0.15s, border-color 0.5s;
-
-  &.selected.open {
-    border-right-color: ${ props => props.theme.textColorHl };
-    color: ${ props => props.theme.textColorHl };
-  }
-
-  :hover {
-    background-color: #273033;
-    color: ${ props => props.theme.textColorHl };
-  }
-
-  > * {
-    :first-child {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 60px;
-      height: 40px;
-    }
-    :last-child {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      width: calc(100% - 60px);
-      padding: 5px;
-    }
-  }
-`

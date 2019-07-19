@@ -75,7 +75,8 @@ class MapLayer {
 				}
 			};
 
-			if (!get(this, 'component.props.sidebar', false)) {
+			if (!get(this, 'component.props.sidebar', false) ||
+					!get(this, 'component.props.sidebarPages', []).includes("layers")) {
 				this.mapActions = {
 					...this.mapActions,
 					attributes: {
