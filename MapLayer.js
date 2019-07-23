@@ -94,7 +94,7 @@ class MapLayer {
 			else {
 				const actions = this.actions || [];
 				this.actions = [
-					...actions,
+					...actions.filter(({ tooltip }) tooltip !== "Toggle Attributes"),
 			    {
 			      Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
 			      action: ["toggleModal", "attributes"],
