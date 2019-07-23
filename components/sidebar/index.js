@@ -27,14 +27,14 @@ const Pages = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  padding: 0px 10px 10px 10px;
+  padding: 10px 10px 10px 10px;
   color: ${ props => props.theme.textColor };
 
   > * {
     padding: 5px;
     cursor: pointer;
-    height: 40px;
-    width: 40px;
+    height: 30px;
+    width: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
