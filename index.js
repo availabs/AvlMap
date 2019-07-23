@@ -310,7 +310,8 @@ console.log("<AvlMap.dismissMessage>", id, messages);
   }
 
   updateFilter(layerName, filterName, value) {
-    console.log('updateFilter')
+// console.log('updateFilter', layerName, filterName, value);
+
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
 
