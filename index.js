@@ -3,6 +3,8 @@ import React from "react"
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl'
 import { MAPBOX_TOKEN } from 'store/config'
 
+import get from "lodash.get"
+
 import Sidebar from './components/sidebar'
 import Infobox from './components/infobox/Infobox'
 import MapPopover from "./components/popover/MapPopover"
@@ -50,6 +52,7 @@ class AvlMap extends React.Component {
   	this.state = {
   		map: null,
   		activeLayers: [],
+      sources: {},
   		popover: {
   			pos: [0, 0],
   			pinned: false,
@@ -127,6 +130,7 @@ class AvlMap extends React.Component {
 
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
+console.log("UPDATE???", oldProps.layers, oldProps.update, this.props.update)
     if (oldProps.update !== this.props.update){
         let self = this;
         let filters = [];
@@ -190,9 +194,18 @@ console.log("<AvlMap.dismissMessage>", id, messages);
   }
 
   _addLayer(map, newLayer, activeLayers=this.state.activeLayers) {
+    const sources = { ...this.state.sources };
+
+    const sourcesToAdd = new Set(newLayer.layers.map(l => l.source))
+
     newLayer.sources.forEach(source => {
+      if (!sourcesToAdd.has(source.id)) return;
+
       if (!map.getSource(source.id)) {
         map.addSource(source.id, source.source);
+      }
+      if (!(source.id in sources)) {
+        sources[source.id] = [];
       }
     })
 
@@ -230,7 +243,10 @@ console.log("<AvlMap.dismissMessage>", id, messages);
           map.addLayer(mbLayer);
         }
       }
+      sources[mbLayer.source].push(mbLayer.id)
     })
+
+    this.setState({ sources });
   }
 
   addLayer(layerName) {
@@ -247,7 +263,27 @@ console.log("<AvlMap.dismissMessage>", id, messages);
   	if (this.state.map && layer && layer.active) {
   		layer.active = false;
   		layer.onRemove(this.state.map);
-  		this.setState({ activeLayers: this.state.activeLayers.filter(ln => ln !== layerName) });
+
+      const sourcesToRemove = []
+  		layer.layers.forEach(layer => {
+  			this.state.map.removeLayer(layer.id);
+        sourcesToRemove.push([layer.source, layer.id])
+  		});
+
+      const sources = { ...this.state.sources };
+      sourcesToRemove.forEach(([sourceId, layerId]) => {
+        if (sourceId in sources) {
+          sources[sourceId] = sources[sourceId].filter(lId => lId !== layerId);
+        }
+      })
+
+  		layer.sources.forEach(source => {
+        if (get(sources, [source.id, "length"], "not-added") === 0) {
+          this.state.map.removeSource(source.id);
+        }
+  		})
+
+  		this.setState({ activeLayers: this.state.activeLayers.filter(ln => ln !== layerName), sources });
   	}
   }
   toggleLayerVisibility(layerName) {

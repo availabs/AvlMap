@@ -141,12 +141,6 @@ class MapLayer {
 		if (this.popover) {
 			this.removePopover(map);
 		}
-		this.layers.forEach(layer => {
-			map.removeLayer(layer.id);
-		});
-		this.sources.forEach(source => {
-			map.removeSource(source.id);
-		})
 	}
 	onStyleChange(map) {
 		// this._onRemove(map);
