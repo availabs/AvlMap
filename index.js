@@ -130,24 +130,23 @@ class AvlMap extends React.Component {
 
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
-console.log("UPDATE???", oldProps.layers, oldProps.update, this.props.update)
-    if (oldProps.update !== this.props.update){
-        let self = this;
-        let filters = [];
-        filters.push({
-            'layer': oldProps.layers,
-            'filters': oldProps.layers[0].filters,
-            'filterName': Object.keys(oldProps.layers[0].filters)
-        });
-        filters.forEach(function(a){
-            Object.keys(a.filters).forEach(function(each_filter){
-                a.layer[0].onFilterFetch(each_filter,oldProps.update,a.filters[each_filter].value)
-                    .then(data => a.layer[0].receiveData(self.state.map, data))
-                    .then(() => a.layer[0].loading = false)
-                    .then(() => self.forceUpdate);
-            })
-        })
-    }
+    // if (oldProps.update !== this.props.update){
+    //     let self = this;
+    //     let filters = [];
+    //     filters.push({
+    //         'layer': oldProps.layers,
+    //         'filters': oldProps.layers[0].filters,
+    //         'filterName': Object.keys(oldProps.layers[0].filters)
+    //     });
+    //     filters.forEach(function(a){
+    //         Object.keys(a.filters).forEach(function(each_filter){
+    //             a.layer[0].onFilterFetch(each_filter,oldProps.update,a.filters[each_filter].value)
+    //                 .then(data => a.layer[0].receiveData(self.state.map, data))
+    //                 .then(() => a.layer[0].loading = false)
+    //                 .then(() => self.forceUpdate);
+    //         })
+    //     })
+    // }
   }
 
   sendMessage(layerName, data) {
@@ -158,7 +157,7 @@ console.log("UPDATE???", oldProps.layers, oldProps.update, this.props.update)
       update: false,
       layer: this.getLayer(layerName)
     }
-console.log("<AvlMap.sendMessage>", layerName, data, [...this.state.messages]);
+// console.log("<AvlMap.sendMessage>", layerName, data, [...this.state.messages]);
     const update = this.state.messages.reduce((a, c) => a || (c.id === data.id), false);
     let messages = [...this.state.messages];
     if (update) {
@@ -176,7 +175,7 @@ console.log("<AvlMap.sendMessage>", layerName, data, [...this.state.messages]);
   }
   dismissMessage(id) {
     const messages = this.state.messages.filter(m => m.id !== id);
-console.log("<AvlMap.dismissMessage>", id, messages);
+// console.log("<AvlMap.dismissMessage>", id, messages);
     this.setState({ messages });
   }
 
