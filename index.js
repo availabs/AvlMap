@@ -18,8 +18,6 @@ import geoViewport from "@mapbox/geo-viewport"
 
 import './avlmap.css'
 
-import TimeRangeSldier from "./components/time-range-slider/time-range-slider"
-
 let emptyStyle = {
   "version": 8,
   "name": "Empty",
