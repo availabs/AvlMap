@@ -66,12 +66,10 @@ class MapLayer {
 				...modals,
 				attributes: {
 					title: "Attributes",
-					comp: ({ layer }) =>
-						<div style={ { width: "800px" } }>
-							<AttributesTable layer={ layer }/>
-						</div>,
+					comp: ({ layer }) => <AttributesTable layer={ layer }/>,
 					show: false,
-					position: "bottom"
+					position: "bottom",
+					startSize: [800, 500]
 				}
 			};
 

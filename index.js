@@ -45,6 +45,24 @@ const getUniqueId = () =>
 	`unique-id-${ ++UNIQUE_ID }`
 
 class AvlMap extends React.Component {
+
+  static ActiveMaps = {};
+  static addActiveMap = (id, component, map) => {
+    AvlMap.ActiveMaps[id] = { component, map };
+  }
+  static removeActiveMap = id => {
+    delete AvlMap.ActiveMaps[id];
+  }
+  static updateMap = ([id, action, ...args]) => {
+    if (id in AvlMap.ActiveMaps) {
+      const { component } = AvlMap.ActiveMaps[id];
+      component && component[action] && component[action].call(component, ...args);
+    }
+  }
+  testFunc(...args) {
+    console.log("TEST FUNCTION:", ...[...args].map(arg => arg.toString()));
+  }
+
   constructor(props) {
     super(props);
   	this.state = {
@@ -121,9 +139,13 @@ class AvlMap extends React.Component {
       }
       this.setState({ map, activeLayers })
 
+      AvlMap.addActiveMap(id, this, map);
     })
     // map.on('sourcedata', () => this.foceUpdate());
     this.setContainerSize();
+  }
+  componentWillUnmount() {
+    AvlMap.removeActiveMap(this.props.id);
   }
 
   componentDidUpdate(oldProps, oldState) {

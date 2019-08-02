@@ -167,7 +167,7 @@ class AttributesTable extends React.Component {
 		const [keys, data] = this.state.features;
 
 		return (
-			<div>
+			<div style={ { width: "100%" } }>
 
 				<button className="btn btn-sm btn-outline-success"
 					style={ { margin: "10px 0px" } }
@@ -191,5 +191,5 @@ export default AttributesTable
 const Container = styled.div`
 	${ props => props.theme.scrollBar };
 	overflow: auto;
-	max-height: 500px;
+	color: ${ props => props.theme.textColor };
 `
