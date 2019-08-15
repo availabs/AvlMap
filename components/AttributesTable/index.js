@@ -3,7 +3,7 @@ import React from "react"
 import styled from "styled-components"
 import deepequal from "deep-equal"
 
-import AvlTable from "./AvlTable"
+import AvlTable from "components/AvlStuff/AvlTable"
 
 class AttributesTable extends React.Component {
 	static defaultProps = {
@@ -190,6 +190,6 @@ export default AttributesTable
 
 const Container = styled.div`
 	${ props => props.theme.scrollBar };
-	overflow: auto;
+	/*overflow: auto;*/
 	color: ${ props => props.theme.textColor };
 `

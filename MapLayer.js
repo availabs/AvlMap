@@ -166,11 +166,13 @@ class MapLayer {
     this.onHover.layers.forEach(layer => {
       let key = `on-hover-move-${ layer }`,
         func = this.boundFunctions[key];
+
       map.off("mousemove", layer, func);
       delete this.boundFunctions[key];
 
       key = `on-hover-leave-${ layer }`;
       func = this.boundFunctions[key];
+
       map.off("mouseleave", layer, func);
       delete this.boundFunctions[key];
     })
@@ -183,7 +185,7 @@ class MapLayer {
     const data = this.hoverSourceData[layer];
     if (data) {
       this.hoveredFeatureIds.forEach(id => {
-        (id !== undefined) && this.map.setFeatureState({ id, ...data }, { hover: false });
+        this.map.setFeatureState({ id, ...data }, { hover: false });
       })
       this.hoveredFeatureIds.clear();
 

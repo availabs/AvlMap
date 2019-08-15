@@ -6,6 +6,9 @@ import classnames from "classnames"
 
 import deepequal from "deep-equal"
 
+import * as d3selection from "d3-selection"
+import * as d3transition from "d3-transition"
+
 const MessageContainer = styled.div`
 	left: 0px;
 	top: 0px;
@@ -70,8 +73,8 @@ const MessageStyled = styled.div`
 		}
 	}
 	&.entering {
-		transition: top 1.0s;
 		animation: entering 1.0s;
+		transition: top 1.0s;
 	}
 
 	@keyframes dismissing {
@@ -85,9 +88,10 @@ const MessageStyled = styled.div`
 		}
 	}
 	&.dismissing {
-		transition: top 1.0s;
 		animation: dismissing 1.0s;
+		transition: top 1.0s;
 	}
+
 `
 const DismissButton = styled.div`
 	position: absolute;
@@ -147,10 +151,6 @@ class MapMessages extends React.Component {
 						setTimeout(() => this.readyDismiss(id), duration)
 					)
 					this.setState({ timeouts });
-					if (this.state.dismissing.has(id)) {
-						clearTimeout(this.state.dismissing.get(id));
-						this.state.dismissing.delete(id);
-					}
 				}
 			})
 		}
@@ -169,7 +169,7 @@ class MapMessages extends React.Component {
 
 		this.state.heights.delete(id);
 
-		id = `${ id }-${ Date.now() }`;
+		id = `${ id }-dismissing`;
 
 		const dismissing = new Map(
 			[...this.state.dismissing,
@@ -188,8 +188,7 @@ class MapMessages extends React.Component {
 		this.setState({ heights });
 	}
 	getHeight(id) {
-		const map = this.state.heights;
-		return map.has(id) ? map.get(id) : 0;
+		return this.state.heights.get(id) || 0;
 	}
 	render() {
 		const {
@@ -219,7 +218,7 @@ class MapMessages extends React.Component {
 							id={ id } { ...rest }
 							dismissing={ dismissing.has(id) }
 							dismiss={ id => this.readyDismiss(id) }
-							zIndex={ messages.length - i - (dismissing ? - messages.length : 0)}
+							zIndex={ messages.length - i - (dismissing ? messages.length : 0)}
 							reportHeight={ this.reportHeight.bind(this) }
 							height={ this.getHeight(id) }
 							top={ getTop(id, dismissing.has(id)) }/>
@@ -241,16 +240,18 @@ class Message extends React.Component {
 		entering: !this.props.dismissing
 	}
 	componentDidMount() {
-		this.checkWidth();
-		this.timeout = setTimeout(() => this.setState({ entering: false }), 1000);
+		this.checkHeight();
+		if (this.state.entering) {
+			this.timeout = setTimeout(() => this.setState({ entering: false }), 1000);
+		}
 	}
 	componentWillUnmount() {
 		clearTimeout(this.timeout);
 	}
-	componentDidUpdate() {
-		this.checkWidth();
+	componentDidUpdate(oldProps) {
+		this.checkHeight();
 	}
-	checkWidth() {
+	checkHeight() {
 		const comp = this.comp;
 		if (!comp) return;
 		const height = comp.clientHeight;
@@ -292,8 +293,8 @@ class Message extends React.Component {
 				innerRef={ comp => this.comp = comp }
 				height={ height }
 				style={ {
-					top: `${ top }px`,
-					zIndex
+					zIndex,
+					top: `${ this.props.top }px`
 				} }>
 				{ this.renderMessage() }
 			</MessageStyled>

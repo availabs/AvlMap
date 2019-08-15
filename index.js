@@ -299,8 +299,16 @@ class AvlMap extends React.Component {
   		layer.sources.forEach(source => {
         if (get(sources, [source.id, "length"], "not-added") === 0) {
           this.state.map.removeSource(source.id);
+          delete sources[source.id]
         }
   		})
+
+this.props.layers.forEach(({active,layers}) => {
+  if (!active) return;
+  layers.forEach(data => {
+    console.log("SOURCE:", data.id,data.source,data["source-layer"],this.state.map.getLayer(data.id))
+  })
+})
 
   		this.setState({ activeLayers: this.state.activeLayers.filter(ln => ln !== layerName), sources });
   	}

@@ -56,11 +56,14 @@ const SidebarInner = styled.div`
 `
 const SidebarContent = styled.div`
   ${ props => props.theme.scrollBar };
-  flexGrow: 1;
+  flex-grow: 1;
   padding: ${ props => props.isOpen ? 10 : 0 }px;
+/*
   overflow-y: auto;
   overflow-x: hidden;
-  color: #efefef;
+*/
+  overflow: auto;
+  color: ${ props => props.theme.textColor };
 
   > * {
     margin-bottom: 10px;

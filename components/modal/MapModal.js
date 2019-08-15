@@ -1,7 +1,5 @@
 import React from 'react';
 
-import ReactModal from 'react-modal-resizable-draggable';
-
 import { VertDots } from "components/common/icons"
 
 import { Tooltip } from 'components/common/styled-components';
@@ -17,7 +15,7 @@ const ModalWrapper = styled.div`
 	position: relative;
 	pointer-events: all;
 	padding: 20px;
-	overflow: auto;
+	/*overflow: auto;*/
 	width: 100%;
 	height: 100%;
 `
