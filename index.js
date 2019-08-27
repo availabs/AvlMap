@@ -4,6 +4,7 @@ import mapboxgl from 'mapbox-gl/dist/mapbox-gl'
 import { MAPBOX_TOKEN } from 'store/config'
 
 import get from "lodash.get"
+import styled from "styled-components"
 
 import Sidebar from './components/sidebar'
 import Infobox from './components/infobox/Infobox'
@@ -11,6 +12,8 @@ import MapPopover from "./components/popover/MapPopover"
 import MapModal from "./components/modal/MapModal"
 import MapActions from "./components/MapActions"
 import MapMessages from "./components/MapMessages"
+
+import { ScalableLoading } from "components/loading/loadingPage"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
@@ -130,7 +133,11 @@ class AvlMap extends React.Component {
       	if (layer.active) {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
-					layer.onAdd(map);
+
+          ++layer.loading;
+					Promise.resolve(layer.onAdd(map))
+            .then(() => --layer.loading)
+            .then(() => this.forceUpdate());
       	}
       })
 
@@ -150,23 +157,6 @@ class AvlMap extends React.Component {
 
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
-    // if (oldProps.update !== this.props.update){
-    //     let self = this;
-    //     let filters = [];
-    //     filters.push({
-    //         'layer': oldProps.layers,
-    //         'filters': oldProps.layers[0].filters,
-    //         'filterName': Object.keys(oldProps.layers[0].filters)
-    //     });
-    //     filters.forEach(function(a){
-    //         Object.keys(a.filters).forEach(function(each_filter){
-    //             a.layer[0].onFilterFetch(each_filter,oldProps.update,a.filters[each_filter].value)
-    //                 .then(data => a.layer[0].receiveData(self.state.map, data))
-    //                 .then(() => a.layer[0].loading = false)
-    //                 .then(() => self.forceUpdate);
-    //         })
-    //     })
-    // }
   }
 
   sendMessage(layerName, data) {
@@ -273,13 +263,16 @@ class AvlMap extends React.Component {
   	if (this.state.map && layer && !layer.active) {
   		layer.active = true;
       this._addLayer(this.state.map, layer);
-      layer.onAdd(this.state.map);
+      ++layer.loading;
+      Promise.resolve(layer.onAdd(this.state.map))
+        .then(() => --layer.loading)
+        .then(() => this.forceUpdate());
       this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
   	}
   }
   removeLayer(layerName) {
   	const layer = this.getLayer(layerName);
-  	if (this.state.map && layer && layer.active) {
+  	if (this.state.map && layer && layer.active && !layer.loading) {
   		layer.active = false;
   		layer.onRemove(this.state.map);
 
@@ -312,6 +305,9 @@ this.props.layers.forEach(({active,layers}) => {
 
   		this.setState({ activeLayers: this.state.activeLayers.filter(ln => ln !== layerName), sources });
   	}
+    else if (this.state.map && layer && layer.active && layer.loading) {
+      this.sendMessage(null, { Message: "Cannot remove a layer while it is loading." })
+    }
   }
   toggleLayerVisibility(layerName) {
   	const layer = this.getLayer(layerName);
@@ -350,13 +346,13 @@ this.props.layers.forEach(({active,layers}) => {
   	const layer = this.getLayer(layerName)
 
     layer.selection = selection;
-    layer.loading = true;
+    ++layer.loading;
     this.forceUpdate();
 
     layer.onSelect(selection)
       .then(() => layer.fetchData())
       .then(data => layer.receiveData(this.state.map, data))
-      .then(() => layer.loading = false)
+      .then(() => --layer.loading)
       .then(() => this.forceUpdate());
   }
 
@@ -384,12 +380,12 @@ this.props.layers.forEach(({active,layers}) => {
   		layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
   	}
 
-  	layer.loading = true;
+  	++layer.loading;
   	this.forceUpdate();
 
   	layer.onFilterFetch(filterName, oldValue, value)
       .then(data => layer.receiveData(this.state.map, data))
-      .then(() => layer.loading = false)
+      .then(() => --layer.loading)
       .then(() => this.forceUpdate());
 
     if (layer.filters[filterName].refLayers) {
@@ -402,12 +398,12 @@ this.props.layers.forEach(({active,layers}) => {
             layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
           }
 
-          layer.loading = true;
+          ++layer.loading;
           this.forceUpdate();
 
           layer.onFilterFetch(filterName, oldValue, value)
             .then(data => layer.receiveData(this.state.map, data))
-            .then(() => layer.loading = false)
+            .then(() => --layer.loading)
             .then(() => this.forceUpdate());
 
         }
@@ -422,24 +418,24 @@ this.props.layers.forEach(({active,layers}) => {
 			...layer.legend,
 			...update
 		};
-		layer.loading = true;
+		++layer.loading;
 		this.forceUpdate();
 
   	layer.onLegendChange()
 			.then(data => layer.receiveData(this.state.map, data))
-			.then(() => layer.loading = false)
+			.then(() => --layer.loading)
 			.then(() => this.forceUpdate());
   }
 
   fetchLayerData(layerName) {
   	const layer = this.getLayer(layerName);
 
-  	layer.loading = true;
+  	++layer.loading;
   	this.forceUpdate();
 
   	layer.fetchData()
 			.then(data => layer.receiveData(this.state.map, data))
-			.then(() => layer.loading = false)
+			.then(() => --layer.loading)
 			.then(() => this.forceUpdate());
   }
 
@@ -570,9 +566,62 @@ this.props.layers.forEach(({active,layers}) => {
         <MapMessages
           messages={ this.state.messages }
           dismiss={ this.dismissMessage.bind(this) }/>
+
+        <LoadingLayers layers={ this.props.layers }
+          sidebar={ this.props.sidebar }
+          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
+          theme={ this.props.theme }/>
 			</div>
 		)
 	}
+}
+
+const LoadingContainer = styled.div`
+	position: absolute;
+	bottom: 20px;
+	left: ${ props => props.sidebar && props.isOpen ? 340 : props.sidebar && !props.isOpen ? 40 : 20 }px;
+	transition: left 0.25s;
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+  pointer-events: none;
+  color: ${ props => props.theme.textColorHl };
+
+  > * {
+    margin-bottom: 10px;
+    min-width: 300px;
+    background-color: ${ props => props.theme.sidePanelBg };
+    border-radius: 4px;
+    border-top-left-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
+    border-bottom-left-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
+    font-size: 1rem;
+  }
+  > *:last-child {
+    margin-bottom: 0px;
+  }
+`
+
+const LoadingLayers = ({ layers, sidebar, isOpen, theme }) => {
+  const loadingLayers = layers.reduce((a, c) => {
+    if (c.loading) a.push(c.name);
+    return a;
+  }, [])
+  const height = 40,
+    padding = 10;
+  return (
+    <LoadingContainer sidebar={ sidebar } isOpen={ isOpen } height={ height } padding={ padding }>
+      {
+        loadingLayers.map((name, i) => (
+          <div key={ name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
+            <ScalableLoading scale={ height * 0.01 }/>
+            <div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "right", width: `calc(100% - ${ height }px)` } }>
+              { name }
+            </div>
+          </div>
+        ))
+      }
+    </LoadingContainer>
+  )
 }
 
 const getMapPreview = (map, style, size=[60, 40]) => {
