@@ -51,10 +51,10 @@ const TimeRangeSliderContainer = styled.div`
 `
 
  class LayerFilterPanel extends Component {
-  
+
 
   render() {
-    
+
     const { layer } = this.props,
       filters = layer.filters;
 
@@ -63,7 +63,7 @@ const TimeRangeSliderContainer = styled.div`
 
       const dispatchUpdateFilter = (value) => {
 
-        this.props.updateFilter(layer.name, filterName, value)  
+        this.props.updateFilter(layer.name, filterName, value)
       }
 
       const dispatchUpdateCheckbox = () => {
@@ -72,7 +72,7 @@ const TimeRangeSliderContainer = styled.div`
       }
 
       const dispatchUpdateSlider = (e) => {
-        this.props.updateFilter(layer.name, filterName, e.target.value)  
+        this.props.updateFilter(layer.name, filterName, e.target.value)
       }
 
 
@@ -81,15 +81,22 @@ const TimeRangeSliderContainer = styled.div`
       }
 
       const getFilter = (filter) => {
+        if (filter.active === false) return null;
+        
         switch(filter.type) {
           case 'dropdown':
-            return <SingleSelectFilter 
-              setFilter={ dispatchUpdateFilter } 
+            return <SingleSelectFilter
+              setFilter={ dispatchUpdateFilter }
+              filter={ filter }
+            />;
+          case 'single':
+            return <SingleSelectFilter
+              setFilter={ dispatchUpdateFilter }
               filter={ filter }
             />;
           case 'multi':
-            return <MultiSelectFilter 
-              setFilter={ dispatchUpdateFilter } 
+            return <MultiSelectFilter
+              setFilter={ dispatchUpdateFilter }
               filter={ filter }
             />;
           case 'hidden':
@@ -100,14 +107,14 @@ const TimeRangeSliderContainer = styled.div`
                 {filter.name}
               </SubmitButton>
             );
-          case 'checkbox': 
+          case 'checkbox':
             return (
-              <Switch 
-                onChange={dispatchUpdateCheckbox} 
-                checked={filter.value} 
-                value={filter.value} 
-                id={filter.id} 
-                label={filter.name} 
+              <Switch
+                onChange={dispatchUpdateCheckbox}
+                checked={filter.value}
+                value={filter.value}
+                id={filter.id}
+                label={filter.name}
               />
             )
           break;
@@ -116,19 +123,19 @@ const TimeRangeSliderContainer = styled.div`
               <div>
 
               {filter.name} - {filter.value}
-                <input type="range" 
-                  min={filter.min || 0} 
-                  max={filter.max || 100} 
-                  value={filter.value} 
-                  style={sliderStyle} 
-                  onChange={dispatchUpdateSlider} 
+                <input type="range"
+                  min={filter.min || 0}
+                  max={filter.max || 100}
+                  value={filter.value}
+                  style={sliderStyle}
+                  onChange={dispatchUpdateSlider}
                 />
               </div>
             );
           case 'date':
             return (
-              <DateFilter 
-              setFilter={ dispatchUpdateFilter } 
+              <DateFilter
+              setFilter={ dispatchUpdateFilter }
               filter={ filter }
               />
             );
@@ -167,8 +174,8 @@ const TimeRangeSliderContainer = styled.div`
                   Title={ filter.Title }/>
               </TimeRangeSliderContainer>
             )
-          default: 
-            return (<span >Invalid Filter Type {filter.type}</span>);
+          default:
+            return (<span >Invalid Filter Type { filter.type }</span>);
         }
       }
 

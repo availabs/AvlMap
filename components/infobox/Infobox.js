@@ -46,6 +46,7 @@ const SidebarContainer = styled.div`
   top: 0px;
   right: 0px;
   max-height: calc(100vh - 100px);
+  pointer-events: none;
 `
 const SidebarInner = styled.div`
   ${ props => props.theme.scrollBar };
@@ -53,6 +54,7 @@ const SidebarInner = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
+  pointer-events: all;
 `
 const SidebarContent = styled.div`
   ${ props => props.theme.scrollBar };

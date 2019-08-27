@@ -84,14 +84,13 @@ export default class PanelHeaderAction extends Component {
         className={classnames('panel--header__action', {disabled, [className]: className})}
         active={active}
         hoverColor={hoverColor}
-        flush={flush}
-       
-      >
+        flush={flush}>
+        
         <this.props.IconComponent
           data-tip
           data-for={`${tooltip}_${id}`}
           height="18px"
-          onClick={onClick}
+          onClick={ e => { e.stopPropagation(); onClick(e); } }
         />
         {tooltip ? (
           <Tooltip

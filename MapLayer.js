@@ -9,7 +9,7 @@ const DEFAULT_OPTIONS = {
 	layers: [],
 
 	active: false,
-	loading: false,
+	loading: 0,
 
 	popover: false,
 	actions: false,
@@ -155,11 +155,11 @@ class MapLayer {
         sourceLayer: data['source-layer']
       };
 
-      let func = e => this.onHoverMove(e, layer);
+      let func = e => this.onHoverMove(e, layer, map);
       this.boundFunctions[`on-hover-move-${ layer }`] = func;
       map.on("mousemove", layer, func);
 
-      func = e => this.onHoverLeave(e, layer);
+      func = e => this.onHoverLeave(e, layer, map);
       this.boundFunctions[`on-hover-leave-${ layer }`] = func;
       map.on("mouseleave", layer, func);
     })
@@ -177,10 +177,14 @@ class MapLayer {
       delete this.boundFunctions[key];
     })
   }
-  onHoverMove(e, layer) {
-    const dataFunc = this.onHover.dataFunc;
+  onHoverMove(e, layer, map) {
+    const { dataFunc, minZoom } = this.onHover;
+
+		const zoom = map.getZoom();
+		if (minZoom && (minZoom > zoom)) return;
+
     (typeof dataFunc === "function") &&
-      dataFunc.call(this, e.features, e.point, e.lngLat, layer)
+      dataFunc.call(this, e.features, e.point, e.lngLat, layer);
 
     const data = this.hoverSourceData[layer];
     if (data) {
@@ -222,17 +226,17 @@ class MapLayer {
 		})
 	}
 
+	fetchData() {
+		return Promise.resolve();
+	}
 	onFilterFetch(filterName, oldValue, newValue) {
 		return this.fetchData();
 	}
 	onLegendChange() {
-		return this.onFilterFetch();
-	}
-	fetchData() {
-		return this.onFilterFetch();
+		return this.fetchData();
 	}
   onSelect(selection) {
-    return this.onFilterFetch();
+    return this.fetchData();
   }
 	receiveData(map, data) {
 	}
@@ -289,16 +293,22 @@ class MapLayer {
 		})
 	}
 	_mousemove(e) {
-		const { map, popover } = this.component.state;
-		map.getCanvas().style.cursor = 'pointer';
+		const { map, popover } = this.component.state,
+			zoom = map.getZoom(),
+			{ minZoom, dataFunc } = this.popover;
 
-    const { pinned } = popover;
-    if (pinned) return;
+		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features.length) {
+			const data = dataFunc.call(this, e.features[0], e.features);
+			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
+
+	    const { pinned } = popover;
+	    if (pinned) return;
+
       this.updatePopover({
       	pos: [e.point.x, e.point.y],
-      	data: this.popover.dataFunc.call(this, e.features[0], e.features)
+      	data
       })
     }
 	}
@@ -332,11 +342,11 @@ class MapLayer {
     			})
     		}
     	}
-    	else {
-    		this.updatePopover({
-    			pinned: false
-    		})
-    	}
+    	// else {
+    	// 	this.updatePopover({
+    	// 		pinned: false
+    	// 	})
+    	// }
     }
 	}
 
