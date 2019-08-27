@@ -181,17 +181,17 @@ class MapLayer {
     const { dataFunc, minZoom } = this.onHover;
 
 		const zoom = map.getZoom();
-		if (minZoom && (minZoom > zoom)) return;
+		if (minZoom && (minZoom > zoom)) {
+      this.onHoverLeave(e, layer);
+			return;
+		}
 
     (typeof dataFunc === "function") &&
       dataFunc.call(this, e.features, e.point, e.lngLat, layer);
 
     const data = this.hoverSourceData[layer];
     if (data) {
-      this.hoveredFeatureIds.forEach(id => {
-        this.map.setFeatureState({ id, ...data }, { hover: false });
-      })
-      this.hoveredFeatureIds.clear();
+      this.onHoverLeave(e, layer);
 
       e.features.forEach(({ id }) => {
         (id !== undefined) && this.hoveredFeatureIds.add(id);
