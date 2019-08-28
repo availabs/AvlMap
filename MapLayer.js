@@ -238,7 +238,15 @@ class MapLayer {
   onSelect(selection) {
     return this.fetchData();
   }
-	receiveData(map, data) {
+	receiveDataOld(...args) {
+		if (this.receiveData) {
+			console.warn("<AvlMap> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
+			this.receiveData(...args);
+		}
+	}
+
+	render(map) {
+		return false;
 	}
 
   addOnClick(map) {
