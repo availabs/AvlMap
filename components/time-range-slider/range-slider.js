@@ -132,7 +132,7 @@ export default class RangeSlider extends Component {
       <SliderInput
         className="kg-range-slider__input"
         type="number"
-        innerRef={comp => {
+        ref={comp => {
           this[`input-${key}`] = comp;
         }}
         id={`filter-${key}`}

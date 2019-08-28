@@ -199,7 +199,7 @@ export default class Tooltip extends React.Component {
 
 //     return (
 //       <StyledMapPopover
-//         innerRef={comp => {
+//         ref={comp => {
 //           this.popover = comp;
 //         }}
 //         className={classnames('map-popover', {hidden})}

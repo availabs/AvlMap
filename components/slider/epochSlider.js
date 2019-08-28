@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 // import classnames from 'classnames';
 import styled from 'styled-components';
-import {Input} from './styled-components';
+import {Input} from 'components/common/styled-components';
 
 import Slider from './slider'
 
@@ -23,7 +23,7 @@ const sliderStyle =  {
     transition: 'opacity .15s ease-in-out'
 }
 
-const SliderInput = Input.extend`
+const SliderInput = styled(Input)`
   height: 24px;
   width: 40px;
   padding: 4px 6px;
@@ -43,7 +43,7 @@ const RangeInputWrapper =styled.div`
 
 
 class EpochSlider extends Component {
-  
+
   static propTypes = {
     title: PropTypes.string,
     isRanged: PropTypes.bool,

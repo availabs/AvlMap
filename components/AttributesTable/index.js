@@ -106,20 +106,41 @@ class AttributesTable extends React.Component {
 		let data = [],
 			keys = { layer: true };
 
-		const options = {
-			layers: queryLayers.length ? queryLayers : layer.layers.map(({ id }) => id)
-		};
+		const sourceData = [],
+			layers = queryLayers.length ? queryLayers : layer.layers.map(({ id }) => id);
 
-		map.queryRenderedFeatures(options)
-			.forEach(feature => {
-				const _keys = Object.keys(feature.properties);
-				_keys.forEach(key => keys[key] = true);
-				const row = { layer: feature.layer.id };
-				_keys.forEach(key => {
-					row[key] = feature.properties[key];
+		layer.layers.forEach(l => {
+			if (layers.includes(l.id)) {
+				sourceData.push([l["source"], l["source-layer"], l["id"]])
+			}
+		})
+		sourceData.forEach(([sourceId, sourceLayer, layer]) => {
+			map.querySourceFeatures(sourceId, { sourceLayer })
+				.forEach(feature => {
+					const _keys = Object.keys(feature.properties);
+					_keys.forEach(key => keys[key] = true);
+					const row = { layer };
+					_keys.forEach(key => {
+						row[key] = feature.properties[key];
+					})
+					data.push(row);
 				})
-				data.push(row);
-			})
+		})
+
+		// const options = {
+		// 	layers: queryLayers.length ? queryLayers : layer.layers.map(({ id }) => id)
+		// };
+		//
+		// map.queryRenderedFeatures(options)
+		// 	.forEach(feature => {
+		// 		const _keys = Object.keys(feature.properties);
+		// 		_keys.forEach(key => keys[key] = true);
+		// 		const row = { layer: feature.layer.id };
+		// 		_keys.forEach(key => {
+		// 			row[key] = feature.properties[key];
+		// 		})
+		// 		data.push(row);
+		// 	})
 
 		const { dataFunc } = this.props;
 		if (dataFunc !== null) {
