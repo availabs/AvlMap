@@ -86,10 +86,20 @@ class AvlMap extends React.Component {
       transitioning: false,
       style: props.style ? { name: "Use Styles Prop", style: props.style } : props.styles[0]
   	}
+    this.MOUNTED = false;
     this.container = React.createRef();
   }
 
+  setState(...args) {
+    this.MOUNTED && super.setState(...args);
+  }
+  forceUpdate(...args) {
+    this.MOUNTED && super.forceUpdate(...args);
+  }
+
   componentDidMount() {
+    this.MOUNTED = true;
+
     const {
     	id,
     	center,
@@ -152,6 +162,10 @@ class AvlMap extends React.Component {
     this.setContainerSize();
   }
   componentWillUnmount() {
+    // this.state.activeLayers.forEach(layer => this.removeLayer(layer));
+
+    this.MOUNTED = false;
+
     AvlMap.removeActiveMap(this.props.id);
   }
 
@@ -296,13 +310,6 @@ class AvlMap extends React.Component {
         }
   		})
 
-this.props.layers.forEach(({active,layers}) => {
-  if (!active) return;
-  layers.forEach(data => {
-    console.log("SOURCE:", data.id,data.source,data["source-layer"],this.state.map.getLayer(data.id))
-  })
-})
-
   		this.setState({ activeLayers: this.state.activeLayers.filter(ln => ln !== layerName), sources });
   	}
     else if (this.state.map && layer && layer.active && layer.loading) {
@@ -351,7 +358,7 @@ this.props.layers.forEach(({active,layers}) => {
 
     layer.onSelect(selection)
       .then(() => layer.fetchData())
-      .then(data => layer.active && (layer.render(this.state.map), layer.receiveDataOld(this.state.map, data)))
+      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
   }
@@ -384,7 +391,7 @@ this.props.layers.forEach(({active,layers}) => {
   	this.forceUpdate();
 
   	layer.onFilterFetch(filterName, oldValue, value)
-      .then(data => layer.active && (layer.render(this.state.map), layer.receiveDataOld(this.state.map, data)))
+      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
 
@@ -402,7 +409,7 @@ this.props.layers.forEach(({active,layers}) => {
           this.forceUpdate();
 
           layer.onFilterFetch(filterName, oldValue, value)
-            .then(data => layer.active && (layer.render(this.state.map), layer.receiveDataOld(this.state.map, data)))
+            .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
             .then(() => --layer.loading)
             .then(() => this.forceUpdate());
         }
@@ -421,7 +428,7 @@ this.props.layers.forEach(({active,layers}) => {
 		this.forceUpdate();
 
   	layer.onLegendChange()
-			.then(data => layer.active && (layer.render(this.state.map), layer.receiveDataOld(this.state.map, data)))
+			.then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
 			.then(() => --layer.loading)
 			.then(() => this.forceUpdate());
   }
@@ -433,7 +440,7 @@ this.props.layers.forEach(({active,layers}) => {
   	this.forceUpdate();
 
   	layer.fetchData()
-			.then(data => layer.active && (layer.render(this.state.map), layer.receiveDataOld(this.state.map, data)))
+			.then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
 			.then(() => --layer.loading)
 			.then(() => this.forceUpdate());
   }
