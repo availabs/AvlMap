@@ -12,7 +12,7 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) 
   let legendContainerStyle = {
     width: '100%',
     display: 'flex',
-    color: theme.textColor 
+    color: theme.textColor
   }
 
   let colorBlock = {
@@ -29,7 +29,7 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) 
   }
   return (
     <div style={{width: '100%',  padding: 10, backgroundColor: theme.sidePanelHeaderBg}}>
-      <h5 style={{color: theme.textColor }}>{title}</h5>
+      <h5 style={{color: theme.textColorHl }}>{title}</h5>
       <div className='legend-container' style={legendContainerStyle}>
         {
           type === "linear" ?
@@ -39,7 +39,7 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) 
         }
       </div>
       <div style={{width:'100%', position: 'relative', right: -3}}>
-        { 
+        {
           type === "ordinal" ?
             domain.map(d => <div key={ d } style={ textBlock } >{ format(d) }</div>)
           : type === "linear" ?
@@ -56,7 +56,7 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title }) =>
   range = (type === "linear") ? scale.ticks(5).map(t => scale(t)) : range
   return (
     <div style={ { width: "100%", padding: "10px", backgroundColor: theme.sidePanelHeaderBg } }>
-      <h5 style={{color: theme.textColor }}>{title}</h5>
+      <h5 style={{color: theme.textColorHl }}>{title}</h5>
       <table>
         <tbody>
           {
@@ -97,7 +97,7 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title }) =>
         return d3scale.scaleLinear();
     }
   }
-  
+
   render() {
     const { vertical } = this.props // domain, range
 
