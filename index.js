@@ -351,7 +351,7 @@ this.props.layers.forEach(({active,layers}) => {
 
     layer.onSelect(selection)
       .then(() => layer.fetchData())
-      .then(data => layer.receiveData(this.state.map, data))
+      .then(data => layer.active && layer.receiveData(this.state.map, data))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
   }
@@ -384,7 +384,7 @@ this.props.layers.forEach(({active,layers}) => {
   	this.forceUpdate();
 
   	layer.onFilterFetch(filterName, oldValue, value)
-      .then(data => layer.receiveData(this.state.map, data))
+      .then(data => layer.active && layer.receiveData(this.state.map, data))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
 
@@ -402,7 +402,7 @@ this.props.layers.forEach(({active,layers}) => {
           this.forceUpdate();
 
           layer.onFilterFetch(filterName, oldValue, value)
-            .then(data => layer.receiveData(this.state.map, data))
+            .then(data => layer.active && layer.receiveData(this.state.map, data))
             .then(() => --layer.loading)
             .then(() => this.forceUpdate());
 
@@ -422,7 +422,7 @@ this.props.layers.forEach(({active,layers}) => {
 		this.forceUpdate();
 
   	layer.onLegendChange()
-			.then(data => layer.receiveData(this.state.map, data))
+			.then(data => layer.active && layer.receiveData(this.state.map, data))
 			.then(() => --layer.loading)
 			.then(() => this.forceUpdate());
   }
@@ -434,7 +434,7 @@ this.props.layers.forEach(({active,layers}) => {
   	this.forceUpdate();
 
   	layer.fetchData()
-			.then(data => layer.receiveData(this.state.map, data))
+			.then(data => layer.active && layer.receiveData(this.state.map, data))
 			.then(() => --layer.loading)
 			.then(() => this.forceUpdate());
   }

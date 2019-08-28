@@ -83,8 +83,6 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title }) =>
 
   getScale() {
     switch (this.props.type) {
-      case "linear":
-        return d3scale.scaleLinear();
       case "ordinal":
         return d3scale.scaleOrdinal();
       case "quantile":
