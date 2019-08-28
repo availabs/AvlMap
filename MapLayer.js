@@ -241,6 +241,11 @@ class MapLayer {
 	receiveData(map, data) {
 	}
 
+	render(map) {
+		console.warn("You are using the old fetchData / receiveData API. Use the new featchData / render API!");
+		return false;
+	}
+
   addOnClick(map) {
     this.onClick.layers.forEach(layer => {
       const func = e => this._mapClick(e, layer);
