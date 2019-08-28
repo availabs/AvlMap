@@ -140,10 +140,6 @@ class MapLayer {
 			this.removePopover(map);
 		}
 	}
-	onStyleChange(map) {
-		// this._onRemove(map);
-		this._onAdd(map);
-	}
 
   addOnHover(map) {
     this.onHover.layers.forEach(layer => {
@@ -246,6 +242,12 @@ class MapLayer {
 	}
 
 	render(map) {
+	}
+	onStyleChange(map) {
+		// this._onRemove(map);
+		this._onAdd(map);
+
+		this.render(map);
 	}
 
   addOnClick(map) {
