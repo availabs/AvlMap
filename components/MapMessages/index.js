@@ -290,7 +290,7 @@ class Message extends React.Component {
 		return (
 			<MessageStyled
 				className={ classnames({ dismissing, entering, confirm }) }
-				innerRef={ comp => this.comp = comp }
+				ref={ comp => this.comp = comp }
 				height={ height }
 				style={ {
 					zIndex,

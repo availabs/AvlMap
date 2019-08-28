@@ -92,7 +92,7 @@ export default class Slider extends Component {
     return (
       <SliderWrapper
         className={classnames('kg-slider', {...classSet})}
-        innerRef={this._saveRef}
+        ref={this._saveRef}
       >
         {this.createSlider(value / maxValue * 100)}
       </SliderWrapper>
