@@ -246,7 +246,6 @@ class MapLayer {
 	}
 
 	render(map) {
-		return false;
 	}
 
   addOnClick(map) {
