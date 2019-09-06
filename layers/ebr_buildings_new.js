@@ -1,20 +1,25 @@
 import React from "react"
 
-// import store from "store"
-// import { update } from "utils/redux-falcor/components/duck"
+import store from "store"
+import { update } from "utils/redux-falcor/components/duck"
 import { falcorGraph, falcorChunkerNice } from "store/falcorGraph"
+import { connect } from 'react-redux';
+import { reduxFalcor, UPDATE as REDUX_UPDATE } from 'utils/redux-falcor'
 
 import get from "lodash.get"
+import styled from "styled-components"
 
 import {
     scaleQuantile,
     scaleQuantize
 } from "d3-scale"
 import { extent } from "d3-array"
+import { format as d3format } from "d3-format"
 
 import { fnum } from "utils/sheldusUtils"
 
 import MapLayer from "components/AvlMap/MapLayer"
+import { register, unregister } from "components/AvlMap/ReduxMiddleware"
 
 import { getColorRange } from "constants/color-ranges";
 const LEGEND_COLOR_RANGE = getColorRange(5, "RdYlBu");
@@ -25,9 +30,14 @@ class EBRLayer extends MapLayer {
   onAdd(map) {
     super.onAdd(map);
 
+    register(this, REDUX_UPDATE, ["graph"]);
+
     const geoLevel = "cousubs";
 
-    return falcorGraph.get(["geo", "36", geoLevel], ["parcel", "meta", ["prop_class", "owner_type"]])
+    return falcorGraph.get(
+        ["geo", "36", geoLevel],
+        ["parcel", "meta", ["prop_class", "owner_type"]]
+      )
       .then(res => res.json.geo['36'][geoLevel])
       .then(geoids => {
         return falcorChunkerNice(["geo", geoids, "name"])
@@ -55,16 +65,21 @@ class EBRLayer extends MapLayer {
       // .then(() => store.dispatch(update(falcorGraph.getCache())))
       .then(() => this.doAction(["updateFilter", "area", ['3600101000']]))
   }
+  onRemove(map) {
+    super.onRemove(map);
+    unregister(this);
+  }
+  receiveMessage(action, data) {
+    this.falcorCache = data;
+  }
   onFilterFetch(filterName, oldValue, newValue) {
     if (filterName === "measure") {
       switch (newValue) {
         case "num_occupants":
           this.legend.format = IDENTITY;
-          this.legend.title = "Number of Occupants";
           break;
         case "replacement_value":
           this.legend.format = fnum;
-          this.legend.title = "Replacement Cost";
           break;
       }
     }
@@ -119,9 +134,10 @@ class EBRLayer extends MapLayer {
       .then(buildingids => {
         if (!buildingids.length) return;
 
-        return falcorChunkerNice(["building", "byId", buildingids, ["replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
+        return falcorChunkerNice(["building", "byId", buildingids, ["address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
       })
-      .then(() => this.falcorCache = falcorGraph.getCache())
+      .then(() => store.dispatch(update(falcorGraph.getCache())))
+      // .then(() => this.falcorCache = falcorGraph.getCache())
   }
   makeCheckPropCategoryFilter() {
     const propCategoryFilters = this.filters.prop_category.value;
@@ -201,6 +217,9 @@ class EBRLayer extends MapLayer {
           riskFilter = this.filters.risk.value,
           atRiskIds = [];
 
+        this.infoBoxes["measure"].show = Boolean(data.length);
+        this.measureData = data;
+
         const colorScale = this.getColorScale(data),
           colors = data.reduce((a, c) => {
             a[c.id] = colorScale(c.value);
@@ -238,47 +257,6 @@ class EBRLayer extends MapLayer {
       	)
       })
   }
-  // receiveData(map, [filteredBuildingids = [], data = []]) {
-  //   const coloredBuildingIds = [],
-  //     riskFilter = this.filters.risk.value,
-  //     atRiskIds = [];
-  //
-  //   const colorScale = this.getColorScale(data),
-  //     colors = data.reduce((a, c) => {
-  //       a[c.id] = colorScale(c.value);
-  //       coloredBuildingIds.push(c.id.toString());
-  //       if (riskFilter.reduce((aa, cc) => aa || c.risks.includes(cc), false)) {
-  //         atRiskIds.push(c.id.toString());
-  //       }
-  //       return a;
-  //     }, {});
-  //
-  //   const FILTERED_COLOR = "#666",
-  //     DEFAULT_COLOR = "#000";
-  //
-  //   this.falcorCache = falcorGraph.getCache();
-  //
-  //   map.setPaintProperty(
-  //     'ebr',
-  //     'fill-outline-color',
-  // 		["match", ["to-string", ["get", "id"]],
-  //       atRiskIds.length ? atRiskIds : "no-at-risk", "#fff",
-  //       coloredBuildingIds.length ? coloredBuildingIds.filter(id => !atRiskIds.includes(id)) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
-  //       filteredBuildingids.length ? filteredBuildingids.filter(id => !atRiskIds.includes(id)) : "no-filtered", FILTERED_COLOR,
-  //       DEFAULT_COLOR
-  //     ]
-  //   )
-  //
-  // 	map.setPaintProperty(
-  // 		'ebr',
-  // 		'fill-color',
-  // 		["match", ["to-string", ["get", "id"]],
-  //       coloredBuildingIds.length ? coloredBuildingIds : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
-  //       filteredBuildingids.length ? filteredBuildingids : "no-filtered", FILTERED_COLOR,
-  //       DEFAULT_COLOR
-  //     ]
-  // 	)
-  // }
   getColorScale(data) {
     const { type, range } = this.legend;
     switch (type) {
@@ -300,11 +278,21 @@ class EBRLayer extends MapLayer {
   }
 }
 
+const getFilterName = (layer, filterName, value = null) =>
+  value === null ?
+    layer.filters[filterName].domain.reduce((a, c) => c.value === layer.filters[filterName].value ? c.name : a, null)
+  :
+    layer.filters[filterName].domain.reduce((a, c) => c.value === value ? c.name : a, null)
+
+const getPropClassName = (falcorCache, value) =>
+  get(falcorCache, ["parcel", "meta", "prop_class", "value"], [])
+    .reduce((a, c) => c.value == value ? c.name : a, "Unknown")
+
 export default (options = {}) =>
   new EBRLayer("Enhanced Building Risk", {
     active: true,
     falcorCache: {},
-    buildingids: [],
+    measureData: [],
     sources: [
       { id: "nys_buildings_avail",
         source: {
@@ -313,16 +301,6 @@ export default (options = {}) =>
         }
       }
     ],
-    legend: {
-      title: "Replacement Cost",
-      type: "quantile",
-      types: ["quantile", "quantize"],
-      vertical: false,
-      range: LEGEND_COLOR_RANGE,
-      active: true,
-      domain: [],
-      format: fnum
-    },
     layers: [
       { 'id': 'ebr',
           'source': 'nys_buildings_avail',
@@ -335,6 +313,16 @@ export default (options = {}) =>
 
       }
     ],
+    legend: {
+      title: ({ layer }) => <>{ getFilterName(layer, "measure") }</>,
+      type: "quantile",
+      types: ["quantile", "quantize"],
+      vertical: false,
+      range: LEGEND_COLOR_RANGE,
+      active: true,
+      domain: [],
+      format: fnum
+    },
     popover: {
       layers: ["ebr"],
       dataFunc: function(topFeature, features) {
@@ -342,8 +330,11 @@ export default (options = {}) =>
 
         const graph = get(this.falcorCache, ["building", "byId", id], {}),
           attributes = [
+            [null, "address"],
             ["Name", "name"],
             ["Replacement Cost", "replacement_value", fnum],
+            ["Owner Type", "owner_type", d => getFilterName(this, "owner_type", d)],
+            ["Land Use", "prop_class", d => getPropClassName(this.falcorCache, d)],
             ["Type", "type"],
             ["Critical Facilities (FCode)", "critical"],
             ["Flood Zone", "flood_zone"]
@@ -351,14 +342,17 @@ export default (options = {}) =>
 
         const data = attributes.reduce((a, [name, key, format = IDENTITY]) => {
           const data = get(graph, [key], false)
-          if (data) {
+          if (data && (name === null)) {
+            a.push(format(data));
+          }
+          else if (data && (name !== null)) {
             a.push([name, format(data)]);
           }
           return a;
         }, [])
 
         if (data.length) {
-          data.unshift(["Building ID", id])
+          data.push(["Building ID", id]);
           return data;
         }
         return data;
@@ -414,11 +408,237 @@ export default (options = {}) =>
         name: "Measure",
         type: "single",
         domain: [
-          { value: "replacement_value", name: "Replacement Value" },
+          { value: "replacement_value", name: "Replacement Cost" },
           { value: "num_occupants", name: "Number of Occupants" }
         ],
         value: "replacement_value"
       }
     },
+    infoBoxes: {
+      measure: {
+        title: ({ layer }) => <>{ `${ getFilterName(layer, "measure") } Info` }</>,
+        comp: MeasureInfoBox,
+        show: false
+      }
+    },
+    onClick: {
+      layers: ["ebr"],
+      dataFunc: function(features) {
+        if (!features.length) return;
+
+        const props = { ...features[0].properties };
+        this.modals.building.show
+          ? this.doAction(["updateModal", "building", props])
+          : this.doAction(["toggleModal", "building", props]);
+      }
+    },
+    modals: {
+      building: {
+        comp: BuildingModal,
+        show: false
+      }
+    },
     ...options
   })
+
+const MeasureInfoBox = ({ layer }) => {
+  let format = d => d;
+  switch (layer.filters.measure.value) {
+    case "replacement_value":
+      format = fnum;
+      break;
+    case "num_occupants":
+      format = d3format(",d");
+      break;
+  }
+  return (
+    <table className="table table-sm"
+      style={ {
+        margin: "0px",
+        fontSize: "1rem"
+      } }>
+      <tbody>
+        <tr>
+          <td>Total</td>
+          <td>{ format(layer.measureData.reduce((a, c) => a + c.value, 0)) }</td>
+        </tr>
+        {
+          layer.filters.risk.value.map(r =>
+            <tr key={ r }>
+              <td>{ `${ getFilterName(layer, "risk", r) } Total` }</td>
+              <td>{ format(layer.measureData.filter(({ risks }) => risks.includes(r)).reduce((a, c) => a + c.value, 0)) }</td>
+            </tr>
+          )
+        }
+      </tbody>
+    </table>
+  )
+}
+const TabBase = ({ name, props, data, meta }) => {
+  const rows = props.reduce((a, c) => {
+    const d = get(data, [c], null);
+    a.push(
+      <tr key={ c }>
+        <td>{ formatPropName(c) }</td>
+        <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
+      </tr>
+    )
+    return a;
+  }, [])
+  return (
+    <table>
+      <tbody>
+        { rows }
+      </tbody>
+    </table>
+  )
+}
+
+const TABS = [
+  { name: "Basic",
+    props: [
+      "address",
+      "name",
+      "prop_class",
+      "owner_type",
+      "replacement_value",
+      "critical"
+    ] },
+  { name: "Occupany",
+    props: [
+      "num_residents",
+      "num_employees",
+      "num_occupants",
+      "num_vehicles_inhabitants"
+    ] },
+  { name: "Structural",
+    props: [
+      "num_units",
+      "basement",
+      "building_type",
+      "roof_type",
+      "height",
+      "num_stories",
+      "structure_type",
+      "bldg_style",
+      "sqft_living",
+      "nbr_kitchens",
+      "nbr_full_baths",
+      "nbr_bedrooms",
+      "first_floor_elevation"
+    ] },
+  { name: "Services",
+    props: [
+      "heat_type"
+    ] },
+  { name: "Commercial",
+    props: [
+      "replacement_value",
+      "naics_code",
+      "census_industry_code",
+      "contents_replacement_value",
+      "inventory_replacement_value",
+      "establishment_revenue",
+      "business_hours"
+    ] },
+  { name: "Risk",
+    props: [
+      "seismic_zone",
+      "flood_plain",
+      "flood_depth",
+      "flood_duration",
+      "flood_velocity",
+      "high_wind_speed",
+      "soil_type",
+      "storage_hazardous_materials",
+      "topography"
+    ] }
+]
+
+const formatPropName = prop =>
+  prop.split("_")
+    .map(string => string[0].toUpperCase() + string.slice(1))
+    .map(string => string.replace(/Nbr|Num/, "Number of"))
+    .map(string => string.replace("Prop", "Property"))
+    .map(string => string.replace("Value", "Cost"))
+    .join(" ")
+const formatPropValue = (prop, value, meta) => {
+  const string = get(meta, [prop, "value"], [])
+    .reduce((a, c) => c.value === value ? c.name : a, value);
+  if (/value/.test(prop)) {
+    return d3format("$,d")(string);
+  }
+  return string;
+}
+
+
+class BuildingModalBase extends React.Component {
+  state = {
+    tab: TABS[0].name
+  }
+  fetchFalcorDeps() {
+    return this.props.falcor.get(
+      ["building", "byId", this.props.id, TABS.reduce((a, c) => [...a, ...c.props], [])],
+      ["parcel", "meta", ["prop_class", "owner_type"]]
+    )
+    // .then(res => this.props.layer.falcorCache = this.props.falcor.getCache())
+  }
+  renderTab() {
+    const data = TABS.find(t => t.name === this.state.tab);
+    return (
+      <TabBase { ...data }
+        meta={ this.props.parcelMeta }
+        data={ this.props.buildingData }/>
+    )
+  }
+  render() {
+    const { layer, theme, buildingData } = this.props,
+      address = get(buildingData, "address", false),
+      name = get(buildingData, "name", false);
+    return (
+      <div style={ { color: theme.textColor, paddingTop: "15px", width: "100%", minWidth: "500px" }}>
+        { address || name ?
+          <h4 style={ { color: theme.textColorHl } }>
+            { address || name }
+          </h4>
+          : null
+        }
+        <div style={ { width: "100%", display: "flex", padding: "10px 0px" } }>
+          { TABS.map(({ name }) =>
+              <TabSelector name={ name } key={ name }
+                isActive={ name === this.state.tab }
+                select={ tab => this.setState({ tab }) }/>
+            )
+          }
+        </div>
+        { this.renderTab() }
+      </div>
+    )
+  }
+}
+const mapStateToProps = (state, { id }) => ({
+  buildingData: get(state, ["graph", "building", "byId", id], {}),
+  parcelMeta: get(state, ["graph", "parcel", "meta"], {})
+});
+const mapDispatchToProps = {};
+
+const BuildingModal = connect(mapStateToProps, mapDispatchToProps)(reduxFalcor(BuildingModalBase))
+
+const TabSelector = ({ name, isActive, select }) =>
+  <StyledTabSelector isActive={ isActive }
+    onClick={ e => select(name) }>
+    { name }
+  </StyledTabSelector>
+
+const StyledTabSelector = styled.div`
+  border-bottom: ${ props => props.isActive ? `2px solid ${ props.theme.textColorHl }` : 'none' };
+  color: ${ props => props.isActive ? props.theme.textColorHl : props.theme.textColor };
+  width: ${ 100 / TABS.length }%;
+  padding: 2px 5px;
+  transition: color 0.15s, background-color 0.15s;
+  :hover {
+    cursor: pointer;
+    color: ${ props => props.theme.textColorHl };
+    background-color: #666;
+  }
+`

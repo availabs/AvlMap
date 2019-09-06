@@ -466,6 +466,10 @@ class MapLayer {
     const canvas = map.getCanvasContainer();
     canvas.removeEventListener('mousedown', this._mousedown, true);
 	}
+
+	receiveMessage(action, data) {
+		console.warn("<MapLayer.receiveMessage>", this.name, action, "You should override this method!");
+	}
 }
 
 export default MapLayer

@@ -10,7 +10,7 @@ import DraggableModal from "components/AvlStuff/DraggableModal"
 
 const ModalWrapper = styled.div`
 	${ props => props.theme.scrollBar };
-	background-color: ${ props => props.theme.panelBackground };
+	/*background-color: ${ props => props.theme.panelBackground };*/
 	display: inline-flex;
 	position: relative;
 	pointer-events: all;

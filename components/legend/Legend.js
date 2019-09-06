@@ -8,7 +8,15 @@ import React, {Component} from 'react';
 
 import * as d3scale from "d3-scale"
 
-const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) => {
+const Title = ({ Title, layer, theme }) =>
+  <h5 style={ { color: theme.textColorHl } }>
+    { typeof Title === "function" ?
+      <Title layer={ layer }/>
+      : Title
+    }
+  </h5>
+
+const HorizontalLegend = ({ theme, type, format, scale, range, domain, title, layer }) => {
   let legendContainerStyle = {
     width: '100%',
     display: 'flex',
@@ -29,7 +37,7 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) 
   }
   return (
     <div style={{width: '100%',  padding: 10, backgroundColor: theme.sidePanelHeaderBg}}>
-      <h5 style={{color: theme.textColorHl }}>{title}</h5>
+      <Title Title={ title } layer={ layer } theme={ theme }/>
       <div className='legend-container' style={legendContainerStyle}>
         {
           type === "linear" ?
@@ -52,11 +60,11 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title }) 
   )
 }
 
-const VerticalLegend = ({ theme, type, format, scale, range, domain, title }) => {
+const VerticalLegend = ({ theme, type, format, scale, range, domain, title, layer }) => {
   range = (type === "linear") ? scale.ticks(5).map(t => scale(t)) : range
   return (
     <div style={ { width: "100%", padding: "10px", backgroundColor: theme.sidePanelHeaderBg } }>
-      <h5 style={{color: theme.textColorHl }}>{title}</h5>
+      <Title Title={ title } layer={ layer } theme={ theme }/>
       <table>
         <tbody>
           {

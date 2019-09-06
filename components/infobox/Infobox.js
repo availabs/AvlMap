@@ -101,7 +101,10 @@ class InfoBox extends Component {
 
     const { theme, layers } = this.props,
       activeLayers = layers.filter(l => l.active),
-      activeLegends = activeLayers.reduce((a, c) => c.legend && c.legend.active && c.legend.domain.length ? a.concat(c.legend) : a, []),
+      activeLegends = activeLayers
+        .reduce((a, c) =>
+          c.legend && c.legend.active && c.legend.domain.length ? a.concat({ legend: c.legend, layer: c }) : a
+        , []),
       activeInfoBoxes = activeLayers
         .reduce((a, c) =>
           c.infoBoxes ?
@@ -132,7 +135,7 @@ class InfoBox extends Component {
             <SidebarContent className='sidebar-content' isOpen={ isOpen }>
               {
                 activeLegends.map((l, i) =>
-                  <Legend key={ i } theme={ this.props.theme } { ...l }/>
+                  <Legend key={ i } theme={ this.props.theme } { ...l.legend } layer={ l.layer }/>
                 )
               }
               {
