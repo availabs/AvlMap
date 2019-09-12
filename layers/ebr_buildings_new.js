@@ -22,7 +22,7 @@ import MapLayer from "components/AvlMap/MapLayer"
 import { register, unregister } from "components/AvlMap/ReduxMiddleware"
 
 import { getColorRange } from "constants/color-ranges";
-const LEGEND_COLOR_RANGE = getColorRange(5, "RdYlBu");
+const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 
 const IDENTITY = i => i;
 
