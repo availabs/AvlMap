@@ -17,7 +17,7 @@ import { ScalableLoading } from "components/loading/loadingPage"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
-import geoViewport from "@mapbox/geo-viewport"
+// import geoViewport from "@mapbox/geo-viewport"
 
 import './avlmap.css'
 
