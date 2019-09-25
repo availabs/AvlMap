@@ -144,6 +144,7 @@ class AvlMap extends React.Component {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
 
+          layer._onAdd(map);
           ++layer.loading;
 					Promise.resolve(layer.onAdd(map))
             .then(() => --layer.loading)
@@ -278,6 +279,7 @@ class AvlMap extends React.Component {
   		layer.active = true;
       this._addLayer(this.state.map, layer);
       ++layer.loading;
+      layer._onAdd(this.state.map);
       Promise.resolve(layer.onAdd(this.state.map))
         .then(() => --layer.loading)
         .then(() => this.forceUpdate());
@@ -288,6 +290,7 @@ class AvlMap extends React.Component {
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && layer.active && !layer.loading) {
   		layer.active = false;
+  		layer._onRemove(this.state.map);
   		layer.onRemove(this.state.map);
 
       const sourcesToRemove = []
