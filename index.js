@@ -353,6 +353,8 @@ class AvlMap extends React.Component {
   }
 
   onSelect(layerName, selection) {
+    if (!this.state.map) return;
+    
   	const layer = this.getLayer(layerName)
 
     layer.selection = selection;
@@ -379,7 +381,7 @@ class AvlMap extends React.Component {
   }
 
   updateFilter(layerName, filterName, value) {
-// console.log('updateFilter', layerName, filterName, value);
+    if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
@@ -421,6 +423,8 @@ class AvlMap extends React.Component {
   }
 
   updateLegend(layerName, update) {
+    if (!this.state.map) return;
+
   	const layer = this.getLayer(layerName);
 
 		layer.legend = {
@@ -437,6 +441,8 @@ class AvlMap extends React.Component {
   }
 
   fetchLayerData(layerName) {
+    if (!this.state.map) return;
+
   	const layer = this.getLayer(layerName);
 
   	++layer.loading;
