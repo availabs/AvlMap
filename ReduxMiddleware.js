@@ -21,7 +21,7 @@ export const register = (comp, action, path = []) => {
 }
 export const unregister = (comp, action = null) => {
   if (action === null) {
-    LISTENERS.keys().forEach(a => unregister(comp, a));
+    [...LISTENERS.keys()].forEach(a => unregister(comp, a));
   }
   else if (LISTENERS.has(action)) {
     const filtered = LISTENERS.get(action).filter(d => d.comp !== comp);
