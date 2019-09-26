@@ -18,8 +18,8 @@ import { format as d3format } from "d3-format"
 
 import { fnum } from "utils/sheldusUtils"
 
-import MapLayer from "components/AvlMap/MapLayer"
-import { register, unregister } from "components/AvlMap/ReduxMiddleware"
+import MapLayer from "../MapLayer"
+import { register, unregister } from "../ReduxMiddleware"
 
 import { getColorRange } from "constants/color-ranges";
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
@@ -28,8 +28,6 @@ const IDENTITY = i => i;
 
 class EBRLayer extends MapLayer {
   onAdd(map) {
-    super.onAdd(map);
-
     register(this, REDUX_UPDATE, ["graph"]);
 
     const geoLevel = "cousubs";
@@ -58,15 +56,14 @@ class EBRLayer extends MapLayer {
           .then(() => {
             this.filters.owner_type.domain =
               get(falcorGraph.getCache(), ["parcel", "meta", "owner_type", "value"], [])
-              .filter(({ name, value }) => name !== "Unknown")
-              .sort((a, b) => +a.value - +b.value);
+                .filter(({ name, value }) => name !== "Unknown")
+                .sort((a, b) => +a.value - +b.value);
           })
       })
       // .then(() => store.dispatch(update(falcorGraph.getCache())))
       .then(() => this.doAction(["updateFilter", "area", ['3600101000']]))
   }
   onRemove(map) {
-    super.onRemove(map);
     unregister(this);
   }
   receiveMessage(action, data) {
