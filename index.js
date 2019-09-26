@@ -17,7 +17,7 @@ import { ScalableLoading } from "components/loading/loadingPage"
 
 import DEFAULT_THEME from 'components/common/themes/dark'
 
-import geoViewport from "@mapbox/geo-viewport"
+// import geoViewport from "@mapbox/geo-viewport"
 
 import './avlmap.css'
 
@@ -144,6 +144,7 @@ class AvlMap extends React.Component {
           this._addLayer(map, layer, activeLayers);
           activeLayers.push(layer.name);
 
+          layer._onAdd(map);
           ++layer.loading;
 					Promise.resolve(layer.onAdd(map))
             .then(() => --layer.loading)
@@ -278,6 +279,7 @@ class AvlMap extends React.Component {
   		layer.active = true;
       this._addLayer(this.state.map, layer);
       ++layer.loading;
+      layer._onAdd(this.state.map);
       Promise.resolve(layer.onAdd(this.state.map))
         .then(() => --layer.loading)
         .then(() => this.forceUpdate());
@@ -288,6 +290,7 @@ class AvlMap extends React.Component {
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && layer.active && !layer.loading) {
   		layer.active = false;
+  		layer._onRemove(this.state.map);
   		layer.onRemove(this.state.map);
 
       const sourcesToRemove = []
@@ -350,6 +353,8 @@ class AvlMap extends React.Component {
   }
 
   onSelect(layerName, selection) {
+    if (!this.state.map) return;
+    
   	const layer = this.getLayer(layerName)
 
     layer.selection = selection;
@@ -376,7 +381,7 @@ class AvlMap extends React.Component {
   }
 
   updateFilter(layerName, filterName, value) {
-// console.log('updateFilter', layerName, filterName, value);
+    if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
   		oldValue = layer.filters[filterName].value;
@@ -418,6 +423,8 @@ class AvlMap extends React.Component {
   }
 
   updateLegend(layerName, update) {
+    if (!this.state.map) return;
+
   	const layer = this.getLayer(layerName);
 
 		layer.legend = {
@@ -434,6 +441,8 @@ class AvlMap extends React.Component {
   }
 
   fetchLayerData(layerName) {
+    if (!this.state.map) return;
+
   	const layer = this.getLayer(layerName);
 
   	++layer.loading;
