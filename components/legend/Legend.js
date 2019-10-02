@@ -7,6 +7,7 @@ import React, {Component} from 'react';
 // import EpochSlider from '../slider/epochSlider'
 
 import * as d3scale from "d3-scale"
+import * as d3format from "d3-format"
 
 const Title = ({ Title, layer, theme }) =>
   <h5 style={ { color: theme.textColorHl } }>
@@ -105,15 +106,22 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title, laye
   }
 
   render() {
-    const { vertical } = this.props // domain, range
+    let { vertical, format, domain, range } = this.props;
 
     const scale = this.getScale()
-      .domain(this.props.domain)
-      .range(this.props.range)
+      .domain(domain)
+      .range(range);
+
+    if (typeof format === "string") {
+      format = d3format.format(format);
+    }
 
     return vertical ?
-        <VerticalLegend { ...this.props } scale={ scale }/>
-      : <HorizontalLegend { ...this.props } scale={ scale }/>;
+      <VerticalLegend { ...this.props }
+        scale={ scale } format={ format }/>
+    :
+      <HorizontalLegend { ...this.props }
+        scale={ scale } format={ format }/>;
   }
 }
 

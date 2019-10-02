@@ -10,8 +10,12 @@ import onClickOutside from 'react-onclickoutside';
 
 import SingleSelectFilter from 'components/filters/single-select-filter'
 
+import { Tooltip } from "components/common/styled-components"
+
 import ColorPalette from "./colorPalette"
 import COLOR_RANGES from "constants/color-ranges"
+
+import deepequal from "deep-equal"
 
 const StyledFilterPanel = styled.div`
   margin-bottom: 12px;
@@ -93,14 +97,26 @@ class ColorSelector extends Component {
             }
           {
             COLOR_RANGES[this.state.length]
-              .filter(cr => legend.type !== "ordinal" || cr.type === "qualitative")
+              // .filter(cr => legend.type !== "ordinal" || cr.type === "qualitative")
               .map((cr, i) => {
-                return <div key={ i } onClick={ e => this.props.updateLegend(this.props.layer.name, { range: cr.colors.slice() }) }>
-                  <ColorPalette colors={ cr.colors }
-                    isReversed={ this.state.isReversed }
-                    isSelected={ (cr.colors.length === legend.range.length) && cr.colors.reduce((a, c, i) => a && c === legend.range[i], true) }
-                  />
-                </div>
+                return (
+                  <div key={ cr.name }
+                    onClick={ e => this.props.updateLegend(this.props.layer.name, { range: cr.colors.slice() }) }
+                		data-tip data-for={ `legend-color-item-${ cr.name }` }
+                    style={ { cursor: "pointer" } }>
+                    <ColorPalette colors={ cr.colors }
+                      isReversed={ this.state.isReversed }
+                      isSelected={ deepequal(cr.colors, legend.range) }
+                    />
+      		          <Tooltip
+      		            id={ `legend-color-item-${ cr.name }` }
+      		            effect="solid"
+                      place="right"
+                      delayShow={ 500 }>
+      		            <span>{ cr.name }</span>
+      		          </Tooltip>
+                  </div>
+                )
               })
           }
           </StyledPanelDropdown>

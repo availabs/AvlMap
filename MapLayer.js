@@ -206,8 +206,7 @@ class MapLayer {
   }
 
   doAction([action, ...args]) {
-// console.log(this.name, action, ...args)
-    if (this.map && this.component && this.component[action]) {
+    if (this.component && this.component[action]) {
       this.component[action](this.name, ...args)
     }
   }
