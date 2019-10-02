@@ -236,7 +236,6 @@ class MapLayer {
 	receiveDataOld(...args) {
 		if (this.receiveData) {
 			console.warn("<AvlMap> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
-console.log("receiveDataOld", args)
 			this.receiveData.call(this, ...args);
 		}
 	}

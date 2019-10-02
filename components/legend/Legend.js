@@ -21,7 +21,9 @@ const HorizontalLegend = ({ theme, type, format, scale, range, domain, title, la
   let legendContainerStyle = {
     width: '100%',
     display: 'flex',
-    color: theme.textColor
+    color: theme.textColor,
+    borderRadius: "4px",
+    overflow: "hidden"
   }
 
   let colorBlock = {

@@ -151,11 +151,12 @@ class AvlMap extends React.Component {
           ++layer.loading;
 					Promise.resolve(layer.onAdd(map))
             .then(() => --layer.loading)
+            .then(() => layer.render(map))
             .then(() => this.forceUpdate());
       	}
       })
 
-      if(this.props.fitBounds){
+      if (this.props.fitBounds){
         map.fitBounds(this.props.fitBounds)
       }
       this.setState({ map, activeLayers })
@@ -285,6 +286,7 @@ class AvlMap extends React.Component {
       layer._onAdd(this.state.map);
       Promise.resolve(layer.onAdd(this.state.map))
         .then(() => --layer.loading)
+        .then(() => layer.render(this.state.map))
         .then(() => this.forceUpdate());
       this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
   	}
