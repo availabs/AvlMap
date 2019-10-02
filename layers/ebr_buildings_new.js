@@ -95,6 +95,7 @@ class EBRLayer extends MapLayer {
     return this.fetchData();
   }
   getBuildingIds() {
+    console.log('in get building ids')
     const geoids = this.filters.area.value;
 
     if (!geoids.length) return Promise.resolve([]);
@@ -103,25 +104,26 @@ class EBRLayer extends MapLayer {
       .then(res => {
         let requests =  geoids.map(geoid => {
           const length = res.json.building.byGeoid[geoid].length;
-          return ["building", "byGeoid", geoid, "byIndex", { from: 0, to: length-1}, "id"]
+          return ["building", "byGeoid", geoid, "byIndex", { from: 0, to: length-1}, ["id","address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]]
         })
         return requests;
       })
       .then(requests => {
         return falcorGraph.get(...requests)
           .then(res => {
-            const buildingids = [],
-              graph = get(falcorGraph.getCache(), ["building", "byGeoid"], {});
 
+            const buildingids = [],
+              graph = get(res.json, ["building", "byGeoid"], {});
+              
             geoids.forEach(geoid => {
               const byIndex = get(graph, [geoid, "byIndex"], {});
-
               Object.values(byIndex).forEach(({ id }) => {
-                if (id.value) {
-                  buildingids.push(id.value)
+                if (id) {
+                  buildingids.push(id)
                 }
               })
             })
+            console.log('buildingids', buildingids)
             return buildingids;
           })
       })
@@ -129,6 +131,7 @@ class EBRLayer extends MapLayer {
   fetchData() {
     return this.getBuildingIds()
       .then(buildingids => {
+        console.log('got buildingids')
         if (!buildingids.length) return;
 
         return falcorChunkerNice(["building", "byId", buildingids, ["address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
