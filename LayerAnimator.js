@@ -48,13 +48,12 @@ export default class Animator {
         this.requests.push({ callback, meta })
       }
       else {
-        const request = {
+        this.requests.push({
           to,
           callback,
           meta,
           animateIf
-        };
-        this.requests.push(request);
+        });
       }
     }
     this.getRequest();
