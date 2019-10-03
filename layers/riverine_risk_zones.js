@@ -27,9 +27,8 @@ const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const IDENTITY = i => i;
 
 class RiverineRiskZones extends MapLayer{
-    // register a filter.onChange
-    onFil
 }
+
 
 export default (options = {}) =>
     new RiverineRiskZones("Riverine Risk Zones", {
@@ -49,8 +48,31 @@ export default (options = {}) =>
                 'type': 'fill',
                 'minzoom': 8,
                 'paint': {
-                    'fill-color': '#df3434'
-                }
+                    'fill-color': ["interpolate",
+                        ["linear"],
+                        ["get", "depth_m"],
+                        0,
+                        "hsl(211, 0%, 100%)",
+                        10,
+                        "hsl(211, 75%, 53%)",
+                        20,
+                        "hsl(211, 83%, 39%)",
+                        30,
+                        "hsl(211, 64%, 44%)",
+                        40,
+                        "hsl(211, 91%, 33%)",
+                        50,
+                        "hsl(211, 83%, 31%)",
+                        60,
+                        "hsl(211, 35%, 33%)",
+                        70,
+                        "hsl(211, 89%, 38%)",
+                        80,
+                        "hsl(211, 83%, 31%)",
+                        83,
+                        "hsl(211, 83%, 31%)"
+                    ]
+                },
 
             }
         ],
@@ -87,7 +109,31 @@ export default (options = {}) =>
                                 'type': 'fill',
                                 'minzoom': 8,
                                 'paint': {
-                                    'fill-color': '#FFC300'
+                                    'fill-color': ["interpolate",
+                                        ["linear"],
+                                        ["get", "depth_m"],
+                                        0,
+                                        "hsl(211, 0%, 100%)",
+                                        10,
+                                        "hsl(211, 75%, 53%)",
+                                        20,
+                                        "hsl(211, 83%, 39%)",
+                                        30,
+                                        "hsl(211, 64%, 44%)",
+                                        40,
+                                        "hsl(211, 91%, 33%)",
+                                        50,
+                                        "hsl(211, 83%, 31%)",
+                                        60,
+                                        "hsl(211, 35%, 33%)",
+                                        70,
+                                        "hsl(211, 89%, 38%)",
+                                        80,
+                                        "hsl(211, 83%, 31%)",
+                                        83,
+                                        "hsl(211, 83%, 31%)"
+                                    ]
+
                                 }
                             });
                         }
@@ -127,12 +173,34 @@ export default (options = {}) =>
                                 'type': 'fill',
                                 'minzoom': 8,
                                 'paint': {
-                                    'fill-color': '#df3434'
+                                    'fill-color': ["interpolate",
+                                        ["linear"],
+                                        ["get", "depth_m"],
+                                        0,
+                                        "hsl(211, 0%, 100%)",
+                                        10,
+                                        "hsl(211, 75%, 53%)",
+                                        20,
+                                        "hsl(211, 83%, 39%)",
+                                        30,
+                                        "hsl(211, 64%, 44%)",
+                                        40,
+                                        "hsl(211, 91%, 33%)",
+                                        50,
+                                        "hsl(211, 83%, 31%)",
+                                        60,
+                                        "hsl(211, 35%, 33%)",
+                                        70,
+                                        "hsl(211, 89%, 38%)",
+                                        80,
+                                        "hsl(211, 83%, 31%)",
+                                        83,
+                                        "hsl(211, 83%, 31%)"
+                                    ]
                                 }
                             });
                         }
                     });
-
                 }
             }
         }
