@@ -84,7 +84,7 @@ class AvlMap extends React.Component {
       messages: [],
       isOpen: true,
       transitioning: false,
-      style: props.style ? { name: "Use Styles Prop", style: props.style } : props.styles[0]
+      style: props.style ? { name: "Use Styles Prop!", style: props.style } : props.styles[0]
   	}
     this.MOUNTED = false;
     this.container = React.createRef();
@@ -132,7 +132,10 @@ class AvlMap extends React.Component {
         logo.style.display = 'none';
       })
 
-    this.props.layers.forEach(layer => layer.initComponent(this));
+    this.props.layers.forEach(layer => {
+      layer.version = layer.version || 1.0;
+      layer.initComponent(this)
+    });
 
     map.on('load',  () => {
       const activeLayers = [];
@@ -148,11 +151,12 @@ class AvlMap extends React.Component {
           ++layer.loading;
 					Promise.resolve(layer.onAdd(map))
             .then(() => --layer.loading)
+            .then(() => layer.render(map))
             .then(() => this.forceUpdate());
       	}
       })
 
-      if(this.props.fitBounds){
+      if (this.props.fitBounds){
         map.fitBounds(this.props.fitBounds)
       }
       this.setState({ map, activeLayers })
@@ -282,6 +286,7 @@ class AvlMap extends React.Component {
       layer._onAdd(this.state.map);
       Promise.resolve(layer.onAdd(this.state.map))
         .then(() => --layer.loading)
+        .then(() => layer.render(this.state.map))
         .then(() => this.forceUpdate());
       this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
   	}
@@ -354,7 +359,7 @@ class AvlMap extends React.Component {
 
   onSelect(layerName, selection) {
     if (!this.state.map) return;
-    
+
   	const layer = this.getLayer(layerName)
 
     layer.selection = selection;
@@ -389,7 +394,12 @@ class AvlMap extends React.Component {
 	  layer.filters[filterName].value = value;
 
   	if (layer.filters[filterName].onChange) {
-  		layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
+      if (layer.version >= 2) {
+        layer.filters[filterName].onChange.call(layer, oldValue, value);
+      }
+      else {
+        layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
+      }
   	}
 
   	++layer.loading;
@@ -407,7 +417,12 @@ class AvlMap extends React.Component {
         if (layer.active) {
 
           if (layer.filters[filterName].onChange) {
-            layer.filters[filterName].onChange(this.state.map, layer, value, oldValue)
+            if (layer.version >= 2) {
+              layer.filters[filterName].onChange.call(layer, oldValue, value);
+            }
+            else {
+              layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
+            }
           }
 
           ++layer.loading;
