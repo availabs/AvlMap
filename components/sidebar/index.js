@@ -9,7 +9,7 @@ import { Layers, Crosshairs } from "components/common/icons"
 
 import { Tooltip } from 'components/common/styled-components';
 
-//import AccordionSelector from "components/AvlStuff/AccordionSelector"
+import AccordionSelector from "components/AvlStuff/AccordionSelector"
 
 import deepequal from "deep-equal"
 import styled from "styled-components"
