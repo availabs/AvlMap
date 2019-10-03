@@ -391,13 +391,15 @@ class AvlMap extends React.Component {
     if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
-  		oldValue = layer.filters[filterName].value;
+      filter = layer.filters[filterName],
+  		oldValue = filter.value,
+      domain = filter.domain;
 
-	  layer.filters[filterName].value = value;
+	  filter.value = value;
 
   	if (layer.filters[filterName].onChange) {
       if (layer.version >= 2) {
-        layer.filters[filterName].onChange.call(layer, oldValue, value);
+        layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
       }
       else {
         layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
@@ -414,13 +416,19 @@ class AvlMap extends React.Component {
 
     if (layer.filters[filterName].refLayers) {
       layer.filters[filterName].refLayers.forEach(refLayerName => {
-        const layer = this.getLayer(refLayerName);
-        layer.filters[filterName].value = value;
+
+      	const layer = this.getLayer(refLayerName),
+          filter = layer.filters[filterName],
+      		oldValue = filter.value,
+          domain = filter.domain;
+
+        filter.value = value;
+
         if (layer.active) {
 
           if (layer.filters[filterName].onChange) {
             if (layer.version >= 2) {
-              layer.filters[filterName].onChange.call(layer, oldValue, value);
+              layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
             }
             else {
               layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
