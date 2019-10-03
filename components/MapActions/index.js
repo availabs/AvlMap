@@ -141,7 +141,7 @@ class MapActions extends React.Component {
 		            id={ id }
 		            effect="solid"
 		            place="right">
-		            <span>{ tooltip }</span>
+		            <span>{ typeof tooltip === "function" ? tooltip({ layer }) : tooltip }</span>
 		          </Tooltip>
 
 		          { !disabled ? null :
