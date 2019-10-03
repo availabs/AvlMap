@@ -12,9 +12,9 @@ import * as d3transition from "d3-transition"
 const MessageContainer = styled.div`
 	left: 0px;
 	top: 0px;
-	position: fixed;
-	width: 100vw;
-	height: 100vh;
+	position: absolute;
+	width: 100%;
+	height: 100%;
 	z-index: 50;
 	pointer-events: none;
 

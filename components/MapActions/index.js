@@ -76,17 +76,53 @@ const ActionItem = styled.div`
 	}
 `
 
-const noop = () => {};
+const NO_OP = () => {};
 
 class MapActions extends React.Component {
+	MOUNTED = false;
+	state = {
+		waitingActions: []
+	}
+	componentDidMount() {
+		this.MOUNTED = true;
+	}
+	componentWillUnmount() {
+		this.MOUNTED = false;
+	}
+	doAndPauseAction(e, disableFor, action, id) {
+		action(e);
+
+		const waitingActions = [...this.state.waitingActions, id];
+		this.setState({ waitingActions });
+
+		setTimeout(() => {
+			const waitingActions = this.state.waitingActions.filter(d => d !== id);
+			this.MOUNTED && this.setState({ waitingActions });
+		}, disableFor);
+	}
 	render() {
 		const actions = this.props.layers.reduce((actions, layer) => {
 			if (layer.active) {
 				actions.push(
-					...Object.values(layer.mapActions)
-						.map(({ action=noop, disabled=false, ...rest }) =>
-							({ action: action.bind(layer), layer, disabled, ...rest })
-						)
+					...Object.keys(layer.mapActions)
+						.map(actionName => {
+							const id = `${ layer.name }-${ actionName }`;
+							const {
+								action = NO_OP,
+								disabled = false,
+								disableFor = 0,
+								...rest
+							} = layer.mapActions[actionName];
+							const isDisabled = disabled || this.state.waitingActions.includes(id),
+								boundAction = action.bind(layer);
+							return {
+								action: disableFor ? e => this.doAndPauseAction(e, disableFor, boundAction, id) : boundAction,
+								id,
+								layer,
+								disabled: isDisabled,
+								...rest
+							}
+						})
 				);
 			}
 			return actions;
@@ -94,15 +130,15 @@ class MapActions extends React.Component {
 		return (
 			<ActionContainer sidebar={ this.props.sidebar } isOpen={ this.props.isOpen }>
 				{
-					actions.map(({ Icon, tooltip, action, disabled, layer }, i) =>
-						<ActionItem key={ i } data-tip
-          		data-for={ `action-item-${ i }` }
+					actions.map(({ Icon, id, tooltip, action, disabled, layer }) =>
+						<ActionItem key={ id }
+							data-tip data-for={ id }
           		onClick={ disabled ? null : action }
           		className={ classnames({ disabled }) }>
 
 							<Icon layer={ layer }/>
 		          <Tooltip
-		            id={ `action-item-${ i }` }
+		            id={ id }
 		            effect="solid"
 		            place="right">
 		            <span>{ tooltip }</span>

@@ -3,10 +3,11 @@ import get from "lodash.get"
 const LISTENERS = new Map();
 
 export const AvlInTheMiddle = store => next => action => {
-  const result = next(action);
+  const result = next(action),
+    state = store.getState();
   if (LISTENERS.has(action.type)) {
     LISTENERS.get(action.type).forEach(({ comp, path }) => {
-      const data = path.length ? get(store.getState(), path, {}) : store.getState();
+      const data = path.length ? get(state, path, {}) : state;
       comp.receiveMessage.call(comp, action.type, data);
     })
   }
@@ -21,7 +22,9 @@ export const register = (comp, action, path = []) => {
 }
 export const unregister = (comp, action = null) => {
   if (action === null) {
-    LISTENERS.keys().forEach(a => unregister(comp, a));
+    for (const action of LISTENERS.keys()) {
+      unregister(comp, action);
+    }
   }
   else if (LISTENERS.has(action)) {
     const filtered = LISTENERS.get(action).filter(d => d.comp !== comp);

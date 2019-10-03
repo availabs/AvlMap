@@ -206,8 +206,7 @@ class MapLayer {
   }
 
   doAction([action, ...args]) {
-// console.log(this.name, action, ...args)
-    if (this.map && this.component && this.component[action]) {
+    if (this.component && this.component[action]) {
       this.component[action](this.name, ...args)
     }
   }
@@ -237,7 +236,6 @@ class MapLayer {
 	receiveDataOld(...args) {
 		if (this.receiveData) {
 			console.warn("<AvlMap> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
-console.log("receiveDataOld", args)
 			this.receiveData.call(this, ...args);
 		}
 	}
