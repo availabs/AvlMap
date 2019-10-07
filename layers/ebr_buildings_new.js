@@ -2,7 +2,7 @@ import React from "react"
 
 import store from "store"
 import { update } from "utils/redux-falcor/components/duck"
-import { falcorGraph, falcorChunkerNice } from "store/falcorGraph"
+import { falcorGraph, falcorChunkerNiceWithUpdate } from "store/falcorGraph"
 import { connect } from 'react-redux';
 import { reduxFalcor, UPDATE as REDUX_UPDATE } from 'utils/redux-falcor'
 
@@ -38,7 +38,7 @@ class EBRLayer extends MapLayer {
       )
       .then(res => res.json.geo['36'][geoLevel])
       .then(geoids => {
-        return falcorChunkerNice(["geo", geoids, "name"])
+        return falcorChunkerNiceWithUpdate(["geo", geoids, "name"])
           .then(() => {
             const graph = falcorGraph.getCache().geo;
             this.filters.area.domain = geoids.map(geoid => {
@@ -94,8 +94,28 @@ class EBRLayer extends MapLayer {
     }
     return this.fetchData();
   }
+  getBuildingIdsFromFalcorCache() {
+    const geoids = this.filters.area.value;
+
+    if (!geoids.length) return Promise.resolve([]);
+
+    const buildingids = [];
+
+    for (const geoid of geoids) {
+      const length = get(this.falcorCache, ["building", "byGeoid", geoid, "length"], 0);
+
+      for (let i = 0; i <= length; ++i) {
+        const id = get(this.falcorCache, ["building", "byGeoid", geoid, "byIndex", i, "value", 2], null);
+        if (id !== null) {
+          buildingids.push(id);
+        }
+      }
+    }
+
+    return Promise.resolve(buildingids);
+  }
   getBuildingIds() {
-    console.log('in get building ids')
+    // console.log('in get building ids')
     const geoids = this.filters.area.value;
 
     if (!geoids.length) return Promise.resolve([]);
@@ -114,7 +134,7 @@ class EBRLayer extends MapLayer {
 
             const buildingids = [],
               graph = get(res.json, ["building", "byGeoid"], {});
-              
+
             geoids.forEach(geoid => {
               const byIndex = get(graph, [geoid, "byIndex"], {});
               Object.values(byIndex).forEach(({ id }) => {
@@ -123,7 +143,7 @@ class EBRLayer extends MapLayer {
                 }
               })
             })
-            console.log('buildingids', buildingids)
+            // console.log('buildingids', buildingids)
             return buildingids;
           })
       })
@@ -131,10 +151,10 @@ class EBRLayer extends MapLayer {
   fetchData() {
     return this.getBuildingIds()
       .then(buildingids => {
-        console.log('got buildingids')
+        // console.log('got buildingids')
         if (!buildingids.length) return;
 
-        return falcorChunkerNice(["building", "byId", buildingids, ["address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
+        return falcorChunkerNiceWithUpdate(["building", "byId", buildingids, ["address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
       })
       .then(() => store.dispatch(update(falcorGraph.getCache())))
       // .then(() => this.falcorCache = falcorGraph.getCache())
@@ -187,7 +207,7 @@ class EBRLayer extends MapLayer {
     }
   }
   render(map) {
-    return this.getBuildingIds()
+    return this.getBuildingIdsFromFalcorCache()
       .then(buildingids => {
         const filteredBuildingids = [];
 
@@ -245,12 +265,15 @@ class EBRLayer extends MapLayer {
           { validate: false }
         )
 
+        const selectedBuildingId = this.modals.building.show ? this.selectedBuildingId : "none";
+
       	map.setPaintProperty(
       		'ebr',
       		'fill-color',
       		["match", ["to-string", ["get", "id"]],
-            coloredBuildingIds.length ? coloredBuildingIds : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
-            filteredBuildingids.length ? filteredBuildingids : "no-filtered", FILTERED_COLOR,
+            selectedBuildingId, "#900",
+            coloredBuildingIds.length ? coloredBuildingIds.filter(id => id !== selectedBuildingId) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
+            filteredBuildingids.length ? filteredBuildingids.filter(id => id !== selectedBuildingId) : "no-filtered", FILTERED_COLOR,
             DEFAULT_COLOR
           ],
           { validate: false }
@@ -359,6 +382,9 @@ export default (options = {}) =>
       },
       minZoom: 13
     },
+
+    selectedBuildingId: "none",
+
     filters: {
       area: {
         name: 'Area',
@@ -427,6 +453,10 @@ export default (options = {}) =>
         if (!features.length) return;
 
         const props = { ...features[0].properties };
+
+        this.selectedBuildingId = props.id.toString();
+        this.map && this.render(this.map);
+
         this.modals.building.show
           ? this.doAction(["updateModal", "building", props])
           : this.doAction(["toggleModal", "building", props]);
@@ -435,7 +465,10 @@ export default (options = {}) =>
     modals: {
       building: {
         comp: BuildingModal,
-        show: false
+        show: false,
+        onClose: function() {
+          this.map && this.render(this.map);
+        }
       }
     },
     ...options

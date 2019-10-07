@@ -348,6 +348,9 @@ class AvlMap extends React.Component {
 		})
     modal.show = show;
     modal.props = props;
+    if (!show && (typeof modal.onClose === "function")) {
+      modal.onClose.call(layer);
+    }
   	this.forceUpdate();
   }
   updateModal(layerName, modalName, props={}) {
