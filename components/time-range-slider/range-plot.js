@@ -9,18 +9,17 @@ import styled from 'styled-components';
 import RangeBrush from './range-brush';
 import {getTimeWidgetHintFormatter} from './utils';
 
-// import {theme} from 'styles/base';
-import theme from 'components/common/themes/dark'
-
 const chartMargin = {top: 18, bottom: 0, left: 0, right: 0};
 const chartH = 52;
 const containerH = 78;
 const histogramStyle = {
   highlightW: 1,
-  unHighlightedW: 0.4,
-  highlightedColor: theme.activeColor,
-  unHighlightedColor: theme.sliderBarColor
+  unHighlightedW: 0.4
 };
+
+const Rect = styled.rect`
+  fill: ${ props => props.inRange ? props.theme.activecolor : props.theme.sliderBarColor };
+`
 
 export default class RangePlot extends Component {
   static propTypes = {
@@ -131,13 +130,11 @@ const Histogram = ({
       <g className="histogram-bars">
         {histogram.map(bar => {
           const inRange = bar.x0 >= value[0] && bar.x1 <= value[1];
-          const fill = inRange ? histogramStyle.highlightedColor : histogramStyle.unHighlightedColor;
           const wRatio = inRange ? histogramStyle.highlightW : histogramStyle.unHighlightedW;
 
           return (
-            <rect
+            <Rect inRange={ inRange }
               key={bar.x0}
-              fill={fill}
               height={y(bar.count)}
               width={barWidth * wRatio}
               x={x(bar.x0) + barWidth * (1 - wRatio) / 2}

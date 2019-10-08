@@ -145,7 +145,6 @@ const LayerPanelHeader = ({
   onToggleEnableConfig,
   onRemoveLayer,
   showRemoveLayer,
-  theme,
   actionMap
 }) => (
   <StyledLayerPanelHeader
@@ -156,11 +155,10 @@ const LayerPanelHeader = ({
     active={isConfigActive}
     labelRCGColorValues={labelRCGColorValues}
     onClick={onToggleEnableConfig}
-    theme={theme}
   >
     <HeaderLabelSection className="layer-panel__header__content">
       {isDragNDropEnabled && (
-        <DragHandle theme={theme} className="layer__drag-handle">
+        <DragHandle className="layer__drag-handle">
           <VertDots height="20px" />
         </DragHandle>
       )}
@@ -173,7 +171,7 @@ const LayerPanelHeader = ({
         active={isVisible}
         flush
       />
-      <LayerTitleSection className="layer__title" theme={theme}>
+      <LayerTitleSection className="layer__title">
         <div>
           <div style={ { lineHeight: layer.actions ? "16px" : "26px" } }>{ layer.name }</div>
           { !layer.actions ? null :

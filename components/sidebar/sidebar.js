@@ -74,7 +74,7 @@ class SideBar extends Component {
   };
 
   render() {
-    const { isOpen, transitioning, minifiedWidth, width, theme } = this.props;
+    const { isOpen, transitioning, minifiedWidth, width } = this.props;
 
     const _width = isOpen && transitioning ? 0
                   : isOpen && !transitioning ? width
@@ -82,7 +82,7 @@ class SideBar extends Component {
                   : 0;
 
     return (
-      <StyledSidePanelContainer theme={theme}
+      <StyledSidePanelContainer
         width={ _width }
         className="side-panel--container"
         isOpen={ isOpen }>
@@ -94,7 +94,7 @@ class SideBar extends Component {
 
           { !isOpen && !transitioning ? null :
             <div style={ { width: `${ width }px`, height: "100%" } }>
-              <SideBarInner theme={theme} className="side-bar__inner">
+              <SideBarInner className="side-bar__inner">
                 { this.props.children }
               </SideBarInner>
             </div>

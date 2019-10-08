@@ -564,7 +564,6 @@ class AvlMap extends React.Component {
             onTransitionStart={ this.onTransitionStart.bind(this) }
             layers={ this.props.layers }
   					activeLayers={ this.state.activeLayers }
-  					theme={ this.props.theme }
   					addLayer={ this.addLayer.bind(this) }
   					removeLayer={ this.removeLayer.bind(this) }
   					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
@@ -607,8 +606,7 @@ class AvlMap extends React.Component {
 
         <LoadingLayers layers={ this.props.layers }
           sidebar={ this.props.sidebar }
-          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          theme={ this.props.theme }/>
+          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }/>
 			</div>
 		)
 	}
@@ -639,7 +637,7 @@ const LoadingContainer = styled.div`
   }
 `
 
-const LoadingLayers = ({ layers, sidebar, isOpen, theme }) => {
+const LoadingLayers = ({ layers, sidebar, isOpen }) => {
   const loadingLayers = layers.reduce((a, c) => {
     if (c.loading) a.push(c.name);
     return a;

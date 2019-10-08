@@ -4,18 +4,19 @@ import {scaleLinear} from 'd3-scale';
 import * as d3selection from 'd3-selection'
 import {max} from 'd3-array';
 
-// import {theme} from 'styles/base';
-import theme from 'components/common/themes/dark'
+import styled from "styled-components"
 
 const chartMargin = {top: 18, bottom: 0, left: 0, right: 0};
 const chartH = 52;
 const containerH = 78;
 const histogramStyle = {
   highlightW: 1,
-  unHighlightedW: 0.4,
-  highlightedColor: theme.activeColor,
-  unHighlightedColor: theme.sliderBarColor
+  unHighlightedW: 0.4
 };
+
+const Rect = styled.rect`
+  fill: ${ props => props.inRange ? props.theme.activecolor : props.theme.sliderBarColor };
+`
 
 export default class RangePlot extends Component {
   constructor(props) {
@@ -94,14 +95,12 @@ const BarGraph = ({
       <g className="histogram-bars">
         {bargraph.map(bar => {
           const inRange = bar.x == value;
-          const fill = inRange ? histogramStyle.highlightedColor : histogramStyle.unHighlightedColor;
           const wRatio = inRange ? histogramStyle.highlightW : histogramStyle.unHighlightedW;
           const h = y(bar.y);
 
           return (
-            <rect
+            <Rect inRange={ inRange }
               key={bar.x}
-              fill={fill}
               height={h}
               width={barWidth * wRatio}
               x={x(bar.x) + barWidth * (1 - wRatio) / 2}
