@@ -60,7 +60,6 @@ class EBRLayer extends MapLayer {
                 .sort((a, b) => +a.value - +b.value);
           })
       })
-      // .then(() => store.dispatch(update(falcorGraph.getCache())))
       .then(() => this.doAction(["updateFilter", "area", ['3600101000']]))
   }
   onRemove(map) {
@@ -604,6 +603,16 @@ const formatPropValue = (prop, value, meta) => {
   return string;
 }
 
+const BuildingContainer = styled.div`
+  color: ${ props => props.theme.textColor };
+  padding-top: 15px;
+  width: 100%;
+  min-width: 500px;
+
+  h4 {
+    color: ${ props => props.theme.textColorHl };
+  }
+`
 
 class BuildingModalBase extends React.Component {
   state = {
@@ -625,13 +634,13 @@ class BuildingModalBase extends React.Component {
     )
   }
   render() {
-    const { layer, theme, buildingData } = this.props,
+    const { layer, buildingData } = this.props,
       address = get(buildingData, "address", false),
       name = get(buildingData, "name", false);
     return (
-      <div style={ { color: theme.textColor, paddingTop: "15px", width: "100%", minWidth: "500px" }}>
+      <BuildingContainer>
         { address || name ?
-          <h4 style={ { color: theme.textColorHl } }>
+          <h4>
             { address || name }
           </h4>
           : null
@@ -645,7 +654,7 @@ class BuildingModalBase extends React.Component {
           }
         </div>
         { this.renderTab() }
-      </div>
+      </BuildingContainer>
     )
   }
 }
@@ -672,6 +681,6 @@ const StyledTabSelector = styled.div`
   :hover {
     cursor: pointer;
     color: ${ props => props.theme.textColorHl };
-    background-color: #666;
+    background-color: ${ props => props.theme.panelBackgroundHover };
   }
 `
