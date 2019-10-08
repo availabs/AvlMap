@@ -584,8 +584,7 @@ class AvlMap extends React.Component {
             map={ this.state.map }/>
         }
 
-				<Infobox layers={ this.props.layers }
-					theme={ this.props.theme }/>
+				<Infobox layers={ this.props.layers }/>
 
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
@@ -595,13 +594,11 @@ class AvlMap extends React.Component {
           } }/>
 
 				<MapModal layers={ this.props.layers }
-					toggleModal={ this.toggleModal.bind(this) }
-          theme={ this.props.theme }/>
+					toggleModal={ this.toggleModal.bind(this) }/>
 
         <MapActions layers={ this.props.layers }
           sidebar={ this.props.sidebar }
           isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          theme={ this.props.theme }
           actionMap={ actionMap }/>
 
         <MapMessages
