@@ -18,7 +18,7 @@ const histogramStyle = {
 };
 
 const Rect = styled.rect`
-  fill: ${ props => props.inRange ? props.theme.activecolor : props.theme.sliderBarColor };
+  fill: ${ props => props.inRange ? props.theme.activeColor : props.theme.sliderBarColor };
 `
 
 export default class RangePlot extends Component {
