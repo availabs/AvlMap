@@ -15,8 +15,6 @@ import MapMessages from "./components/MapMessages"
 
 import { ScalableLoading } from "components/loading/loadingPage"
 
-import DEFAULT_THEME from 'components/common/themes/dark'
-
 // import geoViewport from "@mapbox/geo-viewport"
 
 import './avlmap.css'
@@ -84,7 +82,7 @@ class AvlMap extends React.Component {
       messages: [],
       isOpen: true,
       transitioning: false,
-      style: props.style ? { name: "Use Styles Prop!", style: props.style } : props.styles[0]
+      style: props.styles.reduce((a, c) => c.name === props.style ? c : a, props.styles[0])
   	}
     this.MOUNTED = false;
     this.container = React.createRef();
@@ -551,9 +549,6 @@ class AvlMap extends React.Component {
     const mapStyles = [
       ...this.props.styles
     ]
-    if (this.props.style) {
-      mapStyles.unshift({ name: "Use styles prop!", style: this.props.style });
-    }
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
@@ -690,14 +685,13 @@ DEFAULT_STYLES.forEach(style => {
 AvlMap.defaultProps = {
 	id: getUniqueId(),
 	height: "100%",
-	// style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te',
   styles: [...DEFAULT_STYLES],
+  style: "Dark",
 	center: [-73.680647, 42.68],
 	minZoom: 2,
 	zoom: 10,
 	layers: [],
   mapControl: 'bottom-right',
-	theme: DEFAULT_THEME,
   scrollZoom: true,
   sidebar: true,
   update: [],
