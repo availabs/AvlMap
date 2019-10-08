@@ -135,7 +135,7 @@ class InfoBox extends Component {
             <SidebarContent className='sidebar-content' isOpen={ isOpen }>
               {
                 activeLegends.map((l, i) =>
-                  <Legend key={ i } theme={ this.props.theme } { ...l.legend } layer={ l.layer }/>
+                  <Legend key={ i } { ...l.legend } layer={ l.layer }/>
                 )
               }
               {
