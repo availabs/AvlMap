@@ -64,7 +64,7 @@ class MapLayer {
 			const modals = this.modals || {};
 			this.modals = {
 				...modals,
-				attributes: {
+				"avl-attributes": {
 					title: "Attributes",
 					comp: ({ layer }) => <AttributesTable layer={ layer }/>,
 					show: false,
@@ -77,14 +77,11 @@ class MapLayer {
 					!get(this, 'component.props.sidebarPages', []).includes("layers")) {
 				this.mapActions = {
 					...this.mapActions,
-					attributes: {
+					"avl-attributes": {
 						Icon: ({ layer }) => <span className={ `fa fa-lg fa-eye` }/>,
 						tooltip: "Toggle Attributes",
 						action: function() {
-							this.doAction([
-								"toggleModal",
-								"attributes"
-							])
+							this.doAction(["toggleModal", "avl-attributes"]);
 						}
 					}
 				}
@@ -95,7 +92,7 @@ class MapLayer {
 					...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
 			    {
 			      Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
-			      action: ["toggleModal", "attributes"],
+			      action: ["toggleModal", "avl-attributes"],
 			      tooltip: "Toggle Attributes"
 			    }
 				]
@@ -189,10 +186,11 @@ class MapLayer {
     if (data) {
       this.onHoverLeave(e, layer);
 
-      e.features.forEach(({ id }) => {
+			const { id } = e.features[0];
+      // e.features.forEach(({ id }) => {
         (id !== undefined) && this.hoveredFeatureIds.add(id);
         (id !== undefined) && this.map.setFeatureState({ id, ...data }, { hover: true });
-      })
+      // })
     }
   }
   onHoverLeave(e, layer) {
