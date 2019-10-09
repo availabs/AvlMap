@@ -175,8 +175,7 @@ class MapLayer {
 
 		const zoom = map.getZoom();
 		if (minZoom && (minZoom > zoom)) {
-      this.onHoverLeave(e, layer);
-			return;
+      return this.onHoverLeave(e, layer, map);
 		}
 
     (typeof dataFunc === "function") &&
@@ -184,23 +183,23 @@ class MapLayer {
 
     const data = this.hoverSourceData[layer];
     if (data) {
-      this.onHoverLeave(e, layer);
+      this.onHoverLeave(e, layer, map);
 
 			const { id } = e.features[0];
-      // e.features.forEach(({ id }) => {
-        (id !== undefined) && this.hoveredFeatureIds.add(id);
-        (id !== undefined) && this.map.setFeatureState({ id, ...data }, { hover: true });
-      // })
+
+      (id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
+      (id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
     }
   }
-  onHoverLeave(e, layer) {
-    const data = this.hoverSourceData[layer];
-    if (data) {
-      this.hoveredFeatureIds.forEach(id => {
-        this.map.setFeatureState({ id, ...data }, { hover: false });
-      })
-      this.hoveredFeatureIds.clear();
-    }
+  onHoverLeave(e, layer, map) {
+		this.hoveredFeatureIds.forEach(key => {
+			const [layer, id] = key.split("."),
+				data = this.hoverSourceData[layer];
+			if (data) {
+				map.setFeatureState({ id, ...data }, { hover: false });
+			}
+		})
+		this.hoveredFeatureIds.clear();
   }
 
   doAction([action, ...args]) {
