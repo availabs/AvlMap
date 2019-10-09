@@ -526,7 +526,7 @@ const MeasureInfoBox = ({ layer }) => {
   if (layer.filters.measure.value === "riskZone"){
     replacement_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
     flood_loss_value = format(layer.measureData.reduce((a, c) => a + c.value, 0))
-  }else{
+  }else if(layer.filters.measure.value === "replacement_value"){
     replacement_value = format(layer.measureData.reduce((a, c) => a + c.value, 0))
     flood_loss_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
   }
@@ -537,11 +537,16 @@ const MeasureInfoBox = ({ layer }) => {
         fontSize: "1rem"
       } }>
       <tbody>
-        <tr>
-        <td>Replacement Value Total</td>
-        <td>{ replacement_value }</td>
-        </tr>
-        {flood_loss_value !== "$0" ?
+      {replacement_value && replacement_value !== "$0" ?
+          <tr>
+              <td>Replacement Value Total</td>
+              <td>{ replacement_value }</td>
+          </tr>
+          :
+          null
+      }
+
+        {flood_loss_value && flood_loss_value !== "$0" ?
             <tr>
               <td>Expected Annual Flood Loss Total </td>
               <td>{ flood_loss_value }</td>
