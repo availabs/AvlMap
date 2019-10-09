@@ -10,8 +10,8 @@ import get from "lodash.get"
 import styled from "styled-components"
 
 import {
-    scaleQuantile,
-    scaleQuantize
+  scaleQuantile,
+  scaleQuantize, scaleThreshold
 } from "d3-scale"
 import { extent } from "d3-array"
 import { format as d3format } from "d3-format"
@@ -22,7 +22,9 @@ import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
 
 import { getColorRange } from "constants/color-ranges";
+var numeral = require('numeral')
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
+const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
 
 const IDENTITY = i => i;
 
@@ -152,8 +154,11 @@ class EBRLayer extends MapLayer {
       .then(buildingids => {
         // console.log('got buildingids')
         if (!buildingids.length) return;
-
         return falcorChunkerNiceWithUpdate(["building", "byId", buildingids, ["address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
+            .then(() => {
+                return falcorChunkerNiceWithUpdate(["building","byId",buildingids,"riskZone",["riverine"],"aal"])
+
+            })
       })
       .then(() => store.dispatch(update(falcorGraph.getCache())))
       // .then(() => this.falcorCache = falcorGraph.getCache())
@@ -212,33 +217,48 @@ class EBRLayer extends MapLayer {
 
         const shouldFilter = this.makeShouldFilter();
 
+        if (this.filters.measure.value === 'riskZone') {
+          this.legend.type = 'threshold'
+          this.legend.domain = [100, 1000, 10000, 50000, 250000]
+          this.legend.range = LEGEND_RISK_COLOR_RANGE;
+        } else {
+          this.legend.type = 'quantile'
+          this.legend.range = LEGEND_COLOR_RANGE;
+        }
         const byIdGraph = get(falcorGraph.getCache(), ["building", "byId"], {}),
           measure = this.filters.measure.value,
-          data = [];
-
-        buildingids.forEach(id => {
+          data = [],
+            legendData = [];
+        let legendMeasure = ''
+        buildingids.forEach((id,i) => {
           const prop_class = get(byIdGraph, [id, "prop_class"], "000") + "",
             owner_type = get(byIdGraph, [id, "owner_type"], "-999") + "",
             flood_zone = get(byIdGraph, [id, "flood_zone"], null),
             risks = this.getBuildingRisks({ flood_zone });
-
-          if (!shouldFilter({ prop_class, owner_type })) {
-            data.push({ id, measure, value: +get(byIdGraph, [id, measure], 0), risks });
+          if(measure === "riskZone") {
+            let expected_annual_loss_value = +get(byIdGraph, [id,measure, 'riverine','aal'])
+            legendMeasure = "replacement_value"
+            data.push({id,measure,value : expected_annual_loss_value,risks})
+            legendData.push({ id,legendMeasure, value: +get(byIdGraph, [id, "replacement_value"], 0), risks })
+          }
+          else if (!shouldFilter({ prop_class, owner_type })) {
+              data.push({ id, measure, value: +get(byIdGraph, [id, measure], 0), risks });
+              legendMeasure = "riskZone"
+              legendData.push({id,legendMeasure,value : +get(byIdGraph, [id,"riskZone", 'riverine','aal'],0),risks});
           }
           else {
             filteredBuildingids.push(id.toString());
           }
-        })
-        return [filteredBuildingids, data]
+        });
+        return [filteredBuildingids, data,legendData]
       })
-      .then(([filteredBuildingids = [], data = []]) => {
+      .then(([filteredBuildingids = [], data = [], legendData = []]) => {
         const coloredBuildingIds = [],
           riskFilter = this.filters.risk.value,
           atRiskIds = [];
-
         this.infoBoxes["measure"].show = Boolean(data.length);
         this.measureData = data;
-
+        this.legendData = legendData;
         const colorScale = this.getColorScale(data),
           colors = data.reduce((a, c) => {
             a[c.id] = colorScale(c.value);
@@ -277,13 +297,14 @@ class EBRLayer extends MapLayer {
           ],
           { validate: false }
       	)
+
       })
   }
   getColorScale(data) {
-    const { type, range } = this.legend;
+    const { type, range, domain } = this.legend;
     switch (type) {
       case "quantile": {
-        const domain = data.map(d => d.value).sort();
+        const domain = data.map(d => d.value).filter(d => d).sort();
         this.legend.domain = domain;
         return scaleQuantile()
           .domain(domain)
@@ -296,15 +317,21 @@ class EBRLayer extends MapLayer {
           .domain(domain)
           .range(range);
       }
+      case "threshold": {
+        return scaleThreshold()
+            .domain(domain)
+            .range(range)
+      }
     }
   }
 }
 
 const getFilterName = (layer, filterName, value = null) =>
-  value === null ?
-    layer.filters[filterName].domain.reduce((a, c) => c.value === layer.filters[filterName].value ? c.name : a, null)
-  :
-    layer.filters[filterName].domain.reduce((a, c) => c.value === value ? c.name : a, null)
+    value === null ?
+        layer.filters[filterName].domain.reduce((a, c) => c.value === layer.filters[filterName].value ? c.name : a, null)
+        :
+        layer.filters[filterName].domain.reduce((a, c) => c.value === value ? c.name : a, null)
+
 
 const getPropClassName = (falcorCache, value) =>
   get(falcorCache, ["parcel", "meta", "prop_class", "value"], [])
@@ -362,9 +389,11 @@ export default (options = {}) =>
       layers: ["ebr", "ebr-line"],
       dataFunc: function(topFeature, features) {
         const { id } = topFeature.properties;
-
-        const graph = get(this.falcorCache, ["building", "byId", id], {}),
-          attributes = [
+        const graph = get(this.falcorCache, ["building", "byId", id], {})
+        if(graph["riskZone"]  && graph["riskZone"]["riverine"] !== undefined){
+          graph["riskZone"] = graph["riskZone"]["riverine"]["aal"]
+        }
+        const attributes = [
             [null, "address"],
             ["Name", "name"],
             ["Replacement Cost", "replacement_value", fnum],
@@ -372,9 +401,9 @@ export default (options = {}) =>
             ["Land Use", "prop_class", d => getPropClassName(this.falcorCache, d)],
             ["Type", "type"],
             ["Critical Facilities (FCode)", "critical"],
-            ["Flood Zone", "flood_zone"]
+            ["Flood Zone", "flood_zone"],
+            ["Expected Annual Flood Loss","riskZone",fnum]
           ];
-
         const data = attributes.reduce((a, [name, key, format = IDENTITY]) => {
           const data = get(graph, [key], false)
           if (data && (name === null)) {
@@ -382,6 +411,9 @@ export default (options = {}) =>
           }
           else if (data && (name !== null)) {
             a.push([name, format(data)]);
+          }
+          else if (data === null && key === "riskZone"){
+            a.push([name,format("0")]);
           }
           return a;
         }, [])
@@ -447,14 +479,19 @@ export default (options = {}) =>
         type: "single",
         domain: [
           { value: "replacement_value", name: "Replacement Cost" },
-          { value: "num_occupants", name: "Number of Occupants" }
+          { value: "num_occupants", name: "Number of Occupants" },
+          { value: "riskZone",name: "Expected Annual Flood Loss"}
         ],
         value: "replacement_value"
       }
     },
     infoBoxes: {
       measure: {
-        title: ({ layer }) => <>{ `${ getFilterName(layer, "measure") } Info` }</>,
+        title: function({layer}) {
+          return(
+              <>{ `${ getFilterName(layer, "measure") } Info ` }</>
+          )
+        },
         comp: MeasureInfoBox,
         show: false
       }
@@ -488,6 +525,8 @@ export default (options = {}) =>
 
 const MeasureInfoBox = ({ layer }) => {
   let format = d => d;
+  let replacement_value = '';
+  let flood_loss_value = '';
   switch (layer.filters.measure.value) {
     case "replacement_value":
       format = fnum;
@@ -495,6 +534,16 @@ const MeasureInfoBox = ({ layer }) => {
     case "num_occupants":
       format = d3format(",d");
       break;
+    case "riskZone":
+      format = fnum;
+      break;
+  }
+  if (layer.filters.measure.value === "riskZone"){
+    replacement_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
+    flood_loss_value = format(layer.measureData.reduce((a, c) => a + c.value, 0))
+  }else if(layer.filters.measure.value === "replacement_value"){
+    replacement_value = format(layer.measureData.reduce((a, c) => a + c.value, 0))
+    flood_loss_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
   }
   return (
     <table className="table table-sm"
@@ -503,33 +552,59 @@ const MeasureInfoBox = ({ layer }) => {
         fontSize: "1rem"
       } }>
       <tbody>
-        <tr>
-          <td>Total</td>
-          <td>{ format(layer.measureData.reduce((a, c) => a + c.value, 0)) }</td>
-        </tr>
-        {
-          layer.filters.risk.value.map(r =>
-            <tr key={ r }>
-              <td>{ `${ getFilterName(layer, "risk", r) } Total` }</td>
-              <td>{ format(layer.measureData.filter(({ risks }) => risks.includes(r)).reduce((a, c) => a + c.value, 0)) }</td>
+      {replacement_value && replacement_value !== "$0" ?
+          <tr>
+              <td>Replacement Value Total</td>
+              <td>{ replacement_value }</td>
+          </tr>
+          :
+          null
+      }
+
+        {flood_loss_value && flood_loss_value !== "$0" ?
+            <tr>
+              <td>Expected Annual Flood Loss Total </td>
+              <td>{ flood_loss_value }</td>
             </tr>
-          )
+            :
+            null
         }
+      {
+        layer.filters.risk.value.map(r =>
+          <tr key={ r }>
+            <td>{ `${ getFilterName(layer, "risk", r) } Total` }</td>
+            <td>{ format(layer.measureData.filter(({ risks }) => risks.includes(r)).reduce((a, c) => a + c.value, 0)) }</td>
+          </tr>
+        )
+      }
       </tbody>
     </table>
   )
 }
 const TabBase = ({ name, props, data, meta }) => {
+
   const rows = props.reduce((a, c) => {
-    const d = get(data, [c], null);
-    a.push(
-      <tr key={ c }>
-        <td>{ formatPropName(c) }</td>
-        <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
-      </tr>
-    )
-    return a;
-  }, [])
+    if (c !== "expected_annual_flood_loss"){
+      const d = get(data, [c], null);
+      a.push(
+          <tr key={ c }>
+            <td>{ formatPropName(c) }</td>
+            <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
+          </tr>
+      )
+      return a;
+    }
+    else{
+      const d = get(data, ["riskZone","riverine","aal"], null);
+      a.push(
+          <tr key={ c }>
+            <td>{ formatPropName(c) }</td>
+            <td>{ (d !== null) && (d !== 'null') ? numeral(d).format('$ 0.00 a') : "unknown" }</td>
+          </tr>
+      )
+      return a;
+    }
+    },[])
   return (
     <table>
       <tbody>
@@ -596,7 +671,8 @@ const TABS = [
       "high_wind_speed",
       "soil_type",
       "storage_hazardous_materials",
-      "topography"
+      "topography",
+      "expected_annual_flood_loss"
     ] }
 ]
 
@@ -634,7 +710,8 @@ class BuildingModalBase extends React.Component {
   fetchFalcorDeps() {
     return this.props.falcor.get(
       ["building", "byId", this.props.id, TABS.reduce((a, c) => [...a, ...c.props], [])],
-      ["parcel", "meta", ["prop_class", "owner_type"]]
+      ["parcel", "meta", ["prop_class", "owner_type"]],
+      ["building","byId",this.props.id,"riskZone",["riverine"],"aal"]
     )
     // .then(res => this.props.layer.falcorCache = this.props.falcor.getCache())
   }
@@ -673,7 +750,8 @@ class BuildingModalBase extends React.Component {
 }
 const mapStateToProps = (state, { id }) => ({
   buildingData: get(state, ["graph", "building", "byId", id], {}),
-  parcelMeta: get(state, ["graph", "parcel", "meta"], {})
+  parcelMeta: get(state, ["graph", "parcel", "meta"], {}),
+  buildingRiskData : get(state,["graph","building","byId"])
 });
 const mapDispatchToProps = {};
 
