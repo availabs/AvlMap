@@ -17,26 +17,6 @@ import { ScalableLoading } from "components/loading/loadingPage"
 
 import './avlmap.css'
 
-let emptyStyle = {
-  "version": 8,
-  "name": "Empty",
-  "metadata": {
-    "mapbox:autocomposite": true,
-    "mapbox:type": "template"
-  },
-  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-  "sources": {},
-  "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "rgba(0,0,0,0)"
-      }
-    }
-  ]
-}
-
 mapboxgl.accessToken = MAPBOX_TOKEN
 
 let UNIQUE_ID = 0;
