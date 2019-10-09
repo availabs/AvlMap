@@ -524,9 +524,6 @@ class AvlMap extends React.Component {
       updateModal: this.updateModal.bind(this),
 			toggleInfoBox: this.toggleInfoBox.bind(this)
 		}
-    const mapStyles = [
-      ...this.props.styles
-    ]
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
@@ -550,7 +547,7 @@ class AvlMap extends React.Component {
   					updateDrag={ this.updateDrag.bind(this) }
   					dropLayer={ this.dropLayer.bind(this) }
             pages={ this.props.sidebarPages }
-            mapStyles={ mapStyles }
+            mapStyles={ this.props.styles }
             style={ this.state.style }
             setMapStyle={ this.setMapStyle.bind(this) }
             map={ this.state.map }/>
@@ -646,7 +643,7 @@ const getStaticImageUrl = style =>
     `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
     `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`
 
-const DEFAULT_STYLES = [
+export const DEFAULT_STYLES = [
   { name: "Dark",
     style: "mapbox://styles/am3081/cjqqukuqs29222sqwaabcjy29" },
   { name: "Light",
