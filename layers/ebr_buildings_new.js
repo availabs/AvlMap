@@ -248,29 +248,29 @@ class EBRLayer extends MapLayer {
             }
             return a;
           }, {});
-
-        const FILTERED_COLOR = "#666",
-          DEFAULT_COLOR = "#000";
-
-        map.setPaintProperty(
-          'ebr',
-          'fill-outline-color',
-      		["match", ["to-string", ["get", "id"]],
-            atRiskIds.length ? atRiskIds : "no-at-risk", "#fff",
-            coloredBuildingIds.length ? coloredBuildingIds.filter(id => !atRiskIds.includes(id)) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
-            filteredBuildingids.length ? filteredBuildingids.filter(id => !atRiskIds.includes(id)) : "no-filtered", FILTERED_COLOR,
-            DEFAULT_COLOR
-          ],
-          { validate: false }
-        )
+// REDDS: ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a", "#ef3b2c", "#cb181d", "#99000d"]
+        const SELECTED_BULDING_COLOR = "#cb181d",
+          FILTERED_COLOR = "#666",
+          DEFAULT_COLOR = "#000",
+          EBR_LINE_COLOR = "#6baed6";
 
         const selectedBuildingId = this.modals.building.show ? this.selectedBuildingId : "none";
+
+        map.setFilter("ebr-line", ["in", "id", ...atRiskIds.map(id => +id)]);
+        map.setPaintProperty(
+          "ebr-line",
+          "line-color",
+          ["match", ["to-string", ["get", "id"]],
+            selectedBuildingId, SELECTED_BULDING_COLOR,
+            EBR_LINE_COLOR
+          ]
+        )
 
       	map.setPaintProperty(
       		'ebr',
       		'fill-color',
       		["match", ["to-string", ["get", "id"]],
-            selectedBuildingId, "#900",
+            selectedBuildingId, SELECTED_BULDING_COLOR,
             coloredBuildingIds.length ? coloredBuildingIds.filter(id => id !== selectedBuildingId) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
             filteredBuildingids.length ? filteredBuildingids.filter(id => id !== selectedBuildingId) : "no-filtered", FILTERED_COLOR,
             DEFAULT_COLOR
@@ -333,6 +333,19 @@ export default (options = {}) =>
               'fill-color': '#000000'
           }
 
+      },
+      { id: "ebr-line",
+        'source': 'nys_buildings_avail',
+        'source-layer': 'nys_buildings_osm_ms_parcelid_pk',
+        'type': 'line',
+        'minzoom': 8,
+        'paint': {
+// BLUES: ["#eff3ff", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594"]
+            'line-color': '#6baed6',
+            'line-width': 3,
+            'line-offset': -1
+        },
+        filter: ["in", "id", "none"]
       }
     ],
     legend: {
@@ -346,7 +359,7 @@ export default (options = {}) =>
       format: fnum
     },
     popover: {
-      layers: ["ebr"],
+      layers: ["ebr", "ebr-line"],
       dataFunc: function(topFeature, features) {
         const { id } = topFeature.properties;
 

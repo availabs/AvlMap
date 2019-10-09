@@ -33,6 +33,7 @@ class RiverineRiskZones extends MapLayer{
 export default (options = {}) =>
     new RiverineRiskZones("Riverine Risk Zones", {
         active: true,
+        ...options,
         sources: [
             { id: "riverine_risk_layer",
                 source: {
@@ -212,5 +213,3 @@ const mapStateToProps = (state, { id }) => ({
 
 });
 const mapDispatchToProps = {};
-
-
