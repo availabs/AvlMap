@@ -268,8 +268,6 @@ class EBRLayer extends MapLayer {
             }
             return a;
           }, {});
-        const FILTERED_COLOR = "#666",
-          DEFAULT_COLOR = "#000";
 // REDDS: ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a", "#ef3b2c", "#cb181d", "#99000d"]
         const SELECTED_BULDING_COLOR = "#cb181d",
           FILTERED_COLOR = "#666",
