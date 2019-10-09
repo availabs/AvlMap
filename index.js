@@ -15,8 +15,6 @@ import MapMessages from "./components/MapMessages"
 
 import { ScalableLoading } from "components/loading/loadingPage"
 
-// import geoViewport from "@mapbox/geo-viewport"
-
 import './avlmap.css'
 
 let emptyStyle = {
