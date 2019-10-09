@@ -530,7 +530,6 @@ const MeasureInfoBox = ({ layer }) => {
     replacement_value = format(layer.measureData.reduce((a, c) => a + c.value, 0))
     flood_loss_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
   }
-  console.log('flood',flood_loss_value,typeof flood_loss_value)
   return (
     <table className="table table-sm"
       style={ {
