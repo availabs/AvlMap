@@ -15,10 +15,6 @@ import MapMessages from "./components/MapMessages"
 
 import { ScalableLoading } from "components/loading/loadingPage"
 
-import DEFAULT_THEME from 'components/common/themes/dark'
-
-// import geoViewport from "@mapbox/geo-viewport"
-
 import './avlmap.css'
 
 let emptyStyle = {
@@ -84,7 +80,7 @@ class AvlMap extends React.Component {
       messages: [],
       isOpen: true,
       transitioning: false,
-      style: props.style ? { name: "Use Styles Prop!", style: props.style } : props.styles[0]
+      style: props.styles.reduce((a, c) => c.name === props.style ? c : a, props.styles[0])
   	}
     this.MOUNTED = false;
     this.container = React.createRef();
@@ -348,6 +344,9 @@ class AvlMap extends React.Component {
 		})
     modal.show = show;
     modal.props = props;
+    if (!show && (typeof modal.onClose === "function")) {
+      modal.onClose.call(layer);
+    }
   	this.forceUpdate();
   }
   updateModal(layerName, modalName, props={}) {
@@ -389,13 +388,15 @@ class AvlMap extends React.Component {
     if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
-  		oldValue = layer.filters[filterName].value;
+      filter = layer.filters[filterName],
+  		oldValue = filter.value,
+      domain = filter.domain;
 
-	  layer.filters[filterName].value = value;
+	  filter.value = value;
 
   	if (layer.filters[filterName].onChange) {
       if (layer.version >= 2) {
-        layer.filters[filterName].onChange.call(layer, oldValue, value);
+        layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
       }
       else {
         layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
@@ -412,13 +413,19 @@ class AvlMap extends React.Component {
 
     if (layer.filters[filterName].refLayers) {
       layer.filters[filterName].refLayers.forEach(refLayerName => {
-        const layer = this.getLayer(refLayerName);
-        layer.filters[filterName].value = value;
+
+      	const layer = this.getLayer(refLayerName),
+          filter = layer.filters[filterName],
+      		oldValue = filter.value,
+          domain = filter.domain;
+
+        filter.value = value;
+
         if (layer.active) {
 
           if (layer.filters[filterName].onChange) {
             if (layer.version >= 2) {
-              layer.filters[filterName].onChange.call(layer, oldValue, value);
+              layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
             }
             else {
               layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
@@ -540,9 +547,6 @@ class AvlMap extends React.Component {
     const mapStyles = [
       ...this.props.styles
     ]
-    if (this.props.style) {
-      mapStyles.unshift({ name: "Use styles prop!", style: this.props.style });
-    }
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
@@ -553,7 +557,6 @@ class AvlMap extends React.Component {
             onTransitionStart={ this.onTransitionStart.bind(this) }
             layers={ this.props.layers }
   					activeLayers={ this.state.activeLayers }
-  					theme={ this.props.theme }
   					addLayer={ this.addLayer.bind(this) }
   					removeLayer={ this.removeLayer.bind(this) }
   					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
@@ -573,8 +576,7 @@ class AvlMap extends React.Component {
             map={ this.state.map }/>
         }
 
-				<Infobox layers={ this.props.layers }
-					theme={ this.props.theme }/>
+				<Infobox layers={ this.props.layers }/>
 
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
@@ -584,13 +586,11 @@ class AvlMap extends React.Component {
           } }/>
 
 				<MapModal layers={ this.props.layers }
-					toggleModal={ this.toggleModal.bind(this) }
-          theme={ this.props.theme }/>
+					toggleModal={ this.toggleModal.bind(this) }/>
 
         <MapActions layers={ this.props.layers }
           sidebar={ this.props.sidebar }
           isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          theme={ this.props.theme }
           actionMap={ actionMap }/>
 
         <MapMessages
@@ -599,8 +599,7 @@ class AvlMap extends React.Component {
 
         <LoadingLayers layers={ this.props.layers }
           sidebar={ this.props.sidebar }
-          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          theme={ this.props.theme }/>
+          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }/>
 			</div>
 		)
 	}
@@ -631,7 +630,7 @@ const LoadingContainer = styled.div`
   }
 `
 
-const LoadingLayers = ({ layers, sidebar, isOpen, theme }) => {
+const LoadingLayers = ({ layers, sidebar, isOpen }) => {
   const loadingLayers = layers.reduce((a, c) => {
     if (c.loading) a.push(c.name);
     return a;
@@ -684,14 +683,13 @@ DEFAULT_STYLES.forEach(style => {
 AvlMap.defaultProps = {
 	id: getUniqueId(),
 	height: "100%",
-	// style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te',
   styles: [...DEFAULT_STYLES],
+  style: "Dark",
 	center: [-73.680647, 42.68],
 	minZoom: 2,
 	zoom: 10,
 	layers: [],
   mapControl: 'bottom-right',
-	theme: DEFAULT_THEME,
   scrollZoom: true,
   sidebar: true,
   update: [],

@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import {CenterFlexbox} from 'components/common/styled-components';
 import {Pin, Layers} from 'components/common/icons';
-import LightTheme from 'components/common/themes/light'
 // import {FIELD_DISPLAY_FORMAT} from 'constants/default-settings';
 
 const MAX_WIDTH = 400;
@@ -91,14 +90,12 @@ export default class Tooltip extends React.Component {
     };
 
     return (
-      <StyledMapPopover
-        theme={LightTheme}
-      >
+      <StyledMapPopover>
         <StyledLayerName className="map-popover__layer-name">
           <Layers height="12px"/>
           {feature.properties.name}
         </StyledLayerName>
-        
+
         <table className="map-popover__table">
           {rows.map(renderRow)}
         </table>

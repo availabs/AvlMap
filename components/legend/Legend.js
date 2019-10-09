@@ -1,73 +1,80 @@
 import React, {Component} from 'react';
-// import { connect } from 'react-redux';
 
-// import deepEqual from 'deep-equal'
-// import LegendHeader from './LegendHeader'
-// import SelectedDataPane from './SelectedDataPane'
-// import EpochSlider from '../slider/epochSlider'
+import styled from "styled-components"
 
 import * as d3scale from "d3-scale"
 import * as d3format from "d3-format"
 
-const Title = ({ Title, layer, theme }) =>
-  <h5 style={ { color: theme.textColorHl } }>
+const MainContainer = styled.div`
+  background-color: ${ props => props.theme.sidePanelHeaderBg };
+  width: 100%;
+  padding: 10px;
+`
+
+const StyledTitle = styled.h5`
+  color: ${ props => props.theme.textColor };
+`
+const Title = ({ Title, layer }) =>
+  <StyledTitle>
     { typeof Title === "function" ?
       <Title layer={ layer }/>
       : Title
     }
-  </h5>
+  </StyledTitle>
 
-const HorizontalLegend = ({ theme, type, format, scale, range, domain, title, layer }) => {
-  let legendContainerStyle = {
-    width: '100%',
-    display: 'flex',
-    color: theme.textColor,
-    borderRadius: "4px",
-    overflow: "hidden"
-  }
+const LegendContainer = styled.div`
+  width: 100%;
+  display: flex;
+  color: ${ props => props.theme.textColor };
+  border-radius: 4px;
+  overflow: hidden;
+`
+const ColorBlock = styled.div`
+  align-items: stretch;
+  flexGrow: 1;
+  height: 20px;
+`
+const TextBlock = styled.div`
+  color: ${ props => props.theme.textColor };
+  display: inline-block;
+  text-align: right;
+`
 
-  let colorBlock = {
-    alignItems: 'stretch',
-    flexGrow: 1,
-    height: 20
-  }
+const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) => {
 
-  let textBlock = {
-    width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%',
-    color: theme.textColor,
-    display: 'inline-block',
-    textAlign: 'right',
+  const textBlock = {
+    width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%'
   }
   return (
-    <div style={{width: '100%',  padding: 10, backgroundColor: theme.sidePanelHeaderBg}}>
-      <Title Title={ title } layer={ layer } theme={ theme }/>
-      <div className='legend-container' style={legendContainerStyle}>
+    <MainContainer>
+      <Title Title={ title } layer={ layer }/>
+      <LegendContainer className='legend-container'>
         {
           type === "linear" ?
-            scale.ticks(5).map(t => <div key={ t } style={ { ...colorBlock , backgroundColor: scale(t) } }/>)
+            scale.ticks(5).map(t => <ColorBlock key={ t } style={ { backgroundColor: scale(t), ...textBlock } }/>)
           :
-            range.map((r, i) => <div key={ i } style={ { ...colorBlock, backgroundColor: r } }/>)
+            range.map((r, i) => <ColorBlock key={ i } style={ { backgroundColor: r, ...textBlock } }/>)
         }
-      </div>
+      </LegendContainer>
       <div style={{width:'100%', position: 'relative', right: -3}}>
         {
           type === "ordinal" ?
-            domain.map(d => <div key={ d } style={ textBlock } >{ format(d) }</div>)
+            domain.map(d => <TextBlock key={ d } style={ textBlock } >{ format(d) }</TextBlock>)
           : type === "linear" ?
-            scale.ticks(5).map(t => <div key={ t } style={ textBlock }>{ format(t) }</div>)
+            scale.ticks(5).map(t => <TextBlock key={ t } style={ textBlock }>{ format(t) }</TextBlock>)
           :
-            range.map((r, i) => <div key={ i } style={ textBlock }>{ typeof scale.invertExtent(r)[1] === "number" ? format(scale.invertExtent(r)[1]) : null }</div>)
+            range.map((r, i) => <TextBlock key={ i } style={ textBlock }>{ typeof scale.invertExtent(r)[1] === "number" ? format(scale.invertExtent(r)[1]) : null }</TextBlock>)
         }
       </div>
-    </div>
+    </MainContainer>
   )
 }
 
-const VerticalLegend = ({ theme, type, format, scale, range, domain, title, layer }) => {
+const VerticalLegend = ({ type, format, scale, range, domain, title, layer }) => {
   range = (type === "linear") ? scale.ticks(5).map(t => scale(t)) : range
   return (
-    <div style={ { width: "100%", padding: "10px", backgroundColor: theme.sidePanelHeaderBg } }>
-      <Title Title={ title } layer={ layer } theme={ theme }/>
+    <MainContainer>
+      <Title Title={ title } layer={ layer }/>
       <table>
         <tbody>
           {
@@ -86,7 +93,7 @@ const VerticalLegend = ({ theme, type, format, scale, range, domain, title, laye
           }
         </tbody>
       </table>
-    </div>
+    </MainContainer>
   )
 }
 
