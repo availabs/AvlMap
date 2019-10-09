@@ -52,7 +52,7 @@ const ActionItem = styled.div`
 		border-color: #888;
   }
   &.disabled:hover {
-  	border-color: #900;
+  	border-color: ${ props => props.theme.errorColor };
   }
 
 	svg {
@@ -66,12 +66,12 @@ const ActionItem = styled.div`
 		left: -2px;
 
 		line {
-			stroke: #900;
-			stroke-width: 2px;
+			stroke: ${ props => props.theme.errorColor };
+			stroke-width: 4px;
 			transition: stroke 0.15s;
 		}
 		:hover line {
-			stroke: #900;
+			stroke: ${ props => props.theme.errorColor };
 		}
 	}
 `

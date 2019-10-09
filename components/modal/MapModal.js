@@ -59,7 +59,6 @@ class MapModal extends React.Component {
 				<ModalWrapper>
 					{ !Boolean(modal.comp) ? null :
 						<modal.comp { ...modal.props }
-							theme={ this.props.theme }
 							layer={ modal.layer }/>
 					}
 				</ModalWrapper>

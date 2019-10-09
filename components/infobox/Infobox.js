@@ -20,11 +20,11 @@ const ToggleButton = styled.span`
 
   :hover {
     color: ${ props => props.theme.textColorHl };
-    background-color: #666;
+    background-color: ${ props => props.theme.panelBackgroundHover };
   }
 `
 const CollapsedInfoBox = styled.div`
-  color: ${ props => props.theme.textColor };
+  color: ${ props => props.theme.inputPlaceholderColor };
   font-weight: bold;
   font-size: 1.5rem;
   line-height: 1.5rem;
@@ -135,7 +135,7 @@ class InfoBox extends Component {
             <SidebarContent className='sidebar-content' isOpen={ isOpen }>
               {
                 activeLegends.map((l, i) =>
-                  <Legend key={ i } theme={ this.props.theme } { ...l.legend } layer={ l.layer }/>
+                  <Legend key={ i } { ...l.legend } layer={ l.layer }/>
                 )
               }
               {

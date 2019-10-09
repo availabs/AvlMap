@@ -18,7 +18,8 @@ import COLOR_RANGES from "constants/color-ranges"
 import deepequal from "deep-equal"
 
 const StyledFilterPanel = styled.div`
-  margin-bottom: 12px;
+  background-color: ${ props => props.theme.sidePanelHeaderBg };
+  margin-bottom: 5px;
   border-radius: 1px;
   padding-left: 12px;
   padding-right: 12px;
@@ -73,11 +74,12 @@ class ColorSelector extends Component {
     return (
       <StyledFilterPanel>
         <div onClick={ this._showDropdown.bind(this) }>
-          <PanelLabel>Legend</PanelLabel>
+          <PanelLabel>Legend Selector</PanelLabel>
           <ColorPalette colors={ legend.range }/>
         </div>
         { !this.state.editing ? null :
-          <StyledPanelDropdown className="color-selector__dropdown">
+          <StyledPanelDropdown className="color-selector__dropdown"
+            style={ { padding: "5px" } }>
             <div style={{height:"5px"}}/>
             { legend.types && legend.types.length <= 1 ? null :
               <SingleSelectFilter filter={ {

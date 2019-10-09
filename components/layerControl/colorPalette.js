@@ -24,7 +24,7 @@ const PaletteContainer = styled.div`
   flex-grow: 1;
   border-width: 1px;
   border-style: solid;
-  border-color: ${props => props.isSelected ? '#FFFFFF' : 'transparent'};
+  border-color: ${props => props.isSelected ? props.theme.inputBorderActiveColor : 'transparent'};
   padding: 4px;
   border-radius: 4px;
 `;

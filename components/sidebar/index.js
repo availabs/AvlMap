@@ -28,7 +28,7 @@ const Pages = styled.div`
   display: flex;
   flex-direction: row;
   padding: 10px 10px 10px 10px;
-  color: ${ props => props.theme.textColor };
+  color: ${ props => props.theme.inputPlaceholderColor };
 
   > * {
     padding: 5px;
@@ -42,7 +42,7 @@ const Pages = styled.div`
 
     :hover {
       color: ${ props => props.theme.textColorHl };
-      background-color: #666;
+      background-color: ${ props => props.theme.panelBackgroundHover };
     }
     &.active {
       color: ${ props => props.theme.textColorHl };
@@ -161,7 +161,9 @@ class Sidebar extends Component {
         onOpenOrClose={ this.props.onOpenOrClose }
         onTransitionStart={ this.props.onTransitionStart }>
 
-        <SidebarHeader header={ this.props.header }/>
+        { !this.props.header ? null :
+          <SidebarHeader header={ this.props.header }/>
+        }
 
         <Pages>
           {

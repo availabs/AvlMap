@@ -23,6 +23,13 @@ const StyledFilterPanel = styled.div`
   width: 100%;
 `;
 
+const StyledLayerControl = styled.div`
+  width: 100%;
+  display: flex;
+  margin-bottom: 5px;
+  background-color: ${ props => props.theme.sidePanelHeaderBg };
+`
+
 const ModalToggle = ({ layer, toggle }) =>
   <StyledFilterPanel>
     <Button onClick={ toggle } secondary={ true } small={ true } width={ "100%" }>
@@ -42,15 +49,9 @@ const ModalToggle = ({ layer, toggle }) =>
     e.preventDefault()
     this.props.updateDrag({ dragover: index })
   }
-  
+
   render() {
-    const { layer, theme, actionMap, index } = this.props
-    let LayerControlStyle = {
-      width: '100%',
-      display: 'flex',
-      marginBottom: 5,
-      backgroundColor: theme.sidePanelHeaderBg
-    }
+    const { layer, actionMap, index } = this.props;
 
     const { showConfig } = this.state;
 
@@ -68,11 +69,11 @@ const ModalToggle = ({ layer, toggle }) =>
 
     return (
       <div >
-        <div draggable={ true }
+        <StyledLayerControl draggable={ true }
           onDragStart={ e => this.onDragStart(e, layer.name, index) }
           onDragOver={ e => this.onDragOver(e, index) }
-          className='active-layer-container' style={LayerControlStyle}
-        >
+          className='active-layer-container'>
+
           <LayerHeader
             layer={ layer }
             onRemoveLayer={ removeLayer }
@@ -81,7 +82,7 @@ const ModalToggle = ({ layer, toggle }) =>
             onToggleEnableConfig={ toggleConfig }
             actionMap={ actionMap }
             showRemoveLayer={ this.props.showRemoveLayer }/>
-        </div>
+        </StyledLayerControl>
         { !showConfig || !layer.modal || !layer.modal.controlButton ? null :
           <ModalToggle layer={ layer }
             toggle={ e => this.props.toggleModal(layer.name) }/>
