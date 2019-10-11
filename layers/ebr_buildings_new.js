@@ -20,7 +20,7 @@ import { fnum } from "utils/sheldusUtils"
 
 import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
-
+import mapboxgl from "react-map-gl/dist/es5/utils/mapboxgl";
 import { getColorRange } from "constants/color-ranges";
 var numeral = require('numeral')
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
@@ -36,23 +36,28 @@ class EBRLayer extends MapLayer {
 
     return falcorGraph.get(
         ["geo", "36", geoLevel],
-        ["parcel", "meta", ["prop_class", "owner_type"]]
+        ["parcel", "meta", ["prop_class", "owner_type"],
+        ["geo",["36"],"boundingBox"]
+        ]
       )
       .then(res => res.json.geo['36'][geoLevel])
       .then(geoids => {
         return falcorChunkerNiceWithUpdate(["geo", geoids, "name"])
-          .then(() => {
-            const graph = falcorGraph.getCache().geo;
-            this.filters.area.domain = geoids.map(geoid => {
-              return { value: geoid, name: graph[geoid].name }
-            })
-            .sort((a, b) => {
-              const aCounty = a.value.slice(0, 5),
-                bCounty = b.value.slice(0, 5);
-              if (aCounty === bCounty) {
-                return a.name < b.name ? -1 : 1;
-              }
-              return +aCounty - +bCounty;
+          .then(()=>{
+            return falcorChunkerNiceWithUpdate(["geo",geoids,"boundingBox"])
+                .then(() =>{
+                  const graph = falcorGraph.getCache().geo;
+                  this.filters.area.domain = geoids.map(geoid => {
+                    return { value: geoid, name: graph[geoid].name ,bounding_box: graph[geoid].boundingBox.value}
+                })
+                .sort((a, b) => {
+                  const aCounty = a.value.slice(0, 5),
+                      bCounty = b.value.slice(0, 5);
+                  if (aCounty === bCounty) {
+                    return a.name < b.name ? -1 : 1;
+                  }
+                  return +aCounty - +bCounty;
+                })
             })
           })
           .then(() => {
@@ -61,6 +66,7 @@ class EBRLayer extends MapLayer {
                 .filter(({ name, value }) => name !== "Unknown")
                 .sort((a, b) => +a.value - +b.value);
           })
+
       })
       .then(() => this.doAction(["updateFilter", "area", ['3600101000']]))
   }
@@ -337,6 +343,22 @@ const getPropClassName = (falcorCache, value) =>
   get(falcorCache, ["parcel", "meta", "prop_class", "value"], [])
     .reduce((a, c) => c.value == value ? c.name : a, "Unknown")
 
+let geoFilter = function (map, layer, value) {
+
+    let currentValues = layer.filters.area.domain.filter(d => layer.filters.area.value.includes(d.value))
+    if(currentValues.length !== 0) {
+        let bbox = []
+        currentValues.forEach(value =>{
+            let initalBbox = value.bounding_box.slice(4,-1).split(",")
+            bbox.push(initalBbox[0].split(" "),initalBbox[1].split(" "))
+        })
+        map.resize()
+        map.fitBounds(bbox)
+
+    }
+
+}
+
 export default (options = {}) =>
   new EBRLayer("Enhanced Building Risk", {
     active: true,
@@ -434,6 +456,7 @@ export default (options = {}) =>
         name: 'Area',
         type: 'multi',
         domain: [],
+        onChange: geoFilter,
         value: []
       },
       owner_type: {
