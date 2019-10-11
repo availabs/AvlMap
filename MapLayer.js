@@ -64,7 +64,7 @@ class MapLayer {
 			const modals = this.modals || {};
 			this.modals = {
 				...modals,
-				attributes: {
+				"avl-attributes": {
 					title: "Attributes",
 					comp: ({ layer }) => <AttributesTable layer={ layer }/>,
 					show: false,
@@ -77,14 +77,11 @@ class MapLayer {
 					!get(this, 'component.props.sidebarPages', []).includes("layers")) {
 				this.mapActions = {
 					...this.mapActions,
-					attributes: {
+					"avl-attributes": {
 						Icon: ({ layer }) => <span className={ `fa fa-lg fa-eye` }/>,
 						tooltip: "Toggle Attributes",
 						action: function() {
-							this.doAction([
-								"toggleModal",
-								"attributes"
-							])
+							this.doAction(["toggleModal", "avl-attributes"]);
 						}
 					}
 				}
@@ -95,7 +92,7 @@ class MapLayer {
 					...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
 			    {
 			      Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
-			      action: ["toggleModal", "attributes"],
+			      action: ["toggleModal", "avl-attributes"],
 			      tooltip: "Toggle Attributes"
 			    }
 				]
@@ -178,8 +175,7 @@ class MapLayer {
 
 		const zoom = map.getZoom();
 		if (minZoom && (minZoom > zoom)) {
-      this.onHoverLeave(e, layer);
-			return;
+      return this.onHoverLeave(e, layer, map);
 		}
 
     (typeof dataFunc === "function") &&
@@ -187,22 +183,23 @@ class MapLayer {
 
     const data = this.hoverSourceData[layer];
     if (data) {
-      this.onHoverLeave(e, layer);
+      this.onHoverLeave(e, layer, map);
 
-      e.features.forEach(({ id }) => {
-        (id !== undefined) && this.hoveredFeatureIds.add(id);
-        (id !== undefined) && this.map.setFeatureState({ id, ...data }, { hover: true });
-      })
+			const { id } = e.features[0];
+
+      (id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
+      (id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
     }
   }
-  onHoverLeave(e, layer) {
-    const data = this.hoverSourceData[layer];
-    if (data) {
-      this.hoveredFeatureIds.forEach(id => {
-        this.map.setFeatureState({ id, ...data }, { hover: false });
-      })
-      this.hoveredFeatureIds.clear();
-    }
+  onHoverLeave(e, layer, map) {
+		this.hoveredFeatureIds.forEach(key => {
+			const [layer, id] = key.split("."),
+				data = this.hoverSourceData[layer];
+			if (data) {
+				map.setFeatureState({ id, ...data }, { hover: false });
+			}
+		})
+		this.hoveredFeatureIds.clear();
   }
 
   doAction([action, ...args]) {

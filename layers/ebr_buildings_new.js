@@ -22,7 +22,6 @@ import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
 import mapboxgl from "react-map-gl/dist/es5/utils/mapboxgl";
 import { getColorRange } from "constants/color-ranges";
-var numeral = require('numeral')
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
 
@@ -158,16 +157,11 @@ class EBRLayer extends MapLayer {
   fetchData() {
     return this.getBuildingIds()
       .then(buildingids => {
-        // console.log('got buildingids')
         if (!buildingids.length) return;
         return falcorChunkerNiceWithUpdate(["building", "byId", buildingids, ["address", "replacement_value", "owner_type", "prop_class", "num_occupants", "name", "type", "critical", "flood_zone"]])
-            .then(() => {
-                return falcorChunkerNiceWithUpdate(["building","byId",buildingids,"riskZone",["riverine"],"aal"])
-
-            })
+          .then(() => falcorChunkerNiceWithUpdate(["building", "byId", buildingids, "riskZone", "riverine", "aal"]))
       })
       .then(() => store.dispatch(update(falcorGraph.getCache())))
-      // .then(() => this.falcorCache = falcorGraph.getCache())
   }
   makeCheckPropCategoryFilter() {
     const propCategoryFilters = this.filters.prop_category.value;
@@ -410,36 +404,29 @@ export default (options = {}) =>
     popover: {
       layers: ["ebr", "ebr-line"],
       dataFunc: function(topFeature, features) {
-        const { id } = topFeature.properties;
-        const graph = get(this.falcorCache, ["building", "byId", id], {})
-        if(graph["riskZone"]  && graph["riskZone"]["riverine"] !== undefined){
-          graph["riskZone"] = graph["riskZone"]["riverine"]["aal"]
-        }
-        const attributes = [
-            [null, "address"],
-            ["Name", "name"],
-            ["Replacement Cost", "replacement_value", fnum],
-            ["Owner Type", "owner_type", d => getFilterName(this, "owner_type", d)],
-            ["Land Use", "prop_class", d => getPropClassName(this.falcorCache, d)],
-            ["Type", "type"],
-            ["Critical Facilities (FCode)", "critical"],
-            ["Flood Zone", "flood_zone"],
-            ["Expected Annual Flood Loss","riskZone",fnum]
+        const { id } = topFeature.properties,
+          graph = get(this.falcorCache, ["building", "byId", id], {}),
+          attributes = [
+            [null, ["address"]],
+            ["Name", ["name"]],
+            ["Replacement Cost", ["replacement_value"], fnum],
+            ["Owner Type", ["owner_type"], d => getFilterName(this, "owner_type", d)],
+            ["Land Use", ["prop_class"], d => getPropClassName(this.falcorCache, d)],
+            ["Type", ["type"]],
+            ["Critical Facilities (FCode)", ["critical"]],
+            ["Flood Zone", ["flood_zone"]],
+            ["Expected Annual Flood Loss", ["riskZone", "riverine", "aal"], fnum]
           ];
         const data = attributes.reduce((a, [name, key, format = IDENTITY]) => {
-          const data = get(graph, [key], false)
+          const data = get(graph, key, false)
           if (data && (name === null)) {
             a.push(format(data));
           }
           else if (data && (name !== null)) {
             a.push([name, format(data)]);
           }
-          else if (data === null && key === "riskZone"){
-            a.push([name,format("0")]);
-          }
           return a;
         }, [])
-
         if (data.length) {
           data.push(["Building ID", id]);
           return data;
@@ -552,13 +539,11 @@ const MeasureInfoBox = ({ layer }) => {
   let flood_loss_value = '';
   switch (layer.filters.measure.value) {
     case "replacement_value":
+    case "riskZone":
       format = fnum;
       break;
     case "num_occupants":
       format = d3format(",d");
-      break;
-    case "riskZone":
-      format = fnum;
       break;
   }
   if (layer.filters.measure.value === "riskZone"){
@@ -605,10 +590,11 @@ const MeasureInfoBox = ({ layer }) => {
   )
 }
 const TabBase = ({ name, props, data, meta }) => {
-
   const rows = props.reduce((a, c) => {
-    if (c !== "expected_annual_flood_loss"){
-      const d = get(data, [c], null);
+    const d = (c === "expected_annual_flood_loss") ?
+        get(data, ["riskZone", "riverine", "aal"], null)
+      :
+        get(data, [c], null);
       a.push(
           <tr key={ c }>
             <td>{ formatPropName(c) }</td>
@@ -616,17 +602,6 @@ const TabBase = ({ name, props, data, meta }) => {
           </tr>
       )
       return a;
-    }
-    else{
-      const d = get(data, ["riskZone","riverine","aal"], null);
-      a.push(
-          <tr key={ c }>
-            <td>{ formatPropName(c) }</td>
-            <td>{ (d !== null) && (d !== 'null') ? numeral(d).format('$ 0.00 a') : "unknown" }</td>
-          </tr>
-      )
-      return a;
-    }
     },[])
   return (
     <table>
@@ -709,7 +684,7 @@ const formatPropName = prop =>
 const formatPropValue = (prop, value, meta) => {
   const string = get(meta, [prop, "value"], [])
     .reduce((a, c) => c.value === value ? c.name : a, value);
-  if (/value/.test(prop)) {
+  if (/value/.test(prop) || /loss/.test(prop)) {
     return d3format("$,d")(string);
   }
   return string;
@@ -734,9 +709,9 @@ class BuildingModalBase extends React.Component {
     return this.props.falcor.get(
       ["building", "byId", this.props.id, TABS.reduce((a, c) => [...a, ...c.props], [])],
       ["parcel", "meta", ["prop_class", "owner_type"]],
-      ["building","byId",this.props.id,"riskZone",["riverine"],"aal"]
+      ["building","byId", this.props.id, "riskZone", "riverine", "aal"]
     )
-    // .then(res => this.props.layer.falcorCache = this.props.falcor.getCache())
+    .then(res => console.log("RES:" ,res))
   }
   renderTab() {
     const data = TABS.find(t => t.name === this.state.tab);
