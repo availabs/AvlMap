@@ -67,7 +67,6 @@ class EBRLayer extends MapLayer {
       })
       .then(() => {
           if(localStorage.getItem("activeScenarioCousub") && localStorage.getItem("activeScenarioCousub").length !== 0){
-              console.log('areas',localStorage.getItem("activeScenarioCousub").split(','))
               this.doAction(["updateFilter", "area",localStorage.getItem("activeScenarioCousub").split(',')])
           }else{
               this.doAction(["updateFilter", "area", [this.filters.area.domain[0].value]])
