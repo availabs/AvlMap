@@ -30,16 +30,14 @@ const IDENTITY = i => i;
 class EBRLayer extends MapLayer {
   onAdd(map) {
     register(this, REDUX_UPDATE, ["graph"]);
-
     const geoLevel = "cousubs";
-
     return falcorGraph.get(
-        ["geo", "36", geoLevel],
+        ["geo",store.getState().user.activeGeoid, geoLevel],
         ["parcel", "meta", ["prop_class", "owner_type"],
-        ["geo",["36"],"boundingBox"]
+        ["geo",[store.getState().user.activeGeoid],"boundingBox"]
         ]
       )
-      .then(res => res.json.geo['36'][geoLevel])
+      .then(res => res.json.geo[store.getState().user.activeGeoid][geoLevel])
       .then(geoids => {
         return falcorChunkerNiceWithUpdate(["geo", geoids, "name"])
           .then(()=>{
@@ -67,7 +65,14 @@ class EBRLayer extends MapLayer {
           })
 
       })
-      .then(() => this.doAction(["updateFilter", "area", ['3600101000']]))
+      .then(() => {
+          if(localStorage.getItem("activeScenarioCousub") && localStorage.getItem("activeScenarioCousub").length !== 0){
+              console.log('areas',localStorage.getItem("activeScenarioCousub").split(','))
+              this.doAction(["updateFilter", "area",localStorage.getItem("activeScenarioCousub").split(',')])
+          }else{
+              this.doAction(["updateFilter", "area", [this.filters.area.domain[0].value]])
+          }
+          })
   }
   onRemove(map) {
     unregister(this);
@@ -338,14 +343,32 @@ const getPropClassName = (falcorCache, value) =>
     .reduce((a, c) => c.value == value ? c.name : a, "Unknown")
 
 let geoFilter = function (map, layer, value) {
-
+    let bbox = []
+    let X_coordinates= []
+    let Y_coordinates= []
+    localStorage.setItem("activeScenarioCousub",layer.filters.area.value)
     let currentValues = layer.filters.area.domain.filter(d => layer.filters.area.value.includes(d.value))
-    if(currentValues.length !== 0) {
-        let bbox = []
-        currentValues.forEach(value =>{
-            let initalBbox = value.bounding_box.slice(4,-1).split(",")
-            bbox.push(initalBbox[0].split(" "),initalBbox[1].split(" "))
-        })
+    if(currentValues && currentValues.length !== 0){
+        if (currentValues.length === 1){
+            currentValues.forEach(value =>{
+                if (layer.filters.area.value.includes(value.value)){
+                    let initalBbox = value.bounding_box.slice(4,-1).split(",")
+                    bbox = [initalBbox[0].split(" "),initalBbox[1].split(" ")]
+                }
+            })
+        }
+        else{
+            currentValues.forEach(value =>{
+                X_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[0].split(" ")[0]))
+                X_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[1].split(" ")[0]))
+                Y_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[0].split(" ")[1]))
+                Y_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[1].split(" ")[1]))
+            })
+            bbox = [
+                [Math.min(...X_coordinates),Math.min(...Y_coordinates)],
+                [Math.max(...X_coordinates),Math.max(...Y_coordinates)]
+                ]
+        }
         map.resize()
         map.fitBounds(bbox)
 
