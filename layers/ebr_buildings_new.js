@@ -20,8 +20,9 @@ import { fnum } from "utils/sheldusUtils"
 
 import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
-
+import mapboxgl from "react-map-gl/dist/es5/utils/mapboxgl";
 import { getColorRange } from "constants/color-ranges";
+import {Link} from "react-router-dom";
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
 
@@ -30,28 +31,31 @@ const IDENTITY = i => i;
 class EBRLayer extends MapLayer {
   onAdd(map) {
     register(this, REDUX_UPDATE, ["graph"]);
-
     const geoLevel = "cousubs";
-
     return falcorGraph.get(
-        ["geo", "36", geoLevel],
-        ["parcel", "meta", ["prop_class", "owner_type"]]
+        ["geo",store.getState().user.activeGeoid, geoLevel],
+        ["parcel", "meta", ["prop_class", "owner_type"],
+        ["geo",[store.getState().user.activeGeoid],"boundingBox"]
+        ]
       )
-      .then(res => res.json.geo['36'][geoLevel])
+      .then(res => res.json.geo[store.getState().user.activeGeoid][geoLevel])
       .then(geoids => {
         return falcorChunkerNiceWithUpdate(["geo", geoids, "name"])
-          .then(() => {
-            const graph = falcorGraph.getCache().geo;
-            this.filters.area.domain = geoids.map(geoid => {
-              return { value: geoid, name: graph[geoid].name }
-            })
-            .sort((a, b) => {
-              const aCounty = a.value.slice(0, 5),
-                bCounty = b.value.slice(0, 5);
-              if (aCounty === bCounty) {
-                return a.name < b.name ? -1 : 1;
-              }
-              return +aCounty - +bCounty;
+          .then(()=>{
+            return falcorChunkerNiceWithUpdate(["geo",geoids,"boundingBox"])
+                .then(() =>{
+                  const graph = falcorGraph.getCache().geo;
+                  this.filters.area.domain = geoids.map(geoid => {
+                    return { value: geoid, name: graph[geoid].name ,bounding_box: graph[geoid].boundingBox.value}
+                })
+                .sort((a, b) => {
+                  const aCounty = a.value.slice(0, 5),
+                      bCounty = b.value.slice(0, 5);
+                  if (aCounty === bCounty) {
+                    return a.name < b.name ? -1 : 1;
+                  }
+                  return +aCounty - +bCounty;
+                })
             })
           })
           .then(() => {
@@ -60,8 +64,15 @@ class EBRLayer extends MapLayer {
                 .filter(({ name, value }) => name !== "Unknown")
                 .sort((a, b) => +a.value - +b.value);
           })
+
       })
-      .then(() => this.doAction(["updateFilter", "area", ['3600101000']]))
+      .then(() => {
+          if(localStorage.getItem("activeScenarioCousub") && localStorage.getItem("activeScenarioCousub").length !== 0){
+              this.doAction(["updateFilter", "area",localStorage.getItem("activeScenarioCousub").split(',')])
+          }else{
+              this.doAction(["updateFilter", "area", [this.filters.area.domain[0].value]])
+          }
+          })
   }
   onRemove(map) {
     unregister(this);
@@ -331,6 +342,40 @@ const getPropClassName = (falcorCache, value) =>
   get(falcorCache, ["parcel", "meta", "prop_class", "value"], [])
     .reduce((a, c) => c.value == value ? c.name : a, "Unknown")
 
+let geoFilter = function (map, layer, value) {
+    let bbox = []
+    let X_coordinates= []
+    let Y_coordinates= []
+    localStorage.setItem("activeScenarioCousub",layer.filters.area.value)
+    let currentValues = layer.filters.area.domain.filter(d => layer.filters.area.value.includes(d.value))
+    if(currentValues && currentValues.length !== 0){
+        if (currentValues.length === 1){
+            currentValues.forEach(value =>{
+                if (layer.filters.area.value.includes(value.value)){
+                    let initalBbox = value.bounding_box.slice(4,-1).split(",")
+                    bbox = [initalBbox[0].split(" "),initalBbox[1].split(" ")]
+                }
+            })
+        }
+        else{
+            currentValues.forEach(value =>{
+                X_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[0].split(" ")[0]))
+                X_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[1].split(" ")[0]))
+                Y_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[0].split(" ")[1]))
+                Y_coordinates.push(parseFloat(value.bounding_box.slice(4,-1).split(",")[1].split(" ")[1]))
+            })
+            bbox = [
+                [Math.min(...X_coordinates),Math.min(...Y_coordinates)],
+                [Math.max(...X_coordinates),Math.max(...Y_coordinates)]
+                ]
+        }
+        map.resize()
+        map.fitBounds(bbox)
+
+    }
+
+}
+
 export default (options = {}) =>
   new EBRLayer("Enhanced Building Risk", {
     active: true,
@@ -421,6 +466,7 @@ export default (options = {}) =>
         name: 'Area',
         type: 'multi',
         domain: [],
+        onChange: geoFilter,
         value: []
       },
       owner_type: {
@@ -567,20 +613,58 @@ const MeasureInfoBox = ({ layer }) => {
   )
 }
 const TabBase = ({ name, props, data, meta }) => {
-  const rows = props.reduce((a, c) => {
-    const d = (c === "expected_annual_flood_loss") ?
-        get(data, ["riskZone", "riverine", "aal"], null)
-      :
-        get(data, [c], null);
-      a.push(
-          <tr key={ c }>
-            <td>{ formatPropName(c) }</td>
-            <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
-          </tr>
-      )
-      return a;
-    },[])
-  return (
+    console.log('tab base data', data)
+    let rows = [];
+    let headers = [];
+    if (name === 'Actions'){
+        data.actionsData
+            .map((action,action_i) => {
+                let row = props.reduce((a, c) => {
+                    const d = get(action, [c], null);
+                     if (!headers.includes(formatPropName(c))) headers.push(formatPropName(c))
+                    a.push(
+                            <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
+                    )
+                    return a;
+                }
+                ,[])
+                row.push(
+                    <td>
+                        <Link
+                            className="btn btn-sm btn-primary"
+                            to={ `/actions/project/view/${action['id']}` } >
+                            View Action
+                        </Link>
+                    </td>
+                )
+                rows.push(row)
+            })
+    }else{
+         rows = props.reduce((a, c) => {
+            const d = (c === "expected_annual_flood_loss") ?
+                get(data, ["riskZone", "riverine", "aal"], null)
+                :
+                get(data, [c], null);
+            a.push(
+                <tr key={ c }>
+                    <td>{ formatPropName(c) }</td>
+                    <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
+                </tr>
+            )
+            return a;
+        },[])
+    }
+  return name === 'Actions' ?
+      (
+          <table className='table table-lightborder'>
+              <thead>
+              {headers.map(h => <th> {h} </th>)}
+              </thead>
+              <tbody>
+              { rows.map((r,r_i) => <tr key={ r_i }> {r} </tr>) }
+              </tbody>
+          </table>
+      ) : (
     <table>
       <tbody>
         { rows }
@@ -648,7 +732,12 @@ const TABS = [
       "storage_hazardous_materials",
       "topography",
       "expected_annual_flood_loss"
-    ] }
+    ] },
+    { name: "Actions",
+        props: [
+            "action_name",
+            "action_type"
+        ] }
 ]
 
 const formatPropName = prop =>
@@ -684,18 +773,23 @@ class BuildingModalBase extends React.Component {
   }
   fetchFalcorDeps() {
     return this.props.falcor.get(
-      ["building", "byId", this.props.id, TABS.reduce((a, c) => [...a, ...c.props], [])],
+      ["building", "byId", this.props.id, TABS.filter(tab => tab.name !== 'Actions').reduce((a, c) => [...a, ...c.props], [])],
       ["parcel", "meta", ["prop_class", "owner_type"]],
-      ["building","byId", this.props.id, "riskZone", "riverine", "aal"]
+      ["building","byId", this.props.id, "riskZone", "riverine", "aal"],
+        ['actions', 'assets','byId',[this.props.id],['action_name','action_type']]
     )
     .then(res => console.log("RES:" ,res))
   }
   renderTab() {
     const data = TABS.find(t => t.name === this.state.tab);
+    let actionsData = this.props.actionsData &&
+        this.props.actionsData[this.props.id] &&
+        this.props.actionsData[this.props.id].value ?
+        this.props.actionsData[this.props.id].value : {}
     return (
       <TabBase { ...data }
         meta={ this.props.parcelMeta }
-        data={ this.props.buildingData }/>
+        data={ {...this.props.buildingData, actionsData: actionsData}}/>
     )
   }
   render() {
@@ -726,7 +820,8 @@ class BuildingModalBase extends React.Component {
 const mapStateToProps = (state, { id }) => ({
   buildingData: get(state, ["graph", "building", "byId", id], {}),
   parcelMeta: get(state, ["graph", "parcel", "meta"], {}),
-  buildingRiskData : get(state,["graph","building","byId"])
+  buildingRiskData : get(state,["graph","building","byId"]),
+  actionsData : get(state,["graph","actions","assets","byId"])
 });
 const mapDispatchToProps = {};
 
