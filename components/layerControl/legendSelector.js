@@ -16,6 +16,7 @@ import ColorPalette from "./colorPalette"
 import COLOR_RANGES from "constants/color-ranges"
 
 import deepequal from "deep-equal"
+import get from "lodash.get"
 
 const StyledFilterPanel = styled.div`
   background-color: ${ props => props.theme.sidePanelHeaderBg };
@@ -81,7 +82,7 @@ class ColorSelector extends Component {
           <StyledPanelDropdown className="color-selector__dropdown"
             style={ { padding: "5px" } }>
             <div style={{height:"5px"}}/>
-            { legend.types && legend.types.length <= 1 ? null :
+            { !legend.types || (legend.types && legend.types.length <= 1) ? null :
               <SingleSelectFilter filter={ {
                   name: "Scale Type",
                   domain: legend.types,
@@ -98,7 +99,8 @@ class ColorSelector extends Component {
                 setFilter={ length => this.setState({ length }) }/>
             }
           {
-            COLOR_RANGES[this.state.length]
+            // COLOR_RANGES[this.state.length]
+            get(COLOR_RANGES, this.state.length, [])
               // .filter(cr => legend.type !== "ordinal" || cr.type === "qualitative")
               .map((cr, i) => {
                 return (

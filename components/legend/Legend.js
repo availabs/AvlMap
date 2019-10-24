@@ -31,13 +31,17 @@ const LegendContainer = styled.div`
 `
 const ColorBlock = styled.div`
   align-items: stretch;
-  flexGrow: 1;
+  flex-grow: 1;
   height: 20px;
 `
 const TextBlock = styled.div`
   color: ${ props => props.theme.textColor };
   display: inline-block;
   text-align: right;
+`
+const VerticalColorBlock = styled.div`
+  width: 20px;
+  height: 20px;
 `
 
 const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) => {
@@ -82,7 +86,7 @@ const VerticalLegend = ({ type, format, scale, range, domain, title, layer }) =>
               domain.map(d =>
                 <tr key={ d }>
                   <td>
-                    <div style={ { width: "20px", height: "20px", backgroundColor: scale(d) } }/>
+                    <VerticalColorBlock style={ { backgroundColor: scale(d) } }/>
                   </td>
                   <td style={ { paddingLeft: "5px" } }>
                     { format(d) }

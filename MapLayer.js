@@ -19,6 +19,7 @@ const DEFAULT_OPTIONS = {
 	filters: false,
 	select: false,
   onClick: false,
+	onZoom: false,
 
   onHover: false,
   hoveredFeatureIds: new Set(),
@@ -119,11 +120,17 @@ class MapLayer {
     if (this.onHover) {
       this.addOnHover(map);
     }
+		if (this.onZoom) {
+			this.addOnZoom(map);
+		}
 	}
 	onRemove(map) {
 		this._onRemove(map);
 	}
 	_onRemove(map) {
+		if (this.onZoom) {
+			this.removeOnZoom(map);
+		}
     if (this.onHover) {
       this.removeOnHover(map);
     }
@@ -136,6 +143,18 @@ class MapLayer {
 		if (this.popover) {
 			this.removePopover(map);
 		}
+	}
+
+	addOnZoom(map) {
+		const func = () => {
+			const zoom = map.getZoom();
+			this.onZoom(zoom);
+		}
+		this.boundFunctions["on-zoom"] = func;
+		map.on("zoom", func);
+	}
+	removeOnZoom(map) {
+		map.off("zoom", this.boundFunctions["on-zoom"]);
 	}
 
   addOnHover(map) {
@@ -306,7 +325,7 @@ class MapLayer {
 
     if (e.features.length) {
 			const data = dataFunc.call(this, e.features[0], e.features);
-			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
+			map.getCanvas().style.cursor = (data && data.length) ? 'pointer' : '';
 
 	    const { pinned } = popover;
 	    if (pinned) return;
