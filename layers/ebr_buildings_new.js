@@ -5,7 +5,7 @@ import { update } from "utils/redux-falcor/components/duck"
 import { falcorGraph, falcorChunkerNiceWithUpdate } from "store/falcorGraph"
 import { connect } from 'react-redux';
 import { reduxFalcor, UPDATE as REDUX_UPDATE } from 'utils/redux-falcor'
-
+import {asyncContainer, Typeahead} from 'react-bootstrap-typeahead';
 import get from "lodash.get"
 import styled from "styled-components"
 
@@ -24,9 +24,9 @@ import mapboxgl from "react-map-gl/dist/es5/utils/mapboxgl";
 import { getColorRange } from "constants/color-ranges";
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
-
+const AsyncTypeahead = asyncContainer(Typeahead);
 const IDENTITY = i => i;
-
+let isLoading = false;
 class EBRLayer extends MapLayer {
   onAdd(map) {
     register(this, REDUX_UPDATE, ["graph"]);
@@ -555,6 +555,29 @@ export default (options = {}) =>
     ...options
   })
 
+/*
+const handleSearch = (text,{layer}) =>{
+    isLoading = true;
+    if(text.length >=3){
+        console.log('layer',layer.filters.area.value)
+        /*
+        return this.props.falcor.get(['building','byGeoid',layer.filters.area.value,'propType',prop_class,'ownerType',this.props.owner_type,'text',text,'numResults',this.props.num_results,'expected_annual_flood_loss'])
+            .then(response =>{
+                let graph = response.json.building.byGeoid['36025'].propType;
+                prop_class.forEach(prop =>{
+                    let addressArrayData = graph[prop].ownerType[this.props.owner_type].text[text].numResults[this.props.num_results].expected_annual_flood_loss
+                    this.setState({
+                        isLoading: false,
+                        options: addressArrayData ? addressArrayData : []
+                    })
+                })
+            })
+         */
+}
+}
+ */
+
+
 const MeasureInfoBox = ({ layer }) => {
   let format = d => d;
   let replacement_value = '';
@@ -576,39 +599,53 @@ const MeasureInfoBox = ({ layer }) => {
     flood_loss_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
   }
   return (
-    <table className="table table-sm"
-      style={ {
-        margin: "0px",
-        fontSize: "1rem"
-      } }>
-      <tbody>
-      {replacement_value && replacement_value !== "$0" ?
-          <tr>
-              <td>Replacement Value Total</td>
-              <td>{ replacement_value }</td>
-          </tr>
-          :
-          null
-      }
+    <div>
+        <table className="table table-sm"
+               style={ {
+                   margin: "0px",
+                   fontSize: "1rem"
+               } }>
+            <tbody>
+            {replacement_value && replacement_value !== "$0" ?
+                <tr>
+                    <td>Replacement Value Total</td>
+                    <td>{ replacement_value }</td>
+                </tr>
+                :
+                null
+            }
 
-        {flood_loss_value && flood_loss_value !== "$0" ?
-            <tr>
-              <td>Expected Annual Flood Loss Total </td>
-              <td>{ flood_loss_value }</td>
-            </tr>
-            :
-            null
-        }
-      {
-        layer.filters.risk.value.map(r =>
-          <tr key={ r }>
-            <td>{ `${ getFilterName(layer, "risk", r) } Total` }</td>
-            <td>{ format(layer.measureData.filter(({ risks }) => risks.includes(r)).reduce((a, c) => a + c.value, 0)) }</td>
-          </tr>
-        )
-      }
-      </tbody>
-    </table>
+            {flood_loss_value && flood_loss_value !== "$0" ?
+                <tr>
+                    <td>Expected Annual Flood Loss Total </td>
+                    <td>{ flood_loss_value }</td>
+                </tr>
+                :
+                null
+            }
+            {
+                layer.filters.risk.value.map(r =>
+                    <tr key={ r }>
+                        <td>{ `${ getFilterName(layer, "risk", r) } Total` }</td>
+                        <td>{ format(layer.measureData.filter(({ risks }) => risks.includes(r)).reduce((a, c) => a + c.value, 0)) }</td>
+                    </tr>
+                )
+            }
+            </tbody>
+        </table>
+        {/*
+        <AsyncTypeahead
+            isLoading = {isLoading}
+            labelKey="address"
+            id="my-typeahead-id"
+            minLength={3}
+            onSearch={handleSearch(layer)}
+            placeholder="Search for an address..."
+        />
+        */}
+    </div>
+
+
   )
 }
 const TabBase = ({ name, props, data, meta }) => {
