@@ -20,14 +20,79 @@ import { fnum } from "utils/sheldusUtils"
 
 import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
-import mapboxgl from "react-map-gl/dist/es5/utils/mapboxgl";
+import ReactMapboxGl, { Layer, Feature } from 'react-mapbox-gl';
 import { getColorRange } from "constants/color-ranges";
+
+var _ = require('lodash')
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
 const AsyncTypeahead = asyncContainer(Typeahead);
 const IDENTITY = i => i;
-let isLoading = false;
+let colouredBuildings = [];
+let filteredBuildings = [];
+let color = {};
 class EBRLayer extends MapLayer {
+
+    boundingBoxCenter(bbox,building_id){
+        const SELECTED_BULDING_COLOR = "#cb181d",
+            FILTERED_COLOR = "#666",
+            EBR_LINE_COLOR = "#6baed6",
+            DEFAULT_COLOR = "#000";
+
+        this.map.setCenter(bbox)
+        let zoom_level = this.map.getZoom()
+        if(zoom_level <15){
+            this.map.setZoom(15)
+        }else{
+            this.map.setZoom()
+        }
+        this.map.setPaintProperty(
+            'ebr',
+            'fill-color',
+            ["match", ["to-string", ["get", "id"]],
+                building_id.toString(), SELECTED_BULDING_COLOR,
+                colouredBuildings.length ? colouredBuildings.filter(id => id !== building_id.toString()) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal",color]],
+                filteredBuildings.length ? filteredBuildings.filter(id => id !== building_id.toString()) : "no-filtered", FILTERED_COLOR,
+                DEFAULT_COLOR
+            ],
+            { validate: false }
+        )
+
+    }
+
+    getBackToOriginalBound(area){
+        if(area){
+            return falcorGraph.get(['geo',area,"boundingBox"])
+                .then(response =>{
+                    let graph = {}
+                    let bbox = []
+                    if(area.length === 1){
+                        graph = response.json.geo[area].boundingBox
+                        let initalBbox = graph.slice(4,-1).split(",")
+                        bbox = [initalBbox[0].split(" "),initalBbox[1].split(" ")]
+                    }else{
+                        graph = response.json.geo
+                        let X_coordinates = []
+                        let Y_coordinates = []
+                        area.forEach(geoid => {
+                            X_coordinates.push(parseFloat(graph[geoid].boundingBox.slice(4, -1).split(",")[0].split(" ")[0]))
+                            X_coordinates.push(parseFloat(graph[geoid].boundingBox.slice(4, -1).split(",")[1].split(" ")[0]))
+                            Y_coordinates.push(parseFloat(graph[geoid].boundingBox.slice(4, -1).split(",")[0].split(" ")[1]))
+                            Y_coordinates.push(parseFloat(graph[geoid].boundingBox.slice(4, -1).split(",")[1].split(" ")[1]))
+                        })
+                        bbox = [
+                            [Math.min(...X_coordinates), Math.min(...Y_coordinates)],
+                            [Math.max(...X_coordinates), Math.max(...Y_coordinates)]
+                        ]
+                    }
+                    this.map.resize()
+                    this.map.fitBounds(bbox)
+                    })
+
+        }
+
+    }
+
   onAdd(map) {
     register(this, REDUX_UPDATE, ["graph"]);
     const geoLevel = "cousubs";
@@ -214,11 +279,11 @@ class EBRLayer extends MapLayer {
         return false;
     }
   }
+
   render(map) {
     return this.getBuildingIdsFromFalcorCache()
       .then(buildingids => {
-        const filteredBuildingids = [];
-
+          const filteredBuildingids = [];
         const shouldFilter = this.makeShouldFilter();
 
         if (this.filters.measure.value === 'riskZone') {
@@ -252,26 +317,30 @@ class EBRLayer extends MapLayer {
           }
           else {
             filteredBuildingids.push(id.toString());
+            filteredBuildings.push(id.toString());
           }
         });
         return [filteredBuildingids, data,legendData]
       })
       .then(([filteredBuildingids = [], data = [], legendData = []]) => {
-        const coloredBuildingIds = [],
-          riskFilter = this.filters.risk.value,
+        const riskFilter = this.filters.risk.value,
           atRiskIds = [];
         this.infoBoxes["measure"].show = Boolean(data.length);
         this.measureData = data;
         this.legendData = legendData;
+        const coloredBuildingIds = [];
         const colorScale = this.getColorScale(data),
           colors = data.reduce((a, c) => {
             a[c.id] = colorScale(c.value);
             coloredBuildingIds.push(c.id.toString());
+            colouredBuildings.push(c.id.toString());
             if (riskFilter.reduce((aa, cc) => aa || c.risks.includes(cc), false)) {
               atRiskIds.push(c.id.toString());
             }
             return a;
           }, {});
+        color = colors
+
 // REDDS: ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a", "#ef3b2c", "#cb181d", "#99000d"]
         const SELECTED_BULDING_COLOR = "#cb181d",
           FILTERED_COLOR = "#666",
@@ -281,6 +350,7 @@ class EBRLayer extends MapLayer {
         const selectedBuildingId = this.modals.building.show ? this.selectedBuildingId : "none";
 
         map.setFilter("ebr-line", ["in", "id", ...atRiskIds.map(id => +id)]);
+
         map.setPaintProperty(
           "ebr-line",
           "line-color",
@@ -290,17 +360,18 @@ class EBRLayer extends MapLayer {
           ]
         )
 
-      	map.setPaintProperty(
-      		'ebr',
-      		'fill-color',
-      		["match", ["to-string", ["get", "id"]],
-            selectedBuildingId, SELECTED_BULDING_COLOR,
-            coloredBuildingIds.length ? coloredBuildingIds.filter(id => id !== selectedBuildingId) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
-            filteredBuildingids.length ? filteredBuildingids.filter(id => id !== selectedBuildingId) : "no-filtered", FILTERED_COLOR,
-            DEFAULT_COLOR
-          ],
-          { validate: false }
-      	)
+
+          map.setPaintProperty(
+              'ebr',
+              'fill-color',
+              ["match", ["to-string", ["get", "id"]],
+                  selectedBuildingId, SELECTED_BULDING_COLOR,
+                  coloredBuildingIds.length ? coloredBuildingIds.filter(id => id !== selectedBuildingId) : "no-colored", ["get", ["to-string", ["get", "id"]], ["literal", colors]],
+                  filteredBuildingids.length ? filteredBuildingids.filter(id => id !== selectedBuildingId) : "no-filtered", FILTERED_COLOR,
+                  DEFAULT_COLOR
+              ],
+              { validate: false }
+          )
 
       })
   }
@@ -375,7 +446,7 @@ let geoFilter = function (map, layer, value) {
 
 }
 
-export default (options = {}) =>
+const EBR = (options = {}) =>
   new EBRLayer("Enhanced Building Risk", {
     active: true,
     falcorCache: {},
@@ -528,13 +599,14 @@ export default (options = {}) =>
         show: false
       }
     },
+
     onClick: {
       layers: ["ebr"],
       dataFunc: function(features) {
         if (!features.length) return;
 
         const props = { ...features[0].properties };
-
+        console.log('--',props.id.toString())
         this.selectedBuildingId = props.id.toString();
         this.map && this.render(this.map);
 
@@ -555,30 +627,9 @@ export default (options = {}) =>
     ...options
   })
 
-/*
-const handleSearch = (text,{layer}) =>{
-    isLoading = true;
-    if(text.length >=3){
-        console.log('layer',layer.filters.area.value)
-        /*
-        return this.props.falcor.get(['building','byGeoid',layer.filters.area.value,'propType',prop_class,'ownerType',this.props.owner_type,'text',text,'numResults',this.props.num_results,'expected_annual_flood_loss'])
-            .then(response =>{
-                let graph = response.json.building.byGeoid['36025'].propType;
-                prop_class.forEach(prop =>{
-                    let addressArrayData = graph[prop].ownerType[this.props.owner_type].text[text].numResults[this.props.num_results].expected_annual_flood_loss
-                    this.setState({
-                        isLoading: false,
-                        options: addressArrayData ? addressArrayData : []
-                    })
-                })
-            })
-         */
-}
-}
- */
 
+const MeasureInfoBox = ({ layer}) => {
 
-const MeasureInfoBox = ({ layer }) => {
   let format = d => d;
   let replacement_value = '';
   let flood_loss_value = '';
@@ -599,7 +650,7 @@ const MeasureInfoBox = ({ layer }) => {
     flood_loss_value = format(layer.legendData.reduce((a, c) => a + c.value, 0))
   }
   return (
-    <div>
+      <div>
         <table className="table table-sm"
                style={ {
                    margin: "0px",
@@ -631,23 +682,24 @@ const MeasureInfoBox = ({ layer }) => {
                     </tr>
                 )
             }
+            {
+                <tr>
+                    <td>Search For an Address</td>
+                    <td>
+                        <AddressSearch
+                            layer = {[layer]}
+                        />
+                    </td>
+                </tr>
+            }
             </tbody>
         </table>
-        {/*
-        <AsyncTypeahead
-            isLoading = {isLoading}
-            labelKey="address"
-            id="my-typeahead-id"
-            minLength={3}
-            onSearch={handleSearch(layer)}
-            placeholder="Search for an address..."
-        />
-        */}
-    </div>
+      </div>
 
 
   )
 }
+export default EBR
 const TabBase = ({ name, props, data, meta }) => {
   const rows = props.reduce((a, c) => {
     const d = (c === "expected_annual_flood_loss") ?
@@ -805,6 +857,128 @@ class BuildingModalBase extends React.Component {
     )
   }
 }
+
+class AddressSearch extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isLoading: false,
+            options: [],
+            allowNew: true,
+            multiple: false,
+        };
+        this.handleSearch = this.handleSearch.bind(this);
+
+    }
+
+    handleSearch(query) {
+        this.setState({
+            isLoading: true
+        })
+        if (query.length >= 3) {
+            let prop_class = [];
+            let risk = [];
+            let owner_type = [];
+            if (this.props.layer[0].filters.prop_category.value.length === 0 && this.props.layer[0].filters.prop_class.value.length === 0) {
+                prop_class = ['no_prop']
+            } else if (this.props.layer[0].filters.prop_category.value.length >= 1 && this.props.layer[0].filters.prop_class.value.length === 0) {
+                prop_class = this.props.layer[0].filters.prop_category.value
+            } else if (this.props.layer[0].filters.prop_category.value.length >= 1 && this.props.layer[0].filters.prop_class.value.length >= 1) {
+                prop_class = this.props.layer[0].filters.prop_class.value
+            }
+            if (this.props.layer[0].filters.risk.value.length === 0) {
+                risk = ['no_risk']
+            }
+            if (this.props.layer[0].filters.risk.value.length >= 1) {
+                if (this.props.layer[0].filters.risk.value.includes("100-year")) {
+                    risk = ["flood_100"]
+                } else {
+                    risk = ["flood_500"]
+                }
+            }
+            if (this.props.layer[0].filters.owner_type.value.length === 0) {
+                owner_type = ['no_owner']
+            } else {
+                owner_type = this.props.layer[0].filters.owner_type.value
+            }
+            if(this.props.layer[0].filters.measure.value[0] === "riskZone"){
+                return falcorGraph.get(['building','byGeoid', this.props.layer[0].filters.area.value,'propType',prop_class,'ownerType',owner_type,'text',query,'numResults',[10],'expected_annual_flood_loss'])
+                    .then(response =>{
+                        let graph = response.json.building.byGeoid
+                        if(graph){
+                            let addressData = []
+                            this.props.layer[0].filters.area.value.forEach(geoid => {
+                                prop_class.forEach(prop => {
+                                    addressData.push(graph[geoid].propType[prop].ownerType[owner_type].text[query].numResults[10].expected_annual_flood_loss)
+                                })
+
+                            })
+                            this.setState({
+                                isLoading: false,
+                                options:  addressData.flat(1) ? addressData.flat(1) : []
+                            })
+                        }
+                    })
+            }else{
+                return falcorGraph.get(['building', 'byGeoid', this.props.layer[0].filters.area.value, 'propType',prop_class,'ownerType',owner_type,'risk',risk,'text',query,'numResults', [10],'address'])
+                    .then(response => {
+                        let graph = response.json.building.byGeoid
+                        if (graph) {
+                            let addressData = []
+                            this.props.layer[0].filters.area.value.forEach(geoid => {
+                                prop_class.forEach(prop => {
+                                    addressData.push(graph[geoid].propType[prop].ownerType[owner_type].risk[risk].text[query].numResults[10].address)
+                                })
+
+                            })
+                            this.setState({
+                                isLoading: false,
+                                options:  addressData.flat(1) ? addressData.flat(1) : []
+                            })
+                        }
+
+                    })
+            }
+        }
+    }
+
+
+    onChangeFilter(selected) {
+        let building = selected.map(d => d.address)
+        let building_id = selected.map(d => d.building_id)
+        if (building_id.length === 1) {
+            return falcorGraph.get(['parcel', 'byAddress', building, 'lng_lat'])
+                .then(response => {
+                    let point = response.json.parcel.byAddress[building]
+                    if (point) {
+                        this.props.layer[0].boundingBoxCenter(point.lng_lat, building_id)
+                    }
+
+                })
+        }
+        if(building_id.length === 0){
+            this.props.layer[0].getBackToOriginalBound(this.props.layer[0].filters.area.value)
+        }
+    }
+
+    render(){
+        return (
+            <div>
+                <AsyncTypeahead
+                    isLoading = {this.state.isLoading}
+                    labelKey={option => `${option.address}`}
+                    id="my-typeahead-id"
+                    minLength={3}
+                    onSearch={this.handleSearch}
+                    placeholder="Search for an address..."
+                    options = {this.state.options}
+                    onChange = {this.onChangeFilter.bind(this)}
+                />
+            </div>
+        )
+    }
+}
+
 const mapStateToProps = (state, { id }) => ({
   buildingData: get(state, ["graph", "building", "byId", id], {}),
   parcelMeta: get(state, ["graph", "parcel", "meta"], {}),
@@ -813,6 +987,7 @@ const mapStateToProps = (state, { id }) => ({
 const mapDispatchToProps = {};
 
 const BuildingModal = connect(mapStateToProps, mapDispatchToProps)(reduxFalcor(BuildingModalBase))
+const AddSearch = connect(mapStateToProps,mapDispatchToProps)(reduxFalcor(AddressSearch))
 
 const TabSelector = ({ name, isActive, select }) =>
   <StyledTabSelector isActive={ isActive }
