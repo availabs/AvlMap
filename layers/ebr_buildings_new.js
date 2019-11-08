@@ -20,11 +20,10 @@ import { fnum } from "utils/sheldusUtils"
 
 import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
-import ReactMapboxGl, { Layer, Feature } from 'react-mapbox-gl';
 import { getColorRange } from "constants/color-ranges";
-
-var _ = require('lodash')
 import {Link} from "react-router-dom";
+var _ = require('lodash')
+
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
 const AsyncTypeahead = asyncContainer(Typeahead);
