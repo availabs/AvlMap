@@ -24,6 +24,7 @@ import ReactMapboxGl, { Layer, Feature } from 'react-mapbox-gl';
 import { getColorRange } from "constants/color-ranges";
 
 var _ = require('lodash')
+import {Link} from "react-router-dom";
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
 const LEGEND_RISK_COLOR_RANGE = getColorRange(6, "Reds");
 const AsyncTypeahead = asyncContainer(Typeahead);
@@ -606,7 +607,7 @@ const EBR = (options = {}) =>
         if (!features.length) return;
 
         const props = { ...features[0].properties };
-        console.log('--',props.id.toString())
+
         this.selectedBuildingId = props.id.toString();
         this.map && this.render(this.map);
 
@@ -701,20 +702,58 @@ const MeasureInfoBox = ({ layer}) => {
 }
 export default EBR
 const TabBase = ({ name, props, data, meta }) => {
-  const rows = props.reduce((a, c) => {
-    const d = (c === "expected_annual_flood_loss") ?
-        get(data, ["riskZone", "riverine", "aal"], null)
-      :
-        get(data, [c], null);
-      a.push(
-          <tr key={ c }>
-            <td>{ formatPropName(c) }</td>
-            <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
-          </tr>
-      )
-      return a;
-    },[])
-  return (
+    console.log('tab base data', data)
+    let rows = [];
+    let headers = [];
+    if (name === 'Actions'){
+        data.actionsData
+            .map((action,action_i) => {
+                let row = props.reduce((a, c) => {
+                    const d = get(action, [c], null);
+                     if (!headers.includes(formatPropName(c))) headers.push(formatPropName(c))
+                    a.push(
+                            <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
+                    )
+                    return a;
+                }
+                ,[])
+                row.push(
+                    <td>
+                        <Link
+                            className="btn btn-sm btn-primary"
+                            to={ `/actions/project/view/${action['id']}` } >
+                            View Action
+                        </Link>
+                    </td>
+                )
+                rows.push(row)
+            })
+    }else{
+         rows = props.reduce((a, c) => {
+            const d = (c === "expected_annual_flood_loss") ?
+                get(data, ["riskZone", "riverine", "aal"], null)
+                :
+                get(data, [c], null);
+            a.push(
+                <tr key={ c }>
+                    <td>{ formatPropName(c) }</td>
+                    <td>{ (d !== null) && (d !== 'null') ? formatPropValue(c, d, meta) : "unknown" }</td>
+                </tr>
+            )
+            return a;
+        },[])
+    }
+  return name === 'Actions' ?
+      (
+          <table className='table table-lightborder'>
+              <thead>
+              {headers.map(h => <th> {h} </th>)}
+              </thead>
+              <tbody>
+              { rows.map((r,r_i) => <tr key={ r_i }> {r} </tr>) }
+              </tbody>
+          </table>
+      ) : (
     <table>
       <tbody>
         { rows }
@@ -782,7 +821,12 @@ const TABS = [
       "storage_hazardous_materials",
       "topography",
       "expected_annual_flood_loss"
-    ] }
+    ] },
+    { name: "Actions",
+        props: [
+            "action_name",
+            "action_type"
+        ] }
 ]
 
 const formatPropName = prop =>
@@ -818,18 +862,23 @@ class BuildingModalBase extends React.Component {
   }
   fetchFalcorDeps() {
     return this.props.falcor.get(
-      ["building", "byId", this.props.id, TABS.reduce((a, c) => [...a, ...c.props], [])],
+      ["building", "byId", this.props.id, TABS.filter(tab => tab.name !== 'Actions').reduce((a, c) => [...a, ...c.props], [])],
       ["parcel", "meta", ["prop_class", "owner_type"]],
-      ["building","byId", this.props.id, "riskZone", "riverine", "aal"]
+      ["building","byId", this.props.id, "riskZone", "riverine", "aal"],
+        ['actions', 'assets','byId',[this.props.id],['action_name','action_type']]
     )
     .then(res => console.log("RES:" ,res))
   }
   renderTab() {
     const data = TABS.find(t => t.name === this.state.tab);
+    let actionsData = this.props.actionsData &&
+        this.props.actionsData[this.props.id] &&
+        this.props.actionsData[this.props.id].value ?
+        this.props.actionsData[this.props.id].value : {}
     return (
       <TabBase { ...data }
         meta={ this.props.parcelMeta }
-        data={ this.props.buildingData }/>
+        data={ {...this.props.buildingData, actionsData: actionsData}}/>
     )
   }
   render() {
@@ -982,7 +1031,8 @@ class AddressSearch extends React.Component {
 const mapStateToProps = (state, { id }) => ({
   buildingData: get(state, ["graph", "building", "byId", id], {}),
   parcelMeta: get(state, ["graph", "parcel", "meta"], {}),
-  buildingRiskData : get(state,["graph","building","byId"])
+  buildingRiskData : get(state,["graph","building","byId"]),
+  actionsData : get(state,["graph","actions","assets","byId"])
 });
 const mapDispatchToProps = {};
 

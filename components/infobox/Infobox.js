@@ -103,7 +103,7 @@ class InfoBox extends Component {
       activeLayers = layers.filter(l => l.active),
       activeLegends = activeLayers
         .reduce((a, c) =>
-          c.legend && c.legend.active && c.legend.domain.length ? a.concat({ legend: c.legend, layer: c }) : a
+          c.legend && (c.legend.active !== false) && c.legend.domain.length ? a.concat({ legend: c.legend, layer: c }) : a
         , []),
       activeInfoBoxes = activeLayers
         .reduce((a, c) =>

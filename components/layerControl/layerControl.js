@@ -87,7 +87,7 @@ const ModalToggle = ({ layer, toggle }) =>
           <ModalToggle layer={ layer }
             toggle={ e => this.props.toggleModal(layer.name) }/>
         }
-        { !showConfig || !layer.legend || !layer.legend.active ? null :
+        { !showConfig || !layer.legend || !layer.legend.active || (layer.legend.legendSelector === false) ? null :
           <LegendSelector layer={ layer }
             updateLegend={ this.props.updateLegend }/>
         }
