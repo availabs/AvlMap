@@ -67,6 +67,9 @@ const ModalToggle = ({ layer, toggle }) =>
       this.props.toggleLayerVisibility(layer.name)
     }
 
+    const deleteDynamicLayer = () =>
+      this.props.deleteDynamicLayer(layer.name)
+
     return (
       <div >
         <StyledLayerControl draggable={ true }
@@ -77,8 +80,9 @@ const ModalToggle = ({ layer, toggle }) =>
           <LayerHeader
             layer={ layer }
             onRemoveLayer={ removeLayer }
+            deleteDynamicLayer={ deleteDynamicLayer }
             onToggleVisibility={ toggleVisibility }
-            isVisible={ layer.visible }
+            isVisible={ layer._isVisible }
             onToggleEnableConfig={ toggleConfig }
             actionMap={ actionMap }
             showRemoveLayer={ this.props.showRemoveLayer }/>

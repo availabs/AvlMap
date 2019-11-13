@@ -129,14 +129,20 @@ const ActionBar = ({ layer, actions, actionMap }) =>
     }
   </ActionBarContainer>
 
+class RemoveIcon extends React.Component {
+  render() {
+    return (
+      <div { ...this.props }><span className="fa fa-close"/></div>
+    )
+  }
+}
+
 const LayerPanelHeader = ({
   className,
-  idx,
   isConfigActive,
   isDragNDropEnabled,
   isVisible,
   label,
-  layerId,
   layerType,
   layer,
   labelRCGColorValues,
@@ -144,6 +150,7 @@ const LayerPanelHeader = ({
   onUpdateLayerLabel,
   onToggleEnableConfig,
   onRemoveLayer,
+  deleteDynamicLayer,
   showRemoveLayer,
   actionMap
 }) => (
@@ -164,7 +171,7 @@ const LayerPanelHeader = ({
       )}
       <PanelHeaderAction
         className="layer__visibility-toggle"
-        id={layerId}
+        id={layer.name}
         tooltip={isVisible ? 'hide layer' : 'show layer'}
         onClick={onToggleVisibility}
         IconComponent={isVisible ? EyeSeen : EyeUnseen}
@@ -186,7 +193,7 @@ const LayerPanelHeader = ({
       { layer.loading ?
         <PanelHeaderAction
           className="layer__loading-layer"
-          id={layerId}
+          id={layer.name}
           tooltip={'Layer Loading'}
           onClick={null}
           tooltipType="error"
@@ -200,20 +207,29 @@ const LayerPanelHeader = ({
       {showRemoveLayer ? (
         <PanelHeaderAction
           className="layer__remove-layer"
-          id={layerId}
+          id={layer.name}
           tooltip={'Remove layer'}
           onClick={onRemoveLayer}
           tooltipType="error"
-          IconComponent={Trash}
+          IconComponent={ RemoveIcon }
 
         />
       ) : null}
+      { !layer._isDynamic ? null :
+        <PanelHeaderAction
+          className="layer__remove-layer"
+          id={layer.name}
+          tooltip={'Delete Dyanmic Layer'}
+          onClick={ deleteDynamicLayer }
+          tooltipType="error"
+          IconComponent={ Trash }/>
+      }
       <PanelHeaderAction
         className="layer__enable-config"
-        id={layerId}
+        id={layer.name}
         tooltip={'Layer settings'}
         onClick={onToggleEnableConfig}
-        IconComponent={ArrowDown}
+        IconComponent={ ArrowDown }
 
       />
     </HeaderActionSection>

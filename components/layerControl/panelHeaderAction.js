@@ -85,7 +85,7 @@ export default class PanelHeaderAction extends Component {
         active={active}
         hoverColor={hoverColor}
         flush={flush}>
-        
+
         <this.props.IconComponent
           data-tip
           data-for={`${tooltip}_${id}`}

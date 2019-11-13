@@ -20,10 +20,54 @@ import './avlmap.css'
 mapboxgl.accessToken = MAPBOX_TOKEN
 
 let UNIQUE_ID = 0;
-const getUniqueId = () =>
-	`unique-id-${ ++UNIQUE_ID }`
+const getUniqueId = (str = "unique-id") =>
+	`${ str }-${ ++UNIQUE_ID }`
+
+const getMapPreview = (map, style, size=[60, 40]) => {
+  if (!Boolean(map)) return "";
+
+  return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
+    `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
+    `${ size.join('x') }?` +
+    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
+}
+const getStaticImageUrl = style =>
+  `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
+    `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
+    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`
+
+export const DEFAULT_STYLES = [
+  { name: "Dark",
+    style: "mapbox://styles/am3081/cjqqukuqs29222sqwaabcjy29" },
+  { name: "Light",
+    style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te' },
+  { name: "Satellite",
+    style: 'mapbox://styles/am3081/cjya6wla3011q1ct52qjcatxg' },
+  { name: "Satellite Streets",
+    style: `mapbox://styles/am3081/cjya70364016g1cpmbetipc8u` }
+]
+DEFAULT_STYLES.forEach(style => {
+  style.url = getStaticImageUrl(style.style.slice(23));
+})
 
 class AvlMap extends React.Component {
+
+	static defaultProps = {
+		id: getUniqueId(),
+		height: "100%",
+	  styles: [...DEFAULT_STYLES],
+	  style: "Dark",
+		center: [-73.680647, 42.68],
+		minZoom: 2,
+		zoom: 10,
+		layers: [],
+	  mapControl: 'bottom-right',
+	  scrollZoom: true,
+	  sidebar: true,
+	  update: [],
+		header: "AVAIL Map",
+	  sidebarPages: ["layers", "basemaps"]
+	}
 
   static ActiveMaps = {};
   static addActiveMap = (id, component, map) => {
@@ -46,6 +90,7 @@ class AvlMap extends React.Component {
     super(props);
   	this.state = {
   		map: null,
+			dynamicLayers: [],
   		activeLayers: [],
       sources: {},
   		popover: {
@@ -154,6 +199,66 @@ class AvlMap extends React.Component {
     this.setContainerSize();
   }
 
+	addDynamicLayer(layerName, layerFactory) {
+		if (!this.state.map) return;
+
+		const newLayer = layerFactory(),
+			newLayerName = newLayer.name,
+			allLayers = [
+				...this.props.layers,
+				...this.state.dynamicLayers
+			];
+
+		newLayer._isDynamic = true;
+		newLayer.initComponent(this);
+		newLayer.initMap(this.state.map);
+
+		const adjustName = allLayers.reduce((a, c) =>
+			a || c.name === newLayerName
+		, false)
+
+		if (adjustName) {
+			const regExpStr = newLayerName + " " + "\\((\\d+)\\)",
+				regex = new RegExp(regExpStr),
+				num = allLayers.reduce((a, c) => {
+					const match = regex.exec(c.name);
+					if (match) {
+						return Math.max(a, +match[1]);
+					}
+					return a;
+				}, 1);
+			newLayer.name = `${ newLayerName } (${ num + 1 })`;
+		}
+  	if (newLayer.active) {
+      this._addLayer(this.state.map, newLayer);
+      ++newLayer.loading;
+      newLayer._onAdd(this.state.map);
+      Promise.resolve(newLayer.onAdd(this.state.map))
+        .then(() => --newLayer.loading)
+        .then(() => newLayer.render(this.state.map))
+        .then(() => this.forceUpdate());
+      this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] });
+  	}
+
+		this.setState({
+			dynamicLayers: [
+				...this.state.dynamicLayers,
+				newLayer
+			]
+		})
+	}
+	deleteDynamicLayer(layerName) {
+		const layer = this.getLayer(layerName);
+
+		if (!layer) return;
+
+		this.removeLayer(layerName);
+
+		this.setState({
+			dynamicLayers: this.state.dynamicLayers.filter(l => l.name !== layerName)
+		})
+	}
+
   sendMessage(layerName, data) {
     data = {
       id: getUniqueId(),
@@ -194,7 +299,10 @@ class AvlMap extends React.Component {
   }
 
   getLayer(layerName) {
-  	return this.props.layers.reduce((a, c) => c.name === layerName ? c : a, null);
+  	return [
+			...this.props.layers,
+			...this.state.dynamicLayers
+		].reduce((a, c) => c.name === layerName ? c : a, null);
   }
 
   _addLayer(map, newLayer, activeLayers=this.state.activeLayers) {
@@ -304,6 +412,7 @@ class AvlMap extends React.Component {
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer) {
   		layer.toggleVisibility(this.state.map);
+			this.forceUpdate();
   	}
   }
 
@@ -524,6 +633,10 @@ class AvlMap extends React.Component {
       updateModal: this.updateModal.bind(this),
 			toggleInfoBox: this.toggleInfoBox.bind(this)
 		}
+		const allLayers = [
+			...this.props.layers,
+			...this.state.dynamicLayers
+		]
 		return (
 			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
 
@@ -532,10 +645,11 @@ class AvlMap extends React.Component {
             transitioning={ this.state.transitioning }
             onOpenOrClose={ this.onOpenOrClose.bind(this) }
             onTransitionStart={ this.onTransitionStart.bind(this) }
-            layers={ this.props.layers }
+            layers={ allLayers }
   					activeLayers={ this.state.activeLayers }
   					addLayer={ this.addLayer.bind(this) }
   					removeLayer={ this.removeLayer.bind(this) }
+						deleteDynamicLayer={ this.deleteDynamicLayer.bind(this) }
   					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
   					actionMap= { actionMap }
   					header={ this.props.header }
@@ -553,7 +667,7 @@ class AvlMap extends React.Component {
             map={ this.state.map }/>
         }
 
-				<Infobox layers={ this.props.layers }/>
+				<Infobox layers={ allLayers }/>
 
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
@@ -562,10 +676,10 @@ class AvlMap extends React.Component {
             height: this.state.height
           } }/>
 
-				<MapModal layers={ this.props.layers }
+				<MapModal layers={ allLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-        <MapActions layers={ this.props.layers }
+        <MapActions layers={ allLayers }
           sidebar={ this.props.sidebar }
           isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
           actionMap={ actionMap }/>
@@ -574,7 +688,7 @@ class AvlMap extends React.Component {
           messages={ this.state.messages }
           dismiss={ this.dismissMessage.bind(this) }/>
 
-        <LoadingLayers layers={ this.props.layers }
+        <LoadingLayers layers={ allLayers }
           sidebar={ this.props.sidebar }
           isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }/>
 			</div>
@@ -628,50 +742,6 @@ const LoadingLayers = ({ layers, sidebar, isOpen }) => {
       }
     </LoadingContainer>
   )
-}
-
-const getMapPreview = (map, style, size=[60, 40]) => {
-  if (!Boolean(map)) return "";
-
-  return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
-    `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
-    `${ size.join('x') }?` +
-    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
-}
-const getStaticImageUrl = style =>
-  `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
-    `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
-    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`
-
-export const DEFAULT_STYLES = [
-  { name: "Dark",
-    style: "mapbox://styles/am3081/cjqqukuqs29222sqwaabcjy29" },
-  { name: "Light",
-    style: 'mapbox://styles/am3081/cjms1pdzt10gt2skn0c6n75te' },
-  { name: "Satellite",
-    style: 'mapbox://styles/am3081/cjya6wla3011q1ct52qjcatxg' },
-  { name: "Satellite Streets",
-    style: `mapbox://styles/am3081/cjya70364016g1cpmbetipc8u` }
-]
-DEFAULT_STYLES.forEach(style => {
-  style.url = getStaticImageUrl(style.style.slice(23));
-})
-
-AvlMap.defaultProps = {
-	id: getUniqueId(),
-	height: "100%",
-  styles: [...DEFAULT_STYLES],
-  style: "Dark",
-	center: [-73.680647, 42.68],
-	minZoom: 2,
-	zoom: 10,
-	layers: [],
-  mapControl: 'bottom-right',
-  scrollZoom: true,
-  sidebar: true,
-  update: [],
-	header: "AVAIL Map",
-  sidebarPages: ["layers", "basemaps"]
 }
 
 export default AvlMap

@@ -21,6 +21,8 @@ const DEFAULT_OPTIONS = {
   onClick: false,
 	onZoom: false,
 
+	_isVisible: true,
+
   onHover: false,
   hoveredFeatureIds: new Set(),
 
@@ -32,7 +34,7 @@ const DEFAULT_OPTIONS = {
 }
 
 class MapLayer {
-	constructor(name, _options) {
+	constructor(name, _options = {}) {
 		const options = { ...DEFAULT_OPTIONS, ..._options };
 
 		this.component = null;
@@ -123,6 +125,9 @@ class MapLayer {
 		if (this.onZoom) {
 			this.addOnZoom(map);
 		}
+		this.layers.forEach(layer => {
+			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
+		})
 	}
 	onRemove(map) {
 		this._onRemove(map);
@@ -206,6 +211,7 @@ class MapLayer {
 
 			const { id } = e.features[0];
 
+			(id !== undefined) && (map.getCanvas().style.cursor = 'pointer');
       (id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
       (id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
     }
@@ -217,7 +223,8 @@ class MapLayer {
 			if (data) {
 				map.setFeatureState({ id, ...data }, { hover: false });
 			}
-		})
+		});
+		map.getCanvas().style.cursor = '';
 		this.hoveredFeatureIds.clear();
   }
 
@@ -231,9 +238,9 @@ class MapLayer {
   }
 
 	toggleVisibility(map) {
+		this._isVisible = !this._isVisible;
 		this.layers.forEach(layer => {
-			const visible = map.getLayoutProperty(layer.id, 'visibility');
-			map.setLayoutProperty(layer.id, 'visibility', visible === "none" ? "visible" : "none");
+			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
 		})
 	}
 
