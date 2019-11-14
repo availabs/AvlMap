@@ -202,7 +202,11 @@ class AvlMap extends React.Component {
 	addDynamicLayer(layerName, layerFactory) {
 		if (!this.state.map) return;
 
-		const newLayer = layerFactory(),
+		const layer = this.getLayer(layerName);
+
+		if (!layer) return;
+
+		const newLayer = layerFactory.call(null, layer),
 			newLayerName = newLayer.name,
 			allLayers = [
 				...this.props.layers,
