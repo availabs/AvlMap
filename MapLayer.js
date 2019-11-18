@@ -150,6 +150,10 @@ class MapLayer {
 		}
 	}
 
+	onPropsChange(oldProps, newProps) {
+console.log("<MapLayer.onPropsChange>", this.name, oldProps, newProps);
+	}
+
 	addOnZoom(map) {
 		const func = () => {
 			const zoom = map.getZoom();
