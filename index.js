@@ -213,8 +213,13 @@ class AvlMap extends React.Component {
 		this.state.activeLayers.forEach(layerName => {
 			const layer = this.getLayer(layerName);
 
-			if (!deepequal(oldProps.layerProps[layerName], this.props.layerProps[layerName])) {
-				layer.onPropsChange(oldProps.layerProps[layerName], this.props.layerProps[layerName]);
+			const layerProps = get(this.props, ["layerProps", layerName], null);
+			if (layerProps) {
+				layer.receiveProps(oldProps.layerProps[layerName], layerProps);
+			}
+
+			if (!deepequal(oldProps.layerProps[layerName], layerProps)) {
+				layer.onPropsChange(oldProps.layerProps[layerName], layerProps);
 			}
 		})
   }
