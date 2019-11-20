@@ -234,6 +234,7 @@ class AvlMap extends React.Component {
 
 		if (!layer) return;
 
+console.log("LAYER FACTORY:", layerFactory)
 		const newLayer = layerFactory.call(null, layer),
 			newLayerName = newLayer.name,
 			allLayers = [
