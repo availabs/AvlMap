@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
+import { Link } from "react-router-dom"
 import styled from 'styled-components';
+import get from "lodash.get"
 // import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import {CenterFlexbox} from 'components/common/styled-components';
@@ -202,6 +204,13 @@ export class MapPopover extends Component {
 }
 
 const PopoverRow = (row, i) =>
+  get(row, "type", null) === "link" ?
+  <tr key={ i }>
+    <td colSpan={ 2 } className="row__value">
+      <Link to={ row.href }>{ row.link }</Link>
+    </td>
+  </tr>
+  :
     row.length === 2 ?
     <tr key={ i }>
       <td className="row__name">{ row[0] }</td>

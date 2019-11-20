@@ -3,6 +3,7 @@ import React from "react"
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl'
 import { MAPBOX_TOKEN } from 'store/config'
 
+import deepequal from "deep-equal"
 import get from "lodash.get"
 import styled from "styled-components"
 
@@ -53,7 +54,7 @@ DEFAULT_STYLES.forEach(style => {
 class AvlMap extends React.Component {
 
 	static defaultProps = {
-		id: getUniqueId(),
+		id: null,
 		height: "100%",
 	  styles: [...DEFAULT_STYLES],
 	  style: "Dark",
@@ -66,7 +67,8 @@ class AvlMap extends React.Component {
 	  sidebar: true,
 	  update: [],
 		header: "AVAIL Map",
-	  sidebarPages: ["layers", "basemaps"]
+	  sidebarPages: ["layers", "basemaps"],
+		layerProps: {}
 	}
 
   static ActiveMaps = {};
@@ -82,6 +84,13 @@ class AvlMap extends React.Component {
       component && component[action] && component[action].call(component, ...args);
     }
   }
+  static doAction = ([id, action, ...args]) => {
+    if (id in AvlMap.ActiveMaps) {
+      const { component } = AvlMap.ActiveMaps[id];
+      component && component[action] && component[action].call(component, ...args);
+    }
+  }
+	sta
   testFunc(...args) {
     console.log("TEST FUNCTION:", ...[...args].map(arg => arg.toString()));
   }
@@ -89,6 +98,7 @@ class AvlMap extends React.Component {
   constructor(props) {
     super(props);
   	this.state = {
+			id: this.props.id || getUniqueId('avl-map'),
   		map: null,
 			dynamicLayers: [],
   		activeLayers: [],
@@ -122,12 +132,14 @@ class AvlMap extends React.Component {
     this.MOUNTED = true;
 
     const {
-    	id,
     	center,
     	minZoom,
     	zoom,
       mapControl
     } = this.props;
+
+		const { id } = this.state;
+
     const map = new mapboxgl.Map({
       container: id,
       style: this.state.style.style,
@@ -155,7 +167,7 @@ class AvlMap extends React.Component {
 
     this.props.layers.forEach(layer => {
       layer.version = layer.version || 1.0;
-      layer.initComponent(this)
+      layer.initComponent(this);
     });
 
     map.on('load',  () => {
@@ -192,11 +204,24 @@ class AvlMap extends React.Component {
 
     this.MOUNTED = false;
 
-    AvlMap.removeActiveMap(this.props.id);
+    AvlMap.removeActiveMap(this.state.id);
   }
 
   componentDidUpdate(oldProps, oldState) {
     this.setContainerSize();
+
+		this.state.activeLayers.forEach(layerName => {
+			const layer = this.getLayer(layerName);
+
+			const layerProps = get(this.props, ["layerProps", layerName], null);
+			if (layerProps) {
+				layer.receiveProps(oldProps.layerProps[layerName], layerProps);
+			}
+
+			if (!deepequal(oldProps.layerProps[layerName], layerProps)) {
+				layer.onPropsChange(oldProps.layerProps[layerName], layerProps);
+			}
+		})
   }
 
 	addDynamicLayer(layerName, layerFactory) {
@@ -429,6 +454,7 @@ console.log("LAYER FACTORY:", layerFactory)
   	const layer = this.getLayer(layerName),
       modal = layer.modals[modalName],
       show = !modal.show;
+
 		this.props.layers.forEach(layer => {
 			if (layer.modals) {
         for (const modal in layer.modals) {
@@ -643,7 +669,7 @@ console.log("LAYER FACTORY:", layerFactory)
 			...this.state.dynamicLayers
 		]
 		return (
-			<div id={ this.props.id } style={ { height: this.props.height } } ref={ this.container }>
+			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container }>
 
 				{ !this.props.sidebar ? null :
           <Sidebar isOpen={ this.state.isOpen }

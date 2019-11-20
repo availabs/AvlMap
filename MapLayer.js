@@ -150,6 +150,13 @@ class MapLayer {
 		}
 	}
 
+	receiveProps(oldProps, newProps) {
+
+	}
+	onPropsChange(oldProps, newProps) {
+    this.doAction(["fetchLayerData"]);
+	}
+
 	addOnZoom(map) {
 		const func = () => {
 			const zoom = map.getZoom();
@@ -330,7 +337,7 @@ class MapLayer {
 
 		if (minZoom && (minZoom > zoom)) return;
 
-    if (e.features.length) {
+    if (e.features && e.features.length) {
 			const data = dataFunc.call(this, e.features[0], e.features) || [];
 
 			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
