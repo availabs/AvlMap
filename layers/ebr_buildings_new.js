@@ -20,7 +20,6 @@ import { fnum } from "utils/sheldusUtils"
 
 import MapLayer from "../MapLayer"
 import { register, unregister } from "../ReduxMiddleware"
-import mapboxgl from "react-map-gl/dist/es5/utils/mapboxgl";
 import { getColorRange } from "constants/color-ranges";
 import {Link} from "react-router-dom";
 const LEGEND_COLOR_RANGE = getColorRange(7, "YlGn");
