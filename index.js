@@ -68,7 +68,8 @@ class AvlMap extends React.Component {
 	  update: [],
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
-		layerProps: {}
+		layerProps: {},
+		preserveDrawingBuffer: false
 	}
 
   static ActiveMaps = {};
@@ -135,7 +136,8 @@ class AvlMap extends React.Component {
     	center,
     	minZoom,
     	zoom,
-      mapControl
+      mapControl,
+			preserveDrawingBuffer
     } = this.props;
 
 		const { id } = this.state;
@@ -146,7 +148,8 @@ class AvlMap extends React.Component {
       center,
       minZoom,
       zoom,
-      attributionControl: false
+      attributionControl: false,
+			preserveDrawingBuffer
     });
 
     if(mapControl) {

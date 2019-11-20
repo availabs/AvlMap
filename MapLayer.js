@@ -107,7 +107,7 @@ class MapLayer {
 	}
 
 	onAdd(map) {
-		this._onAdd(map);
+
 	}
 	_onAdd(map) {
 		if (this.popover) {
@@ -130,7 +130,7 @@ class MapLayer {
 		})
 	}
 	onRemove(map) {
-		this._onRemove(map);
+		
 	}
 	_onRemove(map) {
 		if (this.onZoom) {
@@ -155,6 +155,44 @@ class MapLayer {
 	}
 	onPropsChange(oldProps, newProps) {
     this.doAction(["fetchLayerData"]);
+	}
+
+	getLayerData(layers = []) {
+		if (!this.map) return { keys: [], data: [] };
+
+		let data = [],
+			keys = { layer: true };
+
+		layers = layers.length ? layers : this.layers.map(({ id }) => id);
+
+		const sourceData = [];
+
+		this.layers.forEach(l => {
+			if (layers.includes(l.id)) {
+				sourceData.push([l["source"], l["source-layer"], l["id"]])
+			}
+		})
+		sourceData.forEach(([sourceId, sourceLayer, layer]) => {
+			this.map.querySourceFeatures(sourceId, { sourceLayer })
+				.forEach(feature => {
+					const _keys = Object.keys(feature.properties);
+					_keys.forEach(key => keys[key] = true);
+					const row = { layer };
+					_keys.forEach(key => {
+						row[key] = feature.properties[key];
+					})
+					data.push(row);
+				})
+		})
+
+		keys = data.reduce((keys, row) => ({
+			...keys,
+			...Object.keys(row).reduce((a, c) => ({ ...a, [c]: true }), {})
+		}), keys)
+
+		keys = Object.keys(keys);
+
+		return { data, keys };
 	}
 
 	addOnZoom(map) {
