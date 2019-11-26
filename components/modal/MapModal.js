@@ -14,10 +14,19 @@ const ModalWrapper = styled.div`
 	display: inline-flex;
 	position: relative;
 	pointer-events: all;
-	padding: 20px;
+	padding: 0px 20px 20px 20px;
 	/*overflow: auto;*/
 	width: 100%;
 	height: 100%;
+`
+
+const ModalTitle = styled.div`
+	display: block;
+	position: absolute;
+	top: 10px;
+	left: 40px;
+	font-size: 1.25rem;
+	color: ${ props => props.theme.textColorHl };
 `
 
 class MapModal extends React.Component {
@@ -56,6 +65,7 @@ class MapModal extends React.Component {
 				onClose={ e => this.close(e, modal) }
 				meta={ { id: this.MODAL_ID, startSize: modal.startSize, startPos: modal.startPos } }
 				resizeOnIdChange={ true }>
+				{ modal.title && <ModalTitle>{ modal.title }</ModalTitle> }
 				<ModalWrapper>
 					{ !Boolean(modal.comp) ? null :
 						<modal.comp { ...modal.props }

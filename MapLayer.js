@@ -19,6 +19,9 @@ const DEFAULT_OPTIONS = {
 	filters: false,
 	select: false,
   onClick: false,
+	onZoom: false,
+
+	_isVisible: true,
 
   onHover: false,
   hoveredFeatureIds: new Set(),
@@ -31,7 +34,7 @@ const DEFAULT_OPTIONS = {
 }
 
 class MapLayer {
-	constructor(name, _options) {
+	constructor(name, _options = {}) {
 		const options = { ...DEFAULT_OPTIONS, ..._options };
 
 		this.component = null;
@@ -104,7 +107,7 @@ class MapLayer {
 	}
 
 	onAdd(map) {
-		this._onAdd(map);
+
 	}
 	_onAdd(map) {
 		if (this.popover) {
@@ -119,11 +122,20 @@ class MapLayer {
     if (this.onHover) {
       this.addOnHover(map);
     }
+		if (this.onZoom) {
+			this.addOnZoom(map);
+		}
+		this.layers.forEach(layer => {
+			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
+		})
 	}
 	onRemove(map) {
-		this._onRemove(map);
+		
 	}
 	_onRemove(map) {
+		if (this.onZoom) {
+			this.removeOnZoom(map);
+		}
     if (this.onHover) {
       this.removeOnHover(map);
     }
@@ -136,6 +148,63 @@ class MapLayer {
 		if (this.popover) {
 			this.removePopover(map);
 		}
+	}
+
+	receiveProps(oldProps, newProps) {
+
+	}
+	onPropsChange(oldProps, newProps) {
+    this.doAction(["fetchLayerData"]);
+	}
+
+	getLayerData(layers = []) {
+		if (!this.map) return { keys: [], data: [] };
+
+		let data = [],
+			keys = { layer: true };
+
+		layers = layers.length ? layers : this.layers.map(({ id }) => id);
+
+		const sourceData = [];
+
+		this.layers.forEach(l => {
+			if (layers.includes(l.id)) {
+				sourceData.push([l["source"], l["source-layer"], l["id"]])
+			}
+		})
+		sourceData.forEach(([sourceId, sourceLayer, layer]) => {
+			this.map.querySourceFeatures(sourceId, { sourceLayer })
+				.forEach(feature => {
+					const _keys = Object.keys(feature.properties);
+					_keys.forEach(key => keys[key] = true);
+					const row = { layer };
+					_keys.forEach(key => {
+						row[key] = feature.properties[key];
+					})
+					data.push(row);
+				})
+		})
+
+		keys = data.reduce((keys, row) => ({
+			...keys,
+			...Object.keys(row).reduce((a, c) => ({ ...a, [c]: true }), {})
+		}), keys)
+
+		keys = Object.keys(keys);
+
+		return { data, keys };
+	}
+
+	addOnZoom(map) {
+		const func = () => {
+			const zoom = map.getZoom();
+			this.onZoom(zoom);
+		}
+		this.boundFunctions["on-zoom"] = func;
+		map.on("zoom", func);
+	}
+	removeOnZoom(map) {
+		map.off("zoom", this.boundFunctions["on-zoom"]);
 	}
 
   addOnHover(map) {
@@ -187,6 +256,7 @@ class MapLayer {
 
 			const { id } = e.features[0];
 
+			(id !== undefined) && (map.getCanvas().style.cursor = 'pointer');
       (id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
       (id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
     }
@@ -198,7 +268,8 @@ class MapLayer {
 			if (data) {
 				map.setFeatureState({ id, ...data }, { hover: false });
 			}
-		})
+		});
+		map.getCanvas().style.cursor = '';
 		this.hoveredFeatureIds.clear();
   }
 
@@ -212,9 +283,9 @@ class MapLayer {
   }
 
 	toggleVisibility(map) {
+		this._isVisible = !this._isVisible;
 		this.layers.forEach(layer => {
-			const visible = map.getLayoutProperty(layer.id, 'visibility');
-			map.setLayoutProperty(layer.id, 'visibility', visible === "none" ? "visible" : "none");
+			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
 		})
 	}
 
@@ -304,12 +375,12 @@ class MapLayer {
 
 		if (minZoom && (minZoom > zoom)) return;
 
-    if (e.features.length) {
-			const data = dataFunc.call(this, e.features[0], e.features);
+    if (e.features && e.features.length) {
+			const data = dataFunc.call(this, e.features[0], e.features) || [];
+
 			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
 
-	    const { pinned } = popover;
-	    if (pinned) return;
+	    if (popover.pinned) return;
 
       this.updatePopover({
       	pos: [e.point.x, e.point.y],
@@ -319,10 +390,10 @@ class MapLayer {
 	}
 	_mouseleave(e) {
 		const { map, popover } = this.component.state;
+
     map.getCanvas().style.cursor = '';
 
-    const { pinned } = popover;
-    if (pinned) return;
+    if (popover.pinned) return;
 
     this.updatePopover({
         data: []

@@ -8,7 +8,7 @@ import * as d3format from "d3-format"
 const MainContainer = styled.div`
   background-color: ${ props => props.theme.sidePanelHeaderBg };
   width: 100%;
-  padding: 10px;
+  padding: ${ props => props.align === "vertical" ? "10px" : "10px 10px 0px 10px" };
 `
 
 const StyledTitle = styled.h5`
@@ -31,13 +31,17 @@ const LegendContainer = styled.div`
 `
 const ColorBlock = styled.div`
   align-items: stretch;
-  flexGrow: 1;
+  flex-grow: 1;
   height: 20px;
 `
 const TextBlock = styled.div`
   color: ${ props => props.theme.textColor };
   display: inline-block;
   text-align: right;
+`
+const VerticalColorBlock = styled.div`
+  width: 20px;
+  height: ${ props => props.height || 20 }px;
 `
 
 const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) => {
@@ -46,8 +50,8 @@ const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) 
     width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%'
   }
   return (
-    <MainContainer>
-      <Title Title={ title } layer={ layer }/>
+    <MainContainer align={ "horizontal" }>
+      { !title ? null : <Title Title={ title } layer={ layer }/> }
       <LegendContainer className='legend-container'>
         {
           type === "linear" ?
@@ -73,8 +77,8 @@ const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) 
 const VerticalLegend = ({ type, format, scale, range, domain, title, layer }) => {
   range = (type === "linear") ? scale.ticks(5).map(t => scale(t)) : range
   return (
-    <MainContainer>
-      <Title Title={ title } layer={ layer }/>
+    <MainContainer align={ "vertical" }>
+      { !title ? null : <Title Title={ title } layer={ layer }/> }
       <table>
         <tbody>
           {
@@ -82,10 +86,22 @@ const VerticalLegend = ({ type, format, scale, range, domain, title, layer }) =>
               domain.map(d =>
                 <tr key={ d }>
                   <td>
-                    <div style={ { width: "20px", height: "20px", backgroundColor: scale(d) } }/>
+                    <VerticalColorBlock style={ { backgroundColor: scale(d) } }/>
                   </td>
                   <td style={ { paddingLeft: "5px" } }>
                     { format(d) }
+                  </td>
+                </tr>
+              )
+            : type === "quantile" ?
+              range.map((r, i) =>
+                <tr key={ r }>
+                  <td>
+                    <VerticalColorBlock height={ 40 }
+                      style={ { backgroundColor: r } }/>
+                  </td>
+                  <td>
+                    { typeof scale.invertExtent(r)[1] === "number" ? format(scale.invertExtent(r)[1]) : null }
                   </td>
                 </tr>
               )
@@ -135,7 +151,7 @@ const VerticalLegend = ({ type, format, scale, range, domain, title, layer }) =>
 }
 
 Legend.defaultProps = {
-  title: 'Legend',
+  title: '',
   range: [],
   domain: [],
   type: "linear",
