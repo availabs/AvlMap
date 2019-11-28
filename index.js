@@ -65,6 +65,7 @@ class AvlMap extends React.Component {
 	  mapControl: 'bottom-right',
 	  scrollZoom: true,
 	  sidebar: true,
+        mapactions: true,
 	  update: [],
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
@@ -713,10 +714,12 @@ console.log("LAYER FACTORY:", layerFactory)
 				<MapModal layers={ allLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-        <MapActions layers={ allLayers }
-          sidebar={ this.props.sidebar }
-          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          actionMap={ actionMap }/>
+                {!this.props.mapactions ? null :
+                    <MapActions layers={ allLayers }
+                                sidebar={ this.props.sidebar }
+                                isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
+                                actionMap={ actionMap }/>}
+
 
         <MapMessages
           messages={ this.state.messages }
