@@ -182,7 +182,6 @@ class AvlMap extends React.Component {
     map.on('load',  () => {
       const activeLayers = [];
 
-console.log("MAP STYLE:", map.getStyle())
       this.props.layers.forEach(layer => {
 
         layer.initMap(map);
@@ -193,7 +192,9 @@ console.log("MAP STYLE:", map.getStyle())
 
           layer._onAdd(map);
           ++layer.loading;
-					Promise.resolve(layer.onAdd(map))
+
+					const layerProps = get(this.props.layerProps, layer.name, {});
+					Promise.resolve(layer.onAdd(map, layerProps))
             .then(() => --layer.loading)
             .then(() => layer.render(map))
             .then(() => this.forceUpdate());
@@ -242,7 +243,6 @@ console.log("MAP STYLE:", map.getStyle())
 
 		if (!layer) return;
 
-console.log("LAYER FACTORY:", layerFactory)
 		const newLayer = layerFactory.call(null, layer),
 			newLayerName = newLayer.name,
 			allLayers = [
@@ -274,7 +274,9 @@ console.log("LAYER FACTORY:", layerFactory)
       this._addLayer(this.state.map, newLayer);
       ++newLayer.loading;
       newLayer._onAdd(this.state.map);
-      Promise.resolve(newLayer.onAdd(this.state.map))
+
+			const layerProps = get(this.props.layerProps, newLayer.name, {});
+      Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
         .then(() => --newLayer.loading)
         .then(() => newLayer.render(this.state.map))
         .then(() => this.forceUpdate());
@@ -409,7 +411,10 @@ console.log("LAYER FACTORY:", layerFactory)
       this._addLayer(this.state.map, layer);
       ++layer.loading;
       layer._onAdd(this.state.map);
-      Promise.resolve(layer.onAdd(this.state.map))
+
+
+			const layerProps = get(this.props.layerProps, layerName, {});
+      Promise.resolve(layer.onAdd(this.state.map, layerProps))
         .then(() => --layer.loading)
         .then(() => layer.render(this.state.map))
         .then(() => this.forceUpdate());

@@ -107,7 +107,7 @@ class MapLayer {
     this.map = map;
 	}
 
-	onAdd(map) {
+	onAdd(map, props) {
 
 	}
 	_onAdd(map) {
