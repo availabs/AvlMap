@@ -24,7 +24,6 @@ const DEFAULT_OPTIONS = {
 	_isVisible: true,
 
   onHover: false,
-  hoveredFeatureIds: new Set(),
 
 	showAttributesModal: true,
 
@@ -47,6 +46,8 @@ class MapLayer {
 
     this.boundFunctions = {};
     this.hoverSourceData = {};
+		this.hoveredFeatureIds = new Set();
+		this.pinnedFeatureIds = new Set();
 
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
@@ -130,7 +131,7 @@ class MapLayer {
 		})
 	}
 	onRemove(map) {
-		
+
 	}
 	_onRemove(map) {
 		if (this.onZoom) {
@@ -384,7 +385,8 @@ class MapLayer {
 
       this.updatePopover({
       	pos: [e.point.x, e.point.y],
-      	data
+      	data,
+				layer: this
       })
     }
 	}
@@ -396,8 +398,21 @@ class MapLayer {
     if (popover.pinned) return;
 
     this.updatePopover({
-        data: []
+        data: [],
+				layer: null
     })
+	}
+	_clearPinnedState() {
+		if (!this.map) return;
+
+		this.pinnedFeatureIds.forEach(layerId => {
+			const [layer, id] = layerId.split("."),
+				layerData = this.layers.reduce((a, c) =>
+					c.id === layer ? ({ source: c.source, sourceLayer: c['source-layer'] }) : a
+				, null)
+			layerData && this.map.setFeatureState({ id, ...layerData }, { pinned: false });
+		})
+		this.pinnedFeatureIds.clear();
 	}
 	_popoverClick(e) {
 		const { map, popover } = this.component.state,
@@ -406,15 +421,35 @@ class MapLayer {
     if (e.features.length) {
     	const data = this.popover.dataFunc.call(this, e.features[0], e.features);
     	if (data.length) {
+				if (typeof this.popover.onPinned === "function") {
+					this.popover.onPinned.call(this, e.features, e.lngLat, e.point);
+				}
+
+				if (this.popover.setPinnedState) {
+					this._clearPinnedState();
+
+					e.features.forEach(({ id, layer }) => {
+						const layerData = this.layers.reduce((a, c) =>
+							c.id === layer.id ? ({ source: c.source, sourceLayer: c['source-layer'] }) : a
+						, null)
+						if ((id !== undefined) && layerData) {
+				      this.pinnedFeatureIds.add(`${ layer.id }.${ id }`);
+				      map.setFeatureState({ id, ...layerData }, { pinned: true });
+						}
+					})
+				}
+
     		if (pinned) {
     			this.updatePopover({
     				pos: [e.point.x, e.point.y],
-    				data
+    				data,
+						layer: this
     			})
     		}
     		else {
     			this.updatePopover({
-    				pinned: true
+    				pinned: true,
+						layer: this
     			})
     		}
     	}
