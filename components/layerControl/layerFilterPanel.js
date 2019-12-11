@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
-import { Button  } from 'components/common/styled-components'; // StyledPanelHeader
+import { Button, PanelLabel  } from 'components/common/styled-components'; // StyledPanelHeader
 
 //import * as Filters from 'components/filters';
 import { SingleSelectFilter,MultiSelectFilter, DateFilter, Switch } from 'components/filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
 import BigEpochSlider from "../big-epoch-slider"
+
+import SliderFilter from "./slider-filter"
+import Slider from "../slider/slider"
 // import deepEqual from 'deep-equal'
 
 const sliderStyle =  {
@@ -71,8 +74,8 @@ const TimeRangeSliderContainer = styled.div`
         this.props.updateFilter(layer.name, filterName, !filter.value)
       }
 
-      const dispatchUpdateSlider = (e) => {
-        this.props.updateFilter(layer.name, filterName, e.target.value)
+      const dispatchUpdateSlider = v => {
+        this.props.updateFilter(layer.name, filterName, v)
       }
 
 
@@ -82,13 +85,9 @@ const TimeRangeSliderContainer = styled.div`
 
       const getFilter = (filter) => {
         if (filter.active === false) return null;
-        
+
         switch(filter.type) {
           case 'dropdown':
-            return <SingleSelectFilter
-              setFilter={ dispatchUpdateFilter }
-              filter={ filter }
-            />;
           case 'single':
             return <SingleSelectFilter
               setFilter={ dispatchUpdateFilter }
@@ -120,17 +119,8 @@ const TimeRangeSliderContainer = styled.div`
           break;
           case 'slider':
             return (
-              <div>
-
-              {filter.name} - {filter.value}
-                <input type="range"
-                  min={filter.min || 0}
-                  max={filter.max || 100}
-                  value={filter.value}
-                  style={sliderStyle}
-                  onChange={dispatchUpdateSlider}
-                />
-              </div>
+              <SliderFilter { ...filter }
+                onChange={ dispatchUpdateSlider }/>
             );
           case 'date':
             return (
