@@ -126,7 +126,9 @@ class MapLayer {
 			this.addOnZoom(map);
 		}
 		this.layers.forEach(layer => {
-			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
+			const layerVisibility = map.getLayoutProperty(layer.id, 'visibility'),
+				isVisible = (layerVisibility === "visible") && this._isVisible;
+			map.setLayoutProperty(layer.id, 'visibility', isVisible ? "visible" : "none");
 		})
 	}
 	onRemove(map) {
