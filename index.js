@@ -64,8 +64,9 @@ class AvlMap extends React.Component {
 		layers: [],
 	  mapControl: 'bottom-right',
 	  scrollZoom: true,
+    boxZoom: true,
 	  sidebar: true,
-        mapactions: true,
+    mapactions: true,
 	  update: [],
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
@@ -157,8 +158,10 @@ class AvlMap extends React.Component {
       map.addControl(new mapboxgl.NavigationControl(), mapControl);
     }
 
-    map.boxZoom.disable();
-
+    if(!this.props.boxZoom){
+      map.boxZoom.disable();  
+    }
+    
     if(!this.props.scrollZoom) {
       map.scrollZoom.disable();
     };
