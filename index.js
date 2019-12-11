@@ -47,9 +47,6 @@ export const DEFAULT_STYLES = [
   { name: "Satellite Streets",
     style: `mapbox://styles/am3081/cjya70364016g1cpmbetipc8u` }
 ]
-DEFAULT_STYLES.forEach(style => {
-  style.url = getStaticImageUrl(style.style.slice(23));
-})
 
 class AvlMap extends React.Component {
 
@@ -57,7 +54,8 @@ class AvlMap extends React.Component {
 		id: null,
 		height: "100%",
 	  styles: [...DEFAULT_STYLES],
-	  style: "Dark",
+	  styleName: "Dark",
+		style: null,
 		center: [-73.680647, 42.68],
 		minZoom: 2,
 		zoom: 10,
@@ -65,10 +63,12 @@ class AvlMap extends React.Component {
 	  mapControl: 'bottom-right',
 	  scrollZoom: true,
 	  sidebar: true,
+        mapactions: true,
 	  update: [],
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
-		layerProps: {}
+		layerProps: {},
+		preserveDrawingBuffer: false
 	}
 
   static ActiveMaps = {};
@@ -106,7 +106,8 @@ class AvlMap extends React.Component {
   		popover: {
   			pos: [0, 0],
   			pinned: false,
-  			data: []
+  			data: [],
+				layer: null
   		},
   		dragging: null,
   		dragover: null,
@@ -115,7 +116,9 @@ class AvlMap extends React.Component {
       messages: [],
       isOpen: true,
       transitioning: false,
-      style: props.styles.reduce((a, c) => c.name === props.style ? c : a, props.styles[0])
+      style: props.styles.reduce((a, c) =>
+				((c.name === props.styleName) || (c.name === props.style)) ? c : a
+			, props.styles[0])
   	}
     this.MOUNTED = false;
     this.container = React.createRef();
@@ -135,19 +138,25 @@ class AvlMap extends React.Component {
     	center,
     	minZoom,
     	zoom,
-      mapControl
+      mapControl,
+			preserveDrawingBuffer,
+			style
     } = this.props;
 
 		const { id } = this.state;
 
+		const regex = /^mapbox:\/\/styles\//;
+
     const map = new mapboxgl.Map({
       container: id,
-      style: this.state.style.style,
+      style: regex.test(style) ? style : this.state.style.style,
       center,
       minZoom,
       zoom,
-      attributionControl: false
+      attributionControl: false,
+			preserveDrawingBuffer
     });
+
 
     if(mapControl) {
       map.addControl(new mapboxgl.NavigationControl(), mapControl);
@@ -172,6 +181,7 @@ class AvlMap extends React.Component {
 
     map.on('load',  () => {
       const activeLayers = [];
+
       this.props.layers.forEach(layer => {
 
         layer.initMap(map);
@@ -182,7 +192,9 @@ class AvlMap extends React.Component {
 
           layer._onAdd(map);
           ++layer.loading;
-					Promise.resolve(layer.onAdd(map))
+
+					const layerProps = get(this.props.layerProps, layer.name, {});
+					Promise.resolve(layer.onAdd(map, layerProps))
             .then(() => --layer.loading)
             .then(() => layer.render(map))
             .then(() => this.forceUpdate());
@@ -231,7 +243,6 @@ class AvlMap extends React.Component {
 
 		if (!layer) return;
 
-console.log("LAYER FACTORY:", layerFactory)
 		const newLayer = layerFactory.call(null, layer),
 			newLayerName = newLayer.name,
 			allLayers = [
@@ -263,7 +274,9 @@ console.log("LAYER FACTORY:", layerFactory)
       this._addLayer(this.state.map, newLayer);
       ++newLayer.loading;
       newLayer._onAdd(this.state.map);
-      Promise.resolve(newLayer.onAdd(this.state.map))
+
+			const layerProps = get(this.props.layerProps, newLayer.name, {});
+      Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
         .then(() => --newLayer.loading)
         .then(() => newLayer.render(this.state.map))
         .then(() => this.forceUpdate());
@@ -378,7 +391,7 @@ console.log("LAYER FACTORY:", layerFactory)
         }
       })
       if (!layerAdded) {
-        if (mbLayer.beneath && Boolean(map.getLayer(mbLayer.beneath))) {
+        if (Boolean(mbLayer.beneath) && Boolean(map.getLayer(mbLayer.beneath))) {
           map.addLayer(mbLayer, mbLayer.beneath);
         }
         else {
@@ -398,7 +411,10 @@ console.log("LAYER FACTORY:", layerFactory)
       this._addLayer(this.state.map, layer);
       ++layer.loading;
       layer._onAdd(this.state.map);
-      Promise.resolve(layer.onAdd(this.state.map))
+
+
+			const layerProps = get(this.props.layerProps, layerName, {});
+      Promise.resolve(layer.onAdd(this.state.map, layerProps))
         .then(() => --layer.loading)
         .then(() => layer.render(this.state.map))
         .then(() => this.forceUpdate());
@@ -447,6 +463,11 @@ console.log("LAYER FACTORY:", layerFactory)
   }
 
   updatePopover(update) {
+		if ((update.pinned === false) && this.state.popover.pinned) {
+			const func = this.state.popover.layer.popover.onUnPinned;
+			(typeof func === "function") && func.call(this.state.popover.layer);
+			this.state.popover.layer._clearPinnedState();
+		}
   	this.setState({ popover: { ...this.state.popover, ...update }});
   }
 
@@ -668,6 +689,10 @@ console.log("LAYER FACTORY:", layerFactory)
 			...this.props.layers,
 			...this.state.dynamicLayers
 		]
+		const mapStyles = this.props.styles.map(s => ({
+			...s,
+			url: getStaticImageUrl(s.style.slice(23))
+		}))
 		return (
 			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container }>
 
@@ -692,7 +717,7 @@ console.log("LAYER FACTORY:", layerFactory)
   					updateDrag={ this.updateDrag.bind(this) }
   					dropLayer={ this.dropLayer.bind(this) }
             pages={ this.props.sidebarPages }
-            mapStyles={ this.props.styles }
+            mapStyles={ mapStyles }
             style={ this.state.style }
             setMapStyle={ this.setMapStyle.bind(this) }
             map={ this.state.map }/>
@@ -710,10 +735,12 @@ console.log("LAYER FACTORY:", layerFactory)
 				<MapModal layers={ allLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-        <MapActions layers={ allLayers }
-          sidebar={ this.props.sidebar }
-          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-          actionMap={ actionMap }/>
+                {!this.props.mapactions ? null :
+                    <MapActions layers={ allLayers }
+                                sidebar={ this.props.sidebar }
+                                isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
+                                actionMap={ actionMap }/>}
+
 
         <MapMessages
           messages={ this.state.messages }

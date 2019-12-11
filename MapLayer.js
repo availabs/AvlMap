@@ -24,7 +24,6 @@ const DEFAULT_OPTIONS = {
 	_isVisible: true,
 
   onHover: false,
-  hoveredFeatureIds: new Set(),
 
 	showAttributesModal: true,
 
@@ -47,6 +46,8 @@ class MapLayer {
 
     this.boundFunctions = {};
     this.hoverSourceData = {};
+		this.hoveredFeatureIds = new Set();
+		this.pinnedFeatureIds = new Set();
 
 		this._mousemove = this._mousemove.bind(this);
 		this._mouseleave = this._mouseleave.bind(this);
@@ -106,8 +107,8 @@ class MapLayer {
     this.map = map;
 	}
 
-	onAdd(map) {
-		this._onAdd(map);
+	onAdd(map, props) {
+
 	}
 	_onAdd(map) {
 		if (this.popover) {
@@ -132,7 +133,7 @@ class MapLayer {
 		})
 	}
 	onRemove(map) {
-		this._onRemove(map);
+
 	}
 	_onRemove(map) {
 		if (this.onZoom) {
@@ -157,6 +158,44 @@ class MapLayer {
 	}
 	onPropsChange(oldProps, newProps) {
     this.doAction(["fetchLayerData"]);
+	}
+
+	getLayerData(layers = []) {
+		if (!this.map) return { keys: [], data: [] };
+
+		let data = [],
+			keys = { layer: true };
+
+		layers = layers.length ? layers : this.layers.map(({ id }) => id);
+
+		const sourceData = [];
+
+		this.layers.forEach(l => {
+			if (layers.includes(l.id)) {
+				sourceData.push([l["source"], l["source-layer"], l["id"]])
+			}
+		})
+		sourceData.forEach(([sourceId, sourceLayer, layer]) => {
+			this.map.querySourceFeatures(sourceId, { sourceLayer })
+				.forEach(feature => {
+					const _keys = Object.keys(feature.properties);
+					_keys.forEach(key => keys[key] = true);
+					const row = { layer };
+					_keys.forEach(key => {
+						row[key] = feature.properties[key];
+					})
+					data.push(row);
+				})
+		})
+
+		keys = data.reduce((keys, row) => ({
+			...keys,
+			...Object.keys(row).reduce((a, c) => ({ ...a, [c]: true }), {})
+		}), keys)
+
+		keys = Object.keys(keys);
+
+		return { data, keys };
 	}
 
 	addOnZoom(map) {
@@ -348,7 +387,8 @@ class MapLayer {
 
       this.updatePopover({
       	pos: [e.point.x, e.point.y],
-      	data
+      	data,
+				layer: this
       })
     }
 	}
@@ -360,8 +400,21 @@ class MapLayer {
     if (popover.pinned) return;
 
     this.updatePopover({
-        data: []
+        data: [],
+				layer: null
     })
+	}
+	_clearPinnedState() {
+		if (!this.map) return;
+
+		this.pinnedFeatureIds.forEach(layerId => {
+			const [layer, id] = layerId.split("."),
+				layerData = this.layers.reduce((a, c) =>
+					c.id === layer ? ({ source: c.source, sourceLayer: c['source-layer'] }) : a
+				, null)
+			layerData && this.map.setFeatureState({ id, ...layerData }, { pinned: false });
+		})
+		this.pinnedFeatureIds.clear();
 	}
 	_popoverClick(e) {
 		const { map, popover } = this.component.state,
@@ -370,15 +423,35 @@ class MapLayer {
     if (e.features.length) {
     	const data = this.popover.dataFunc.call(this, e.features[0], e.features);
     	if (data.length) {
+				if (typeof this.popover.onPinned === "function") {
+					this.popover.onPinned.call(this, e.features, e.lngLat, e.point);
+				}
+
+				if (this.popover.setPinnedState) {
+					this._clearPinnedState();
+
+					e.features.forEach(({ id, layer }) => {
+						const layerData = this.layers.reduce((a, c) =>
+							c.id === layer.id ? ({ source: c.source, sourceLayer: c['source-layer'] }) : a
+						, null)
+						if ((id !== undefined) && layerData) {
+				      this.pinnedFeatureIds.add(`${ layer.id }.${ id }`);
+				      map.setFeatureState({ id, ...layerData }, { pinned: true });
+						}
+					})
+				}
+
     		if (pinned) {
     			this.updatePopover({
     				pos: [e.point.x, e.point.y],
-    				data
+    				data,
+						layer: this
     			})
     		}
     		else {
     			this.updatePopover({
-    				pinned: true
+    				pinned: true,
+						layer: this
     			})
     		}
     	}
