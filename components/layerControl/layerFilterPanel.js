@@ -53,6 +53,13 @@ const TimeRangeSliderContainer = styled.div`
   width: 750px;
 `
 
+const CheckboxContainer = styled.div`
+  margin-top: 15px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background-color: ${ props => props.theme.secondaryInputBgd };
+`
+
  class LayerFilterPanel extends Component {
 
 
@@ -108,13 +115,15 @@ const TimeRangeSliderContainer = styled.div`
             );
           case 'checkbox':
             return (
-              <Switch
-                onChange={dispatchUpdateCheckbox}
-                checked={filter.value}
-                value={filter.value}
-                id={filter.id}
-                label={filter.name}
-              />
+              <CheckboxContainer>
+                <Switch
+                  onChange={dispatchUpdateCheckbox}
+                  checked={filter.value}
+                  value={filter.value}
+                  id={filter.id}
+                  label={filter.name}
+                />
+              </CheckboxContainer>
             )
           break;
           case 'slider':

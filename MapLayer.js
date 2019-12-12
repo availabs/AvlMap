@@ -243,7 +243,7 @@ class MapLayer {
     })
   }
   onHoverMove(e, layer, map) {
-    const { dataFunc, minZoom } = this.onHover;
+    const { dataFunc, minZoom, filterFunc } = this.onHover;
 
 		const zoom = map.getZoom();
 		if (minZoom && (minZoom > zoom)) {
@@ -254,15 +254,29 @@ class MapLayer {
       dataFunc.call(this, e.features, e.point, e.lngLat, layer);
 
     const data = this.hoverSourceData[layer];
-    if (data) {
-      this.onHoverLeave(e, layer, map);
+		if (!data) return;
 
-			const { id } = e.features[0];
+    this.onHoverLeave(e, layer, map);
 
+		const hover = id => {
 			(id !== undefined) && (map.getCanvas().style.cursor = 'pointer');
-      (id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
-      (id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
-    }
+			(id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
+			(id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
+		}
+
+		if (typeof filterFunc === "function") {
+			const filter = filterFunc.call(this, e.features, e.point, e.lngLat, layer),
+				{ source, sourceLayer } = data;
+			filter && map.querySourceFeatures(source, { sourceLayer, filter })
+				.forEach(({ id }) => {
+					hover(id);
+				})
+			return;
+		}
+
+		const { id } = e.features[0];
+
+		hover(id);
   }
   onHoverLeave(e, layer, map) {
 		this.hoveredFeatureIds.forEach(key => {
