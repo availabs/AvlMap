@@ -3,13 +3,20 @@ import styled from 'styled-components';
 import { Button, PanelLabel  } from 'components/common/styled-components'; // StyledPanelHeader
 
 //import * as Filters from 'components/filters';
-import { SingleSelectFilter,MultiSelectFilter, DateFilter, Switch } from 'components/filters'
+import {
+  SingleSelectFilter,
+  MultiSelectFilter,
+  DateFilter,
+  Switch
+} from 'components/filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
 import BigEpochSlider from "../big-epoch-slider"
 
 import SliderFilter from "./slider-filter"
 import Slider from "../slider/slider"
 // import deepEqual from 'deep-equal'
+
+import Checkbox from "./checkboxFilter"
 
 const sliderStyle =  {
     width: '100%',
@@ -72,17 +79,16 @@ const CheckboxContainer = styled.div`
       const filter = filters[filterName];
 
       const dispatchUpdateFilter = (value) => {
-
         this.props.updateFilter(layer.name, filterName, value)
       }
 
-      const dispatchUpdateCheckbox = () => {
+      const dispatchUpdateCheckbox = v => {
         console.log('test', layer.name, filterName)
-        this.props.updateFilter(layer.name, filterName, !filter.value)
+        this.props.updateFilter(layer.name, filterName, v)
       }
 
-      const dispatchUpdateSlider = v => {
-        this.props.updateFilter(layer.name, filterName, v)
+      const dispatchUpdateSlider = () => {
+        this.props.updateFilter(layer.name, filterName, !filter.value)
       }
 
 
@@ -114,6 +120,13 @@ const CheckboxContainer = styled.div`
               </SubmitButton>
             );
           case 'checkbox':
+            return (
+              <Checkbox
+                label={ filter.name }
+                checked={ filter.value }
+                onChange={ dispatchUpdateFilter }/>
+            )
+          case 'checkbox_OLD':
             return (
               <CheckboxContainer>
                 <Switch

@@ -164,9 +164,9 @@ class AvlMap extends React.Component {
     }
 
     if(!this.props.boxZoom){
-      map.boxZoom.disable();  
+      map.boxZoom.disable();
     }
-    
+
     if(!this.props.scrollZoom) {
       map.scrollZoom.disable();
     };
@@ -510,7 +510,7 @@ class AvlMap extends React.Component {
     this.forceUpdate();
 
     layer.onSelect(selection)
-      .then(() => layer.fetchData())
+      // .then(() => layer.fetchData())
       .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
@@ -726,7 +726,8 @@ class AvlMap extends React.Component {
             map={ this.state.map }/>
         }
 
-				<Infobox layers={ allLayers }/>
+				<Infobox layers={ allLayers }
+					activeLayers={ this.state.activeLayers }/>
 
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
@@ -736,14 +737,16 @@ class AvlMap extends React.Component {
           } }/>
 
 				<MapModal layers={ allLayers }
+					activeLayers={ this.state.activeLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-                {!this.props.mapactions ? null :
-                    <MapActions layers={ allLayers }
-                                sidebar={ this.props.sidebar }
-                                isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-                                actionMap={ actionMap }/>}
-
+        { !this.props.mapactions ? null :
+          <MapActions layers={ allLayers }
+						activeLayers={ this.state.activeLayers }
+            sidebar={ this.props.sidebar }
+            isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
+            actionMap={ actionMap }/>
+				}
 
         <MapMessages
           messages={ this.state.messages }
