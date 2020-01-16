@@ -200,14 +200,14 @@ class AvlMap extends React.Component {
 					Promise.resolve(layer.onAdd(map, layerProps))
             .then(() => --layer.loading)
             .then(() => layer.render(map))
-            .then(() => this.forceUpdate());
+            .then(() => this.setState({ activeLayers }));
       	}
       })
 
       if (this.props.fitBounds){
         map.fitBounds(this.props.fitBounds)
       }
-      this.setState({ map, activeLayers })
+      this.setState({ map, activeLayers: [] })
 
       AvlMap.addActiveMap(id, this, map);
     })
@@ -282,8 +282,7 @@ class AvlMap extends React.Component {
       Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
         .then(() => --newLayer.loading)
         .then(() => newLayer.render(this.state.map))
-        .then(() => this.forceUpdate());
-      this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] });
+        .then(() => this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] }));
   	}
 
 		this.setState({
@@ -293,7 +292,9 @@ class AvlMap extends React.Component {
 			]
 		})
 	}
-	deleteDynamicLayer(layerName) {
+	deleteDynamicLayer(layerName, otherLayerName=false) {
+		layerName = otherLayerName || layerName;
+
 		const layer = this.getLayer(layerName);
 
 		if (!layer) return;
@@ -407,7 +408,9 @@ class AvlMap extends React.Component {
     this.setState({ sources });
   }
 
-  addLayer(layerName) {
+  addLayer(layerName, otherLayerName=false) {
+		layerName = otherLayerName || layerName;
+
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && !layer.active) {
   		layer.active = true;
@@ -424,7 +427,9 @@ class AvlMap extends React.Component {
       this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
   	}
   }
-  removeLayer(layerName) {
+  removeLayer(layerName, otherLayerName=false) {
+		layerName = otherLayerName || layerName;
+
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && layer.active && !layer.loading) {
   		layer.active = false;
