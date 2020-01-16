@@ -18,6 +18,8 @@ import { ScalableLoading } from "components/loading/loadingPage"
 
 import './avlmap.css'
 
+mapboxgl.accessToken = MAPBOX_TOKEN
+
 let UNIQUE_ID = 0;
 const getUniqueId = (str = "unique-id") =>
 	`${ str }-${ ++UNIQUE_ID }`
@@ -153,8 +155,7 @@ class AvlMap extends React.Component {
       minZoom,
       zoom,
       attributionControl: false,
-			preserveDrawingBuffer,
-			accessToken: MAPBOX_TOKEN
+			preserveDrawingBuffer
     });
 
 
@@ -404,6 +405,10 @@ class AvlMap extends React.Component {
       sources[mbLayer.source].push(mbLayer.id)
     })
 
+newMBLayers.forEach(l => {
+	console.log("?????", l, map.getSource(l.source), map.querySourceFeatures(l.source, { sourceLayer: l["source-layer"] }))
+})
+
     this.setState({ sources });
   }
 
@@ -422,8 +427,8 @@ class AvlMap extends React.Component {
       Promise.resolve(layer.onAdd(this.state.map, layerProps))
         .then(() => --layer.loading)
         .then(() => layer.render(this.state.map))
-        .then(() => this.forceUpdate());
-      this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
+        .then(() => this.setState({ activeLayers: [...this.state.activeLayers, layerName] }));
+      ;
   	}
   }
   removeLayer(layerName, otherLayerName=false) {

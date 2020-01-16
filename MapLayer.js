@@ -128,7 +128,7 @@ class MapLayer {
 		}
 		this.layers.forEach(layer => {
 			const layerVisibility = map.getLayoutProperty(layer.id, 'visibility'),
-				isVisible = (layerVisibility === "visible") && this._isVisible;
+				isVisible = (layerVisibility !== "none") && this._isVisible;
 			map.setLayoutProperty(layer.id, 'visibility', isVisible ? "visible" : "none");
 		})
 	}
