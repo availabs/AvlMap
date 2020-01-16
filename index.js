@@ -18,8 +18,6 @@ import { ScalableLoading } from "components/loading/loadingPage"
 
 import './avlmap.css'
 
-mapboxgl.accessToken = MAPBOX_TOKEN
-
 let UNIQUE_ID = 0;
 const getUniqueId = (str = "unique-id") =>
 	`${ str }-${ ++UNIQUE_ID }`
@@ -155,7 +153,8 @@ class AvlMap extends React.Component {
       minZoom,
       zoom,
       attributionControl: false,
-			preserveDrawingBuffer
+			preserveDrawingBuffer,
+			accessToken: MAPBOX_TOKEN
     });
 
 
