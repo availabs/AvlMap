@@ -405,10 +405,6 @@ class AvlMap extends React.Component {
       sources[mbLayer.source].push(mbLayer.id)
     })
 
-newMBLayers.forEach(l => {
-	console.log("?????", l, map.getSource(l.source), map.querySourceFeatures(l.source, { sourceLayer: l["source-layer"] }))
-})
-
     this.setState({ sources });
   }
 
