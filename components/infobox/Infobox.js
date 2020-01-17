@@ -99,7 +99,7 @@ class InfoBox extends Component {
 
   render() {
 
-    const { theme, layers } = this.props,
+    const { layers } = this.props,
       activeLayers = layers.filter(l => l.active),
       activeLegends = activeLayers
         .reduce((a, c) =>
