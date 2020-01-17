@@ -12,7 +12,7 @@ const MainContainer = styled.div`
 `
 
 const StyledTitle = styled.h5`
-  color: ${ props => props.theme.textColor };
+  color: ${ props => props.theme.textColorHl };
 `
 const Title = ({ Title, layer }) =>
   <StyledTitle>

@@ -101,43 +101,45 @@ class MapActions extends React.Component {
 		}, disableFor);
 	}
 	render() {
-		const actions = this.props.layers.reduce((actions, layer) => {
-			if (layer.active) {
-				actions.push(
-					...Object.keys(layer.mapActions)
-						.map(actionName => {
-							const id = `${ layer.name }-${ actionName }`;
-							const {
-								action = NO_OP,
-								disabled = false,
-								disableFor = 0,
-								...rest
-							} = layer.mapActions[actionName];
-							const isDisabled = disabled || this.state.waitingActions.includes(id);
+		const actions = this.props.layers
+			.filter(l => this.props.activeLayers.includes(l.name))
+			.reduce((actions, layer) => {
+				if (layer.active) {
+					actions.push(
+						...Object.keys(layer.mapActions)
+							.map(actionName => {
+								const id = `${ layer.name }-${ actionName }`;
+								const {
+									action = NO_OP,
+									disabled = false,
+									disableFor = 0,
+									...rest
+								} = layer.mapActions[actionName];
+								const isDisabled = disabled || this.state.waitingActions.includes(id);
 
-							let boundAction = NO_OP.bind(layer);
+								let boundAction = NO_OP.bind(layer);
 
-							if (Array.isArray(action)) {
-								const a = action[0];
-								if (a in this.props.actionMap) {
-									boundAction = this.props.actionMap[a].bind(layer, layer.name, ...action.slice(1));
+								if (Array.isArray(action)) {
+									const a = action[0];
+									if (a in this.props.actionMap) {
+										boundAction = this.props.actionMap[a].bind(layer, layer.name, ...action.slice(1));
+									}
 								}
-							}
-							else {
-								boundAction = action.bind(layer);
-							}
-							return {
-								action: disableFor ? e => this.doAndPauseAction(e, disableFor, boundAction, id) : boundAction,
-								id,
-								layer,
-								disabled: isDisabled,
-								...rest
-							}
-						})
-				);
-			}
-			return actions;
-		}, [])
+								else {
+									boundAction = action.bind(layer);
+								}
+								return {
+									action: disableFor ? e => this.doAndPauseAction(e, disableFor, boundAction, id) : boundAction,
+									id,
+									layer,
+									disabled: isDisabled,
+									...rest
+								}
+							})
+					);
+				}
+				return actions;
+			}, [])
 		return (
 			<ActionContainer sidebar={ this.props.sidebar } isOpen={ this.props.isOpen }>
 				{

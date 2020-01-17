@@ -37,26 +37,28 @@ class MapModal extends React.Component {
 		this.props.toggleModal(layerName, modalName);
 	}
 	render() {
-		const modal = this.props.layers.reduce((a, layer) => {
-			let m = null;
-			if (layer.modals) {
-				for (const key in layer.modals) {
-					if (layer.modals[key].show) {
-						m = {
-							...layer.modals[key],
-							id: `${ layer.name }-${ key }`,
-							layerName: layer.name,
-							modalName: key,
-							props: layer.modals[key].props || {},
-							layer,
-							startSize: layer.modals[key].startSize || [800, 500],
-							startPos: layer.modals[key].position || "bottom"
+		const modal = this.props.layers
+			.filter(l => this.props.activeLayers.includes(l.name))
+			.reduce((a, layer) => {
+				let m = null;
+				if (layer.modals) {
+					for (const key in layer.modals) {
+						if (layer.modals[key].show) {
+							m = {
+								...layer.modals[key],
+								id: `${ layer.name }-${ key }`,
+								layerName: layer.name,
+								modalName: key,
+								props: layer.modals[key].props || {},
+								layer,
+								startSize: layer.modals[key].startSize || [800, 500],
+								startPos: layer.modals[key].position || "bottom"
+							}
 						}
 					}
 				}
-			}
-			return m || a;
-		}, {});
+				return m || a;
+			}, {});
 
 		Boolean(modal.comp) && (this.MODAL_ID = modal.id)
 
