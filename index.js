@@ -293,17 +293,18 @@ class AvlMap extends React.Component {
 			]
 		})
 	}
-	deleteDynamicLayer(layerName) {
-		const layer = this.getLayer(layerName);
+    deleteDynamicLayer(layerName, secondName) {
 
-		if (!layer) return;
+        let theLayer = secondName ? secondName : layerName
+        const layer = this.getLayer(theLayer);
+        if (!layer) return;
 
-		this.removeLayer(layerName);
+        this.removeLayer(theLayer);
 
-		this.setState({
-			dynamicLayers: this.state.dynamicLayers.filter(l => l.name !== layerName)
-		})
-	}
+        this.setState({
+            dynamicLayers: this.state.dynamicLayers.filter(l => l.name !== theLayer)
+        })
+    }
 
   sendMessage(layerName, data) {
     data = {
@@ -357,9 +358,11 @@ class AvlMap extends React.Component {
     const sourcesToAdd = new Set(newLayer.layers.map(l => l.source))
 
     newLayer.sources.forEach(source => {
+
       if (!sourcesToAdd.has(source.id)) return;
 
       if (!map.getSource(source.id)) {
+
         map.addSource(source.id, source.source);
       }
       if (!(source.id in sources)) {
