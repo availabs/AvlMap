@@ -418,7 +418,7 @@ class MapLayer {
 		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features && e.features.length) {
-			const data = dataFunc.call(this, e.features[0], e.features, layer) || [];
+			const data = dataFunc.call(this, e.features[0], e.features, layer, map, e) || [];
 
 			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
 
