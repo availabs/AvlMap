@@ -128,7 +128,7 @@ class MapLayer {
 		}
 		this.layers.forEach(layer => {
 			const layerVisibility = map.getLayoutProperty(layer.id, 'visibility'),
-				isVisible = (layerVisibility === "visible") && this._isVisible;
+				isVisible = (layerVisibility !== "none") && this._isVisible;
 			map.setLayoutProperty(layer.id, 'visibility', isVisible ? "visible" : "none");
 		})
 	}
@@ -254,7 +254,7 @@ class MapLayer {
       dataFunc.call(this, e.features, e.point, e.lngLat, layer);
 
     const data = this.hoverSourceData[layer];
-		if (!data) return;
+		if (!data || !e.features.length) return;
 
     this.onHoverLeave(e, layer, map);
 
@@ -263,20 +263,27 @@ class MapLayer {
 			(id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
 			(id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
 		}
+		const hoverFeature = () => {
+			const { id } = e.features[0];
+			hover(id);
+		}
 
 		if (typeof filterFunc === "function") {
 			const filter = filterFunc.call(this, e.features, e.point, e.lngLat, layer),
 				{ source, sourceLayer } = data;
-			filter && map.querySourceFeatures(source, { sourceLayer, filter })
-				.forEach(({ id }) => {
-					hover(id);
-				})
-			return;
+			if (filter) {
+				map.querySourceFeatures(source, { sourceLayer, filter })
+					.forEach(({ id }) => {
+						hover(id);
+					})
+			}
+			else {
+				hoverFeature();
+			}
 		}
-
-		const { id } = e.features[0];
-
-		hover(id);
+		else {
+			hoverFeature();
+		}
   }
   onHoverLeave(e, layer, map) {
 		this.hoveredFeatureIds.forEach(key => {
@@ -369,23 +376,41 @@ class MapLayer {
 
 	addPopover(map) {
 		this.popover.layers.forEach(layer => {
-			map.on("mousemove", layer, this._mousemove);
+
+			let key = `${ layer }-mousemove`,
+				func = e => this._mousemove(e, layer);
+			this.boundFunctions[key] = func;
+			map.on("mousemove", layer, func);
+
 			map.on("mouseleave", layer, this._mouseleave);
+
       if (!this.popover.noSticky && !this.onClick) {
-        map.on("click", layer, this._popoverClick);
+				key = `${ layer }-popover-click`;
+				func = e => this._popoverClick(e, layer);
+				this.boundFunctions[key] = func;
+        map.on("click", layer, func);
       }
 		})
 	}
 	removePopover(map) {
 		this.popover.layers.forEach(layer => {
-			map.off("mousemove", layer, this._mousemove);
+
+			let key = `${ layer }-mousemove`,
+				func = this.boundFunctions[key];
+			delete this.boundFunctions[key];
+			map.off("mousemove", layer, func);
+
 			map.off("mouseleave", layer, this._mouseleave);
+
       if (!this.popover.noSticky && !this.onClick) {
-        map.off("click", layer, this._popoverClick);
+				key = `${ layer }-popover-click`;
+				func = this.boundFunctions[key];
+				delete this.boundFunctions[key];
+        map.off("click", layer, func);
       }
 		})
 	}
-	_mousemove(e) {
+	_mousemove(e, layer) {
 		const { map, popover } = this.component.state,
 			zoom = map.getZoom(),
 			{ minZoom, dataFunc } = this.popover;
@@ -393,7 +418,7 @@ class MapLayer {
 		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features && e.features.length) {
-			const data = dataFunc.call(this, e.features[0], e.features) || [];
+			const data = dataFunc.call(this, e.features[0], e.features, layer, map, e) || [];
 
 			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
 
@@ -406,7 +431,7 @@ class MapLayer {
       })
     }
 	}
-	_mouseleave(e) {
+	_mouseleave(e, layer) {
 		const { map, popover } = this.component.state;
 
     map.getCanvas().style.cursor = '';
@@ -430,12 +455,12 @@ class MapLayer {
 		})
 		this.pinnedFeatureIds.clear();
 	}
-	_popoverClick(e) {
+	_popoverClick(e, layer) {
 		const { map, popover } = this.component.state,
     	{ pinned } = popover;
 
     if (e.features.length) {
-    	const data = this.popover.dataFunc.call(this, e.features[0], e.features);
+    	const data = this.popover.dataFunc.call(this, e.features[0], e.features, layer);
     	if (data.length) {
 				if (typeof this.popover.onPinned === "function") {
 					this.popover.onPinned.call(this, e.features, e.lngLat, e.point);

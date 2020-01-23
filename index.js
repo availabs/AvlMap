@@ -200,14 +200,14 @@ class AvlMap extends React.Component {
 					Promise.resolve(layer.onAdd(map, layerProps))
             .then(() => --layer.loading)
             .then(() => layer.render(map))
-            .then(() => this.forceUpdate());
+            .then(() => this.setState({ activeLayers }));
       	}
       })
 
       if (this.props.fitBounds){
         map.fitBounds(this.props.fitBounds)
       }
-      this.setState({ map, activeLayers })
+      this.setState({ map, activeLayers: [] })
 
       AvlMap.addActiveMap(id, this, map);
     })
@@ -282,8 +282,7 @@ class AvlMap extends React.Component {
       Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
         .then(() => --newLayer.loading)
         .then(() => newLayer.render(this.state.map))
-        .then(() => this.forceUpdate());
-      this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] });
+        .then(() => this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] }));
   	}
 
 		this.setState({
@@ -293,18 +292,19 @@ class AvlMap extends React.Component {
 			]
 		})
 	}
-    deleteDynamicLayer(layerName, secondName) {
+	deleteDynamicLayer(layerName, otherLayerName=false) {
+		layerName = otherLayerName || layerName;
 
-        let theLayer = secondName ? secondName : layerName
-        const layer = this.getLayer(theLayer);
-        if (!layer) return;
+		const layer = this.getLayer(layerName);
 
-        this.removeLayer(theLayer);
+		if (!layer) return;
 
-        this.setState({
-            dynamicLayers: this.state.dynamicLayers.filter(l => l.name !== theLayer)
-        })
-    }
+		this.removeLayer(layerName);
+
+		this.setState({
+			dynamicLayers: this.state.dynamicLayers.filter(l => l.name !== layerName)
+		})
+	}
 
   sendMessage(layerName, data) {
     data = {
@@ -358,11 +358,9 @@ class AvlMap extends React.Component {
     const sourcesToAdd = new Set(newLayer.layers.map(l => l.source))
 
     newLayer.sources.forEach(source => {
-
       if (!sourcesToAdd.has(source.id)) return;
 
       if (!map.getSource(source.id)) {
-
         map.addSource(source.id, source.source);
       }
       if (!(source.id in sources)) {
@@ -410,7 +408,9 @@ class AvlMap extends React.Component {
     this.setState({ sources });
   }
 
-  addLayer(layerName) {
+  addLayer(layerName, otherLayerName=false) {
+		layerName = otherLayerName || layerName;
+
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && !layer.active) {
   		layer.active = true;
@@ -423,11 +423,13 @@ class AvlMap extends React.Component {
       Promise.resolve(layer.onAdd(this.state.map, layerProps))
         .then(() => --layer.loading)
         .then(() => layer.render(this.state.map))
-        .then(() => this.forceUpdate());
-      this.setState({ activeLayers: [...this.state.activeLayers, layerName] });
+        .then(() => this.setState({ activeLayers: [...this.state.activeLayers, layerName] }));
+      ;
   	}
   }
-  removeLayer(layerName) {
+  removeLayer(layerName, otherLayerName=false) {
+		layerName = otherLayerName || layerName;
+
   	const layer = this.getLayer(layerName);
   	if (this.state.map && layer && layer.active && !layer.loading) {
   		layer.active = false;
