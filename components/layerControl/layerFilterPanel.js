@@ -87,8 +87,8 @@ const CheckboxContainer = styled.div`
         this.props.updateFilter(layer.name, filterName, v)
       }
 
-      const dispatchUpdateSlider = () => {
-        this.props.updateFilter(layer.name, filterName, !filter.value)
+      const dispatchUpdateSlider = v => {
+        this.props.updateFilter(layer.name, filterName, v)
       }
 
 
@@ -142,7 +142,7 @@ const CheckboxContainer = styled.div`
           case 'slider':
             return (
               <SliderFilter { ...filter }
-                onChange={ dispatchUpdateSlider }/>
+                onChange={ dispatchUpdateFilter }/>
             );
           case 'date':
             return (
