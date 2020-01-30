@@ -85,7 +85,7 @@ const CheckboxContainer = styled.div`
       const dispatchUpdateFilter = value => {
         this.props.updateFilter(layer.name, filterName, value)
       }
-
+      
       const getFilter = (filter) => {
         if (filter.active === false) return null;
 
