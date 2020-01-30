@@ -533,7 +533,7 @@ class AvlMap extends React.Component {
   	this.forceUpdate();
   }
 
-  updateFilter(layerName, filterName, value) {
+  updateFilter(layerName, filterName, value = null) {
     if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
@@ -541,7 +541,7 @@ class AvlMap extends React.Component {
   		oldValue = filter.value,
       domain = filter.domain;
 
-	  filter.value = value;
+	  (value !== null) && (filter.value = value);
 
   	if (layer.filters[filterName].onChange) {
       if (layer.version >= 2) {
@@ -556,7 +556,7 @@ class AvlMap extends React.Component {
   	this.forceUpdate();
 
   	layer.onFilterFetch(filterName, oldValue, value)
-      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
+      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), ((data !== false) && layer.render(this.state.map))))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
 
@@ -568,7 +568,7 @@ class AvlMap extends React.Component {
       		oldValue = filter.value,
           domain = filter.domain;
 
-        filter.value = value;
+        (value !== null) && (filter.value = value);
 
         if (layer.active) {
 
