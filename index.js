@@ -792,7 +792,7 @@ const LoadingContainer = styled.div`
 
 const LoadingLayers = ({ layers, sidebar, isOpen }) => {
   const loadingLayers = layers.reduce((a, c) => {
-    if (c.loading) a.push(c.name);
+    if (c.loading) a.push({name:c.name, progress: c.progress});
     return a;
   }, [])
   const height = 40,
@@ -800,11 +800,15 @@ const LoadingLayers = ({ layers, sidebar, isOpen }) => {
   return (
     <LoadingContainer sidebar={ sidebar } isOpen={ isOpen } height={ height } padding={ padding }>
       {
-        loadingLayers.map((name, i) => (
-          <div key={ name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
+        loadingLayers.map((layer, i) => (
+          <div key={ layer.name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
             <ScalableLoading scale={ height * 0.01 }/>
+            <div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `calc(100% - ${ height }px)` } }>
+
+              {layer.progress}%
+            </div>            
             <div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "right", width: `calc(100% - ${ height }px)` } }>
-              { name }
+               { layer.name }
             </div>
           </div>
         ))
