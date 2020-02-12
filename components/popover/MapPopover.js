@@ -203,46 +203,6 @@ export class MapPopover extends Component {
   }
 }
 
-class FunctionalRow extends React.Component {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = {
-  //     data: typeof props.row === "function" ? props.row() : []
-  //   }
-  // }
-  state = {
-    data: typeof this.props.row === "function" ? this.props.row() : []
-  }
-  MOUNTED = false;
-  componentDidMount() {
-    this.MOUNTED = true;
-
-    if (this.state.data.length) return;
-
-    this.props.row.then(data => this.MOUNTED && this.setState({ data }));
-  }
-  componentWillUnmount() {
-    this.MOUNTED = false;
-  }
-  render() {
-    return (
-      this.state.data.length === 2 ?
-        <tr>
-          <td className="row__name">{ this.state.data[0] }</td>
-          <td className="row__value">{ this.state.data[1] }</td>
-        </tr>
-      : this.state.data.length === 1 ?
-        <tr>
-          <td colSpan={ 2 } className="row__value">{ this.state.data[0] }</td>
-        </tr>
-      :
-        <tr>
-          <td colSpan={ 2 } className="row__value">Loading...</td>
-        </tr>
-    )
-  }
-}
-
 const PopoverRow = (row, i) =>
   get(row, "type", null) === "link" ?
     <tr key={ "link-" + i }>
@@ -250,10 +210,6 @@ const PopoverRow = (row, i) =>
         <Link to={ row.href }>{ row.link }</Link>
       </td>
     </tr>
-  : typeof row === "function" ?
-    <FunctionalRow row={ row } key={ "func-" + i }/>
-  : row instanceof Promise ?
-      <FunctionalRow row={ row } key={ "prom-" + i }/>
   : row.length === 2 ?
     <tr key={ "row2-" + i }>
       <td className="row__name">{ row[0] }</td>
