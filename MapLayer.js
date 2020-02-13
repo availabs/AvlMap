@@ -43,6 +43,7 @@ class MapLayer {
     for (const key in options) {
       this[key] = options[key];
     }
+		this.LoadingIndicator = () => {};
 
     this.boundFunctions = {};
     this.hoverSourceData = {};
@@ -59,6 +60,13 @@ class MapLayer {
 
     this.onHoverMove = this.onHoverMove.bind(this);
     this.onHoverLeave = this.onHoverLeave.bind(this);
+	}
+
+	registerLoadingIndicator(comp, func) {
+		this.LoadingIndicator = func.bind(comp);
+	}
+	unregisterLoadingIndicator() {
+		this.LoadingIndicator = () => {};
 	}
 
   initComponent(component) {
@@ -327,7 +335,7 @@ class MapLayer {
   }
 	receiveDataOld(...args) {
 		if (this.receiveData) {
-			console.warn("<AvlMap> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
+			console.warn("<AvlMap::MapLayer> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
 			this.receiveData.call(this, ...args);
 		}
 	}

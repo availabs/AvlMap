@@ -205,19 +205,18 @@ export class MapPopover extends Component {
 
 const PopoverRow = (row, i) =>
   get(row, "type", null) === "link" ?
-  <tr key={ i }>
-    <td colSpan={ 2 } className="row__value">
-      <Link to={ row.href }>{ row.link }</Link>
-    </td>
-  </tr>
-  :
-    row.length === 2 ?
-    <tr key={ i }>
+    <tr key={ "link-" + i }>
+      <td colSpan={ 2 } className="row__value">
+        <Link to={ row.href }>{ row.link }</Link>
+      </td>
+    </tr>
+  : row.length === 2 ?
+    <tr key={ "row2-" + i }>
       <td className="row__name">{ row[0] }</td>
       <td className="row__value">{ row[1] }</td>
     </tr>
   :
-    <tr key={ i }>
+    <tr key={ "row1-" + i }>
       <td colSpan={ 2 } className="row__value">{ row[0] }</td>
     </tr>
 

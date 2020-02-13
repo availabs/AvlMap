@@ -6,6 +6,7 @@ import { MAPBOX_TOKEN } from 'store/config'
 import deepequal from "deep-equal"
 import get from "lodash.get"
 import styled from "styled-components"
+import { format as d3format } from "d3-format"
 
 import Sidebar from './components/sidebar'
 import Infobox from './components/infobox/Infobox'
@@ -533,7 +534,7 @@ class AvlMap extends React.Component {
   	this.forceUpdate();
   }
 
-  updateFilter(layerName, filterName, value) {
+  updateFilter(layerName, filterName, value = null) {
     if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
@@ -541,7 +542,7 @@ class AvlMap extends React.Component {
   		oldValue = filter.value,
       domain = filter.domain;
 
-	  filter.value = value;
+	  (value !== null) && (filter.value = value);
 
   	if (layer.filters[filterName].onChange) {
       if (layer.version >= 2) {
@@ -556,7 +557,7 @@ class AvlMap extends React.Component {
   	this.forceUpdate();
 
   	layer.onFilterFetch(filterName, oldValue, value)
-      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
+      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), ((data !== false) && layer.render(this.state.map))))
       .then(() => --layer.loading)
       .then(() => this.forceUpdate());
 
@@ -568,7 +569,7 @@ class AvlMap extends React.Component {
       		oldValue = filter.value,
           domain = filter.domain;
 
-        filter.value = value;
+        (value !== null) && (filter.value = value);
 
         if (layer.active) {
 
@@ -789,28 +790,59 @@ const LoadingContainer = styled.div`
     margin-bottom: 0px;
   }
 `
+class LoadingIndicator extends React.Component {
+	state = {
+		progress: null
+	}
+	format = d3format(".0%");
 
-const LoadingLayers = ({ layers, sidebar, isOpen }) => {
-  const loadingLayers = layers.reduce((a, c) => {
-    if (c.loading) a.push(c.name);
-    return a;
-  }, [])
-  const height = 40,
-    padding = 10;
-  return (
-    <LoadingContainer sidebar={ sidebar } isOpen={ isOpen } height={ height } padding={ padding }>
-      {
-        loadingLayers.map((name, i) => (
-          <div key={ name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
-            <ScalableLoading scale={ height * 0.01 }/>
-            <div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "right", width: `calc(100% - ${ height }px)` } }>
-              { name }
-            </div>
-          </div>
-        ))
-      }
-    </LoadingContainer>
-  )
+	componentDidMount() {
+		// console.log("<LoadingIndicator.componentDidMount>")
+		this.props.layer.registerLoadingIndicator(this, this.setState);
+	}
+	componentWillUnmount() {
+		this.props.layer.unregisterLoadingIndicator(this);
+	}
+	// componentDidUpdate() {
+	// 	console.log("<LoadingIndicator.componentDidUpdate>", this.state)
+	// }
+	render() {
+		const { layer } = this.props,
+			height = 40,
+			padding = 10;
+		return (
+			<div key={ layer.name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
+				<ScalableLoading scale={ height * 0.01 }/>
+				<div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `calc(40% - ${ height }px)` } }>
+
+					{ this.state.progress === null ? null :
+						`${ this.format(this.state.progress) }`
+					}
+
+				</div>
+				<div style={ { height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "right", width: `60%` } }>
+					 { layer.name }
+				</div>
+			</div>
+		)
+	}
+}
+class LoadingLayers extends React.Component {
+	render() {
+	  const { layers, sidebar, isOpen } = this.props,
+			loadingLayers = layers.reduce((a, c) => {
+		    c.loading && a.push(c);
+				// a.push(c);
+		    return a;
+		  }, []),
+			height = 40,
+			padding = 10;
+		return (
+	    <LoadingContainer sidebar={ sidebar } isOpen={ isOpen } height={ height } padding={ padding }>
+	      { loadingLayers.map((l, i) => <LoadingIndicator key={ l.name } layer={ l }/>) }
+	    </LoadingContainer>
+		)
+	}
 }
 
 export default AvlMap

@@ -41,6 +41,10 @@ const StyledFilterPanel = styled.div`
 //   padding: 10px 12px;
 // `;
 
+// const SubmitButton = styled.button`
+//   background-color: ${ props => props.theme.primaryBtnBgd };
+//   width: 100%
+// `
 const SubmitButton = styled(Button)`
   width: 100%
 `
@@ -78,24 +82,10 @@ const CheckboxContainer = styled.div`
     const renderFilter = (filterName, i) => {
       const filter = filters[filterName];
 
-      const dispatchUpdateFilter = (value) => {
+      const dispatchUpdateFilter = value => {
         this.props.updateFilter(layer.name, filterName, value)
       }
-
-      const dispatchUpdateCheckbox = v => {
-        console.log('test', layer.name, filterName)
-        this.props.updateFilter(layer.name, filterName, v)
-      }
-
-      const dispatchUpdateSlider = v => {
-        this.props.updateFilter(layer.name, filterName, v)
-      }
-
-
-      const dispatchFetch = () => {
-        this.props.fetchLayerData(layer.name)
-      }
-
+      
       const getFilter = (filter) => {
         if (filter.active === false) return null;
 
@@ -115,9 +105,12 @@ const CheckboxContainer = styled.div`
             return (<span />)
           case 'fetch':
             return (
-              <SubmitButton onClick={ dispatchFetch }>
-                {filter.name}
-              </SubmitButton>
+              <Button onClick={ () => dispatchUpdateFilter(null) }
+                disabled={ Boolean(filter.disabled) }
+                style={ { width: "100%" } }
+                secondary>
+                { filter.name }
+              </Button>
             );
           case 'checkbox':
             return (
@@ -126,19 +119,6 @@ const CheckboxContainer = styled.div`
                 checked={ filter.value }
                 onChange={ dispatchUpdateFilter }/>
             )
-          case 'checkbox_OLD':
-            return (
-              <CheckboxContainer>
-                <Switch
-                  onChange={dispatchUpdateCheckbox}
-                  checked={filter.value}
-                  value={filter.value}
-                  id={filter.id}
-                  label={filter.name}
-                />
-              </CheckboxContainer>
-            )
-          break;
           case 'slider':
             return (
               <SliderFilter { ...filter }

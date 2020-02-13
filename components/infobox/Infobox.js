@@ -152,7 +152,7 @@ class InfoBox extends Component {
                               <OpenInfoBoxTitle><b.title layer={ b.layer }/></OpenInfoBoxTitle>
                             : <OpenInfoBoxTitle>{ b.title }</OpenInfoBoxTitle>
                           }
-                          <b.comp theme={ this.props.theme } layer={ b.layer }/>
+                          <b.comp layer={ b.layer }/>
                         </>
                     }
                     <ToggleButton className={ this.getToggleButton(b.id) }

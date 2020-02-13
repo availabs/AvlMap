@@ -53,7 +53,8 @@ class CheckboxFilter extends React.Component {
   }
   render() {
     return (
-      <CheckboxContainer onClick={ e => this.props.onChange(!this.props.checked) }>
+      <CheckboxContainer onClick={ e => this.props.onChange(!this.props.checked) }
+        style={ this.props.style }>
 
         <CheckboxLabel>
           { this.props.label }
@@ -64,7 +65,7 @@ class CheckboxFilter extends React.Component {
           <InactiveSquare />
           <SliderSquare checked={ this.props.checked }/>
         </SliderTrack>
-        
+
       </CheckboxContainer>
     )
   }
