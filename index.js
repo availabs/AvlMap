@@ -19,6 +19,11 @@ import { ScalableLoading } from "components/loading/loadingPage"
 
 import './avlmap.css'
 
+import {
+	dispatchMessage,
+	FilterMessage
+} from "./LayerMessageSystem"
+
 mapboxgl.accessToken = MAPBOX_TOKEN
 
 let UNIQUE_ID = 0;
@@ -544,54 +549,61 @@ class AvlMap extends React.Component {
 
 	  (value !== null) && (filter.value = value);
 
+		let onChange = () => {};
   	if (layer.filters[filterName].onChange) {
       if (layer.version >= 2) {
-        layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
+				onChange = () => layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
       }
       else {
-        layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
+        onChange = () => layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
       }
   	}
 
   	++layer.loading;
   	this.forceUpdate();
 
-  	layer.onFilterFetch(filterName, oldValue, value)
+		Promise.resolve(onChange())
+			.then(() => layer.onFilterFetch(filterName, oldValue, value))
       .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), ((data !== false) && layer.render(this.state.map))))
       .then(() => --layer.loading)
+			.then(() => {
+					if (filter.dispatchMessage) {
+						dispatchMessage(layerName, new FilterMessage(layerName, filterName, oldValue, value));
+					}
+			})
       .then(() => this.forceUpdate());
 
-    if (layer.filters[filterName].refLayers) {
-      layer.filters[filterName].refLayers.forEach(refLayerName => {
-
-      	const layer = this.getLayer(refLayerName),
-          filter = layer.filters[filterName],
-      		oldValue = filter.value,
-          domain = filter.domain;
-
-        (value !== null) && (filter.value = value);
-
-        if (layer.active) {
-
-          if (layer.filters[filterName].onChange) {
-            if (layer.version >= 2) {
-              layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
-            }
-            else {
-              layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
-            }
-          }
-
-          ++layer.loading;
-          this.forceUpdate();
-
-          layer.onFilterFetch(filterName, oldValue, value)
-            .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
-            .then(() => --layer.loading)
-            .then(() => this.forceUpdate());
-        }
-      })
-    }
+    // if (layer.filters[filterName].refLayers) {
+    //   layer.filters[filterName].refLayers.forEach(refLayerName => {
+		//
+    //   	const layer = this.getLayer(refLayerName),
+    //       filter = layer.filters[filterName],
+    //   		oldValue = filter.value,
+    //       domain = filter.domain;
+		//
+    //     (value !== null) && (filter.value = value);
+		//
+    //     if (layer.active) {
+		//
+    //       if (layer.filters[filterName].onChange) {
+    //         if (layer.version >= 2) {
+    //           layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
+    //         }
+    //         else {
+    //           layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
+    //         }
+    //       }
+		//
+    //       ++layer.loading;
+    //       this.forceUpdate();
+		//
+    //       layer.onFilterFetch(filterName, oldValue, value)
+    //         .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
+    //         .then(() => --layer.loading)
+    //         .then(() => this.forceUpdate());
+    //     }
+    //   })
+    // }
   }
 
   updateLegend(layerName, update) {
