@@ -87,9 +87,15 @@ class AvlMap extends React.Component {
     }
   }
   static doAction = ([id, action, ...args]) => {
+      console.log('in do action')
     if (id in AvlMap.ActiveMaps) {
       const { component } = AvlMap.ActiveMaps[id];
-      component && component[action] && component[action].call(component, ...args);
+      if(component && component[action]) {
+          console.log('do action', id, action, ...args)
+          let result = component[action].call(component, ...args);
+          console.log('action result ', result)
+          return result
+      }
     }
   }
 	sta
@@ -241,57 +247,60 @@ class AvlMap extends React.Component {
   }
 
 	addDynamicLayer(layerName, layerFactory) {
-		if (!this.state.map) return;
+      return new Promise((resolve, reject) => {
+            if (!this.state.map) return;
 
-		const layer = this.getLayer(layerName);
+            const layer = this.getLayer(layerName);
 
-		if (!layer) return;
+            if (!layer) return;
 
-		const newLayer = layerFactory.call(null, layer),
-			newLayerName = newLayer.name,
-			allLayers = [
-				...this.props.layers,
-				...this.state.dynamicLayers
-			];
+            const newLayer = layerFactory.call(null, layer),
+                newLayerName = newLayer.name,
+                allLayers = [
+                    ...this.props.layers,
+                    ...this.state.dynamicLayers
+                ];
 
-		newLayer._isDynamic = true;
-		newLayer.initComponent(this);
-		newLayer.initMap(this.state.map);
+            newLayer._isDynamic = true;
+            newLayer.initComponent(this);
+            newLayer.initMap(this.state.map);
 
-		const adjustName = allLayers.reduce((a, c) =>
-			a || c.name === newLayerName
-		, false)
+            const adjustName = allLayers.reduce((a, c) =>
+                a || c.name === newLayerName
+                , false)
 
-		if (adjustName) {
-			const regExpStr = newLayerName + " " + "\\((\\d+)\\)",
-				regex = new RegExp(regExpStr),
-				num = allLayers.reduce((a, c) => {
-					const match = regex.exec(c.name);
-					if (match) {
-						return Math.max(a, +match[1]);
-					}
-					return a;
-				}, 1);
-			newLayer.name = `${ newLayerName } (${ num + 1 })`;
-		}
-  	if (newLayer.active) {
-      this._addLayer(this.state.map, newLayer);
-      ++newLayer.loading;
-      newLayer._onAdd(this.state.map);
+            if (adjustName) {
+                const regExpStr = newLayerName + " " + "\\((\\d+)\\)",
+                    regex = new RegExp(regExpStr),
+                    num = allLayers.reduce((a, c) => {
+                        const match = regex.exec(c.name);
+                        if (match) {
+                            return Math.max(a, +match[1]);
+                        }
+                        return a;
+                    }, 1);
+                newLayer.name = `${newLayerName} (${num + 1})`;
+            }
+            if (newLayer.active) {
+                this._addLayer(this.state.map, newLayer);
+                ++newLayer.loading;
+                newLayer._onAdd(this.state.map);
 
-			const layerProps = get(this.props.layerProps, newLayer.name, {});
-      Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
-        .then(() => --newLayer.loading)
-        .then(() => newLayer.render(this.state.map))
-        .then(() => this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] }));
-  	}
+                const layerProps = get(this.props.layerProps, newLayer.name, {});
+                Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
+                    .then(() => --newLayer.loading)
+                    .then(() => newLayer.render(this.state.map))
+                    .then(() => this.setState({activeLayers: [...this.state.activeLayers, newLayer.name]}));
+            }
 
-		this.setState({
-			dynamicLayers: [
-				...this.state.dynamicLayers,
-				newLayer
-			]
-		})
+            this.setState({
+                dynamicLayers: [
+                    ...this.state.dynamicLayers,
+                    newLayer
+                ]
+            })
+            resolve(newLayer)
+        })
 	}
 	deleteDynamicLayer(layerName, otherLayerName=false) {
 		layerName = otherLayerName || layerName;
