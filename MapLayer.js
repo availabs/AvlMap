@@ -162,7 +162,9 @@ class MapLayer {
 	}
 
 	receiveProps(oldProps, newProps) {
-
+		for (const key in newProps) {
+			this[key] = newProps[key];
+		}
 	}
 	onPropsChange(oldProps, newProps) {
     this.doAction(["fetchLayerData"]);
