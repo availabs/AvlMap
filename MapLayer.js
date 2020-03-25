@@ -309,17 +309,19 @@ class MapLayer {
 
   doAction([action, ...args]) {
     if (this.component && this.component[action]) {
-      this.component[action](this.name, ...args)
+      return this.component[action](this.name, ...args)
     }
   }
   forceUpdate() {
     this.component && this.component.forceUpdate();
   }
 
-	toggleVisibility(map) {
+	toggleVisibility() {
+
+		//console.log('in map layer toggle visibility',map,this.layers)
 		this._isVisible = !this._isVisible;
 		this.layers.forEach(layer => {
-			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
+			this.map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
 		})
 	}
 
