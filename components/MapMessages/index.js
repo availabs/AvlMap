@@ -6,9 +6,6 @@ import classnames from "classnames"
 
 import deepequal from "deep-equal"
 
-import * as d3selection from "d3-selection"
-import * as d3transition from "d3-transition"
-
 const MessageContainer = styled.div`
 	left: 0px;
 	top: 0px;
@@ -294,7 +291,7 @@ class Message extends React.Component {
 				height={ height }
 				style={ {
 					zIndex,
-					top: `${ this.props.top }px`
+					top: `${ top }px`
 				} }>
 				{ this.renderMessage() }
 			</MessageStyled>

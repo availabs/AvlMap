@@ -5,7 +5,7 @@ import SidebarHeader from './SidebarHeader'
 import LayerSelector from './LayerSelector'
 import ActiveLayers from './ActiveLayers'
 
-import { Layers, Crosshairs } from "components/common/icons"
+import { Layers } from "components/common/icons"
 
 import { Tooltip } from 'components/common/styled-components';
 
@@ -146,13 +146,6 @@ class Sidebar extends Component {
     })
   }
   render() {
-    let sidebarContentStyle = {
-      flexGrow: 1,
-      padding: 0,
-      overflowY: 'auto',
-      overflowX: 'hidden'
-    }
-
     const { pages } = this.state;
 
     return (
@@ -197,7 +190,7 @@ class BaseMapsSelector extends React.Component {
     this.props.setMapStyle(style);
   }
   render() {
-    const { styles, style, setMapStyle } = this.props,
+    const { styles, style } = this.props,
       options = styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url }/> }));
     return (
       <div>

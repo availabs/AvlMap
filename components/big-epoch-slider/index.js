@@ -1,19 +1,18 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
+// import moment from 'moment';
 // import { requestAnimationFrame, cancelAnimationFrame } from 'global/window';
 import classnames from 'classnames';
 import throttle from 'lodash.throttle';
 import styled from 'styled-components';
-import { createSelector } from 'reselect';
-import { Play, Reset, Pause, Minus } from 'components/common/icons';
-import { SelectTextBold, SelectText, Button, ButtonGroup } from 'components/common/styled-components';
+import { Play, Reset, Pause } from 'components/common/icons';
+import { Button, ButtonGroup } from 'components/common/styled-components';
 import BigSlider from './big-slider';
 import TimeSliderMarker from './time-slider-marker';
 
 const BASE_SPEED = 25;
 
-const defaultTimeFormat = val => moment.utc(val).format('MM/DD/YY hh:mma');
+// const defaultTimeFormat = val => moment.utc(val).format('MM/DD/YY hh:mma');
 const animationControlWidth = 140;
 
 const StyledSliderContainer = styled.div`
@@ -128,49 +127,49 @@ export default class TimeRangeSlider extends Component {
   }
 }
 
-const TimeValueWrapper = styled.div`
-  display: flex;
-  height: ${props => props.theme.secondaryInputHeight};
-  align-items: center;
-  font-size: 11px;
-  justify-content: ${props => props.isEnlarged ? 'center' : 'space-between'};
-  color: ${props => props.theme.labelColor};
-  .horizontal-bar {
-    padding: 0 12px;
-  }
-  .time-value {
-    display: flex;
-    flex-direction: ${props => props.isEnlarged ? 'row' : 'column'};
-    align-items: flex-start;
-  }
-  .time-value:last-child {
-    align-items: flex-end;
-  }
-`;
+// const TimeValueWrapper = styled.div`
+//   display: flex;
+//   height: ${props => props.theme.secondaryInputHeight};
+//   align-items: center;
+//   font-size: 11px;
+//   justify-content: ${props => props.isEnlarged ? 'center' : 'space-between'};
+//   color: ${props => props.theme.labelColor};
+//   .horizontal-bar {
+//     padding: 0 12px;
+//   }
+//   .time-value {
+//     display: flex;
+//     flex-direction: ${props => props.isEnlarged ? 'row' : 'column'};
+//     align-items: flex-start;
+//   }
+//   .time-value:last-child {
+//     align-items: flex-end;
+//   }
+// `;
 
-const TimeTitle = ({value, isEnlarged, timeFormat = defaultTimeFormat}) => (
-  <TimeValueWrapper isEnlarged={isEnlarged}>
-    <TimeValue key={0} value={moment.utc(value[0]).format(timeFormat)} split={!isEnlarged}/>
-    {isEnlarged ? (
-      <div className="horizontal-bar">
-        <Minus height="12px"/>
-      </div>
-    ) : null}
-    <TimeValue key={1} value={moment.utc(value[1]).format(timeFormat)} split={!isEnlarged}/>
-  </TimeValueWrapper>
-);
+// const TimeTitle = ({value, isEnlarged, timeFormat = defaultTimeFormat}) => (
+//   <TimeValueWrapper isEnlarged={isEnlarged}>
+//     <TimeValue key={0} value={moment.utc(value[0]).format(timeFormat)} split={!isEnlarged}/>
+//     {isEnlarged ? (
+//       <div className="horizontal-bar">
+//         <Minus height="12px"/>
+//       </div>
+//     ) : null}
+//     <TimeValue key={1} value={moment.utc(value[1]).format(timeFormat)} split={!isEnlarged}/>
+//   </TimeValueWrapper>
+// );
 
-const TimeValue = ({value, split}) => (
-  // render two lines if not enlarged
-  <div className="time-value">
-    {split ? value.split(' ').map((v, i) => (
-      <div key={i}>
-        {i === 0 ? <SelectText>{v}</SelectText> :
-        <SelectTextBold>{v}</SelectTextBold>}
-      </div>
-    )) : <SelectTextBold>{value}</SelectTextBold>}
-  </div>
-);
+// const TimeValue = ({value, split}) => (
+//   // render two lines if not enlarged
+//   <div className="time-value">
+//     {split ? value.split(' ').map((v, i) => (
+//       <div key={i}>
+//         {i === 0 ? <SelectText>{v}</SelectText> :
+//         <SelectTextBold>{v}</SelectTextBold>}
+//       </div>
+//     )) : <SelectTextBold>{value}</SelectTextBold>}
+//   </div>
+// );
 
 const StyledAnimationControls = styled.div`
   margin-bottom: 12px;

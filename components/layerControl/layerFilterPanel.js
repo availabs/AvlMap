@@ -1,32 +1,32 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
-import { Button, PanelLabel  } from 'components/common/styled-components'; // StyledPanelHeader
+import { Button  } from 'components/common/styled-components'; // StyledPanelHeader
 
 //import * as Filters from 'components/filters';
 import {
   SingleSelectFilter,
   MultiSelectFilter,
   DateFilter,
-  Switch
+  // Switch
 } from 'components/filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
 import BigEpochSlider from "../big-epoch-slider"
 
 import SliderFilter from "./slider-filter"
-import Slider from "../slider/slider"
+// import Slider from "../slider/slider"
 // import deepEqual from 'deep-equal'
 
 import Checkbox from "./checkboxFilter"
 
-const sliderStyle =  {
-    width: '100%',
-    height: 24,
-    background: '#29323C',
-    outline: 'none',
-    opacity: '0.7',
-    // WebkitTransition: 'opacity .15s ease-in-out',
-    transition: 'opacity .15s ease-in-out'
-}
+// const sliderStyle =  {
+//     width: '100%',
+//     height: 24,
+//     background: '#29323C',
+//     outline: 'none',
+//     opacity: '0.7',
+//     // WebkitTransition: 'opacity .15s ease-in-out',
+//     transition: 'opacity .15s ease-in-out'
+// }
 
 const StyledFilterPanel = styled.div`
   margin-bottom: 12px;
@@ -45,9 +45,9 @@ const StyledFilterPanel = styled.div`
 //   background-color: ${ props => props.theme.primaryBtnBgd };
 //   width: 100%
 // `
-const SubmitButton = styled(Button)`
-  width: 100%
-`
+// const SubmitButton = styled(Button)`
+//   width: 100%
+// `
 
 const StyledFilterContent = styled.div`
   background-color: ${props => props.theme.panelBackground};
@@ -64,12 +64,12 @@ const TimeRangeSliderContainer = styled.div`
   width: 750px;
 `
 
-const CheckboxContainer = styled.div`
-  margin-top: 15px;
-  margin-bottom: 10px;
-  padding: 8px 10px;
-  background-color: ${ props => props.theme.secondaryInputBgd };
-`
+// const CheckboxContainer = styled.div`
+//   margin-top: 15px;
+//   margin-bottom: 10px;
+//   padding: 8px 10px;
+//   background-color: ${ props => props.theme.secondaryInputBgd };
+// `
 
  class LayerFilterPanel extends Component {
 
@@ -85,7 +85,7 @@ const CheckboxContainer = styled.div`
       const dispatchUpdateFilter = value => {
         this.props.updateFilter(layer.name, filterName, value)
       }
-      
+
       const getFilter = (filter) => {
         if (filter.active === false) return null;
 

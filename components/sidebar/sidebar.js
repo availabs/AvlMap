@@ -74,7 +74,7 @@ class SideBar extends Component {
   };
 
   render() {
-    const { isOpen, transitioning, minifiedWidth, width } = this.props;
+    const { isOpen, transitioning, width } = this.props;
 
     const _width = isOpen && transitioning ? 0
                   : isOpen && !transitioning ? width

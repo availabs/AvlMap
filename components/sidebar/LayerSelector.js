@@ -1,5 +1,4 @@
 import React from 'react';
-import clickOutside from 'react-onclickoutside'
 
 import styled from "styled-components"
 

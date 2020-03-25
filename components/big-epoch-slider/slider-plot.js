@@ -36,7 +36,7 @@ export default class RangePlot extends Component {
   };
 
   componentDidMount() {
-    const selection = d3selection.select(this.container.current)
+    d3selection.select(this.container.current)
       .on("click", e => {
         const { width, onClick, range } = this.props,
           pos = d3selection.mouse(this.container.current);

@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import styled from 'styled-components';
 
 import SliderHandle from '../slider/slider-handle';
-import SliderBarHandle from '../slider/slider-bar-handle';
+// import SliderBarHandle from '../slider/slider-bar-handle';
 
 function noop() {}
 
@@ -85,7 +85,7 @@ export default class Slider extends Component {
     const {
       classSet,
       maxValue,
-      minValue,
+      // minValue,
       value
     } = this.props;
 

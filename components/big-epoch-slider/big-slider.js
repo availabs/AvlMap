@@ -20,11 +20,11 @@ const SliderWrapper = styled.div`
   position: relative;
 `;
 
-const RangeInputWrapper =styled.div`
-  margin-top: 6px;
-  display: flex;
-  justify-content: space-between;
-`;
+// const RangeInputWrapper =styled.div`
+//   margin-top: 6px;
+//   display: flex;
+//   justify-content: space-between;
+// `;
 
 export default class RangeSlider extends Component {
   static propTypes = {
@@ -80,7 +80,7 @@ export default class RangeSlider extends Component {
   };
 
   _setRangeVal = val => {
-    const {value, onChange} = this.props;
+    const { onChange} = this.props;
     val = Number(val);
 
     if (this._isValInRange(val)) {
@@ -132,7 +132,7 @@ export default class RangeSlider extends Component {
 
   render() {
     const {
-      isRanged,
+      // isRanged,
       bargraph,
       isEnlarged,
       range,

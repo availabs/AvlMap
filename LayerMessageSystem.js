@@ -1,7 +1,5 @@
 const listeners = new Map();
 
-const registedFilters = new Map();
-
 export const listen = (layer, otherLayerName) => {
   if (!listeners.has(otherLayerName)) {
     listeners.set(otherLayerName, []);
@@ -9,7 +7,7 @@ export const listen = (layer, otherLayerName) => {
   listeners.get(otherLayerName).push(layer);
 }
 export const unlisten = layer => {
-  for (let [key, value] of listeners) {
+  for (let [, value] of listeners) {
     value = value.filter(l => l != layer);
   }
 }

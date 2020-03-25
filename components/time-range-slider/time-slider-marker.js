@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { scaleUtc, scaleTime } from 'd3-scale';
+import { scaleTime } from 'd3-scale';
 import { select } from 'd3-selection';
 import { axisBottom } from 'd3-axis';
 import { createSelector } from 'reselect';

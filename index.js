@@ -30,14 +30,14 @@ let UNIQUE_ID = 0;
 const getUniqueId = (str = "unique-id") =>
 	`${ str }-${ ++UNIQUE_ID }`
 
-const getMapPreview = (map, style, size=[60, 40]) => {
-  if (!Boolean(map)) return "";
-
-  return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
-    `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
-    `${ size.join('x') }?` +
-    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
-}
+// const getMapPreview = (map, style, size=[60, 40]) => {
+//   if (!Boolean(map)) return "";
+//
+//   return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
+//     `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
+//     `${ size.join('x') }?` +
+//     `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
+// }
 const getStaticImageUrl = style =>
   `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
     `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
@@ -268,7 +268,7 @@ class AvlMap extends React.Component {
 		, false)
 
 		if (adjustName) {
-			const regExpStr = newLayerName + " " + "\\((\\d+)\\)",
+			const regExpStr = `${ newLayerName } \\((\\d+)\\)`,
 				regex = new RegExp(regExpStr),
 				num = allLayers.reduce((a, c) => {
 					const match = regex.exec(c.name);
@@ -762,7 +762,7 @@ class AvlMap extends React.Component {
           <MapActions layers={ allLayers }
 						activeLayers={ this.state.activeLayers }
             sidebar={ this.props.sidebar }
-            isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
+            isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }
             actionMap={ actionMap }/>
 				}
 
@@ -772,7 +772,7 @@ class AvlMap extends React.Component {
 
         <LoadingLayers layers={ allLayers }
           sidebar={ this.props.sidebar }
-          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }/>
+          isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }/>
 			</div>
 		)
 	}
