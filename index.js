@@ -802,13 +802,13 @@ const LoadingContainer = styled.div`
     min-width: 300px;
     background-color: ${ props => props.theme.sidePanelBg };
     border-radius: 4px;
-    border-top-left-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
-    border-bottom-left-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
+    border-top-right-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
+    border-bottom-right-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
     font-size: 1rem;
   }
-  > *:last-child {
-    margin-bottom: 0px;
-  }
+	> *:last-child {
+		margin-bottom: 0px;
+	}
 `
 class LoadingIndicator extends React.Component {
 	state = {
@@ -817,32 +817,31 @@ class LoadingIndicator extends React.Component {
 	format = d3format(".0%");
 
 	componentDidMount() {
-		// console.log("<LoadingIndicator.componentDidMount>")
-		this.props.layer.registerLoadingIndicator(this, this.setState);
+		this.props.layer.registerLoadingIndicator(this.setState.bind(this));
 	}
 	componentWillUnmount() {
-		this.props.layer.unregisterLoadingIndicator(this);
+		this.props.layer.unregisterLoadingIndicator();
 	}
-	// componentDidUpdate() {
-	// 	console.log("<LoadingIndicator.componentDidUpdate>", this.state)
-	// }
 	render() {
 		const { layer } = this.props,
 			height = 40,
 			padding = 10;
 		return (
 			<div key={ layer.name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
-				<ScalableLoading scale={ height * 0.01 }/>
-				<div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `calc(40% - ${ height }px)` } }>
+
+				<div style={ { height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `65%` } }>
+					 { layer.name }
+				</div>
+
+				<div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `calc(35% - ${ height }px)` } }>
 
 					{ this.state.progress === null ? null :
 						`${ this.format(this.state.progress) }`
 					}
 
 				</div>
-				<div style={ { height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "right", width: `60%` } }>
-					 { layer.name }
-				</div>
+
+				<ScalableLoading scale={ height * 0.01 }/>
 			</div>
 		)
 	}

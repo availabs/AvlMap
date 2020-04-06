@@ -62,8 +62,8 @@ class MapLayer {
     this.onHoverLeave = this.onHoverLeave.bind(this);
 	}
 
-	registerLoadingIndicator(comp, func) {
-		this.LoadingIndicator = func.bind(comp);
+	registerLoadingIndicator(func) {
+		this.LoadingIndicator = func;
 	}
 	unregisterLoadingIndicator() {
 		this.LoadingIndicator = () => {};
