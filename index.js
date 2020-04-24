@@ -484,7 +484,7 @@ class AvlMap extends React.Component {
   	}
   }
 
-  updatePopover(update) {
+  updatePopover(layerName, update) {
 		if ((update.pinned === false) && this.state.popover.pinned) {
 			const func = this.state.popover.layer.popover.onUnPinned;
 			(typeof func === "function") && func.call(this.state.popover.layer);

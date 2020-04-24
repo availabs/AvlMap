@@ -75,7 +75,7 @@ class MapLayer {
 
   initComponent(component) {
     this.component = component;
-    this.updatePopover = component.updatePopover.bind(component);
+    // this.updatePopover = component.updatePopover.bind(component);
 		if (this.showAttributesModal !== false) {
 			const modals = this.modals || {};
 			this.modals = {
@@ -448,11 +448,16 @@ class MapLayer {
 
 			    if (popover.pinned) return;
 
-		      this.updatePopover({
+					this.doAction(["updatePopover", {
 		      	pos: [e.point.x, e.point.y],
 		      	data,
 						layer: this
-		      })
+		      }])
+		      // this.updatePopover({
+		      // 	pos: [e.point.x, e.point.y],
+		      // 	data,
+					// 	layer: this
+		      // })
 			})
     }
 	}
@@ -465,11 +470,14 @@ class MapLayer {
 
     if (popover.pinned) return;
 
-
-    this.updatePopover({
+		this.doAction(["updatePopover", {
         data: [],
 				layer: null
-    })
+    }])
+    // this.updatePopover({
+    //     data: [],
+		// 		layer: null
+    // })
 	}
 	_clearPinnedState() {
 		if (!this.map) return;
@@ -509,17 +517,26 @@ class MapLayer {
 				}
 
     		if (pinned) {
-    			this.updatePopover({
+					this.doAction(["updatePopover", {
     				pos: [e.point.x, e.point.y],
     				data,
 						layer: this
-    			})
+    			}])
+    			// this.updatePopover({
+    			// 	pos: [e.point.x, e.point.y],
+    			// 	data,
+					// 	layer: this
+    			// })
     		}
     		else {
-    			this.updatePopover({
+					this.doAction(["updatePopover", {
     				pinned: true,
 						layer: this
-    			})
+    			}])
+    			// this.updatePopover({
+    			// 	pinned: true,
+					// 	layer: this
+    			// })
     		}
     	}
     	// else {
