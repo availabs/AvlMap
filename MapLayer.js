@@ -40,7 +40,7 @@ class MapLayer {
 		this.map = null;
 
 		this.showPopover = false;
-		this.popoverTime = Date.now();
+		this.latestPopoverId = 0;
 
 		this.name = name;
 
@@ -436,14 +436,13 @@ class MapLayer {
 		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features && e.features.length) {
-			const time = Date.now();
 
-			this.popoverTime = time;
+			const popoverId = ++this.latestPopoverId;
 
 			Promise.resolve(dataFunc.call(this, e.features[0], e.features, layer, map, e) || [])
 				.then(data => {
 					if (!this.showPopover) return;
-					if (time < this.popoverTime) return;
+					if (popoverId < this.latestPopoverId) return;
 
 					map.getCanvas().style.cursor = data.length ? 'pointer' : '';
 
@@ -459,7 +458,7 @@ class MapLayer {
 	}
 	_mouseleave(e, layer) {
 		this.showPopover = false;
-		
+
 		const { map, popover } = this.component.state;
 
     map.getCanvas().style.cursor = '';
