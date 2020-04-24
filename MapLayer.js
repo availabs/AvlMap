@@ -430,17 +430,18 @@ class MapLayer {
 		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features && e.features.length) {
-			const data = dataFunc.call(this, e.features[0], e.features, layer, map, e) || [];
+			Promise.resolve(dataFunc.call(this, e.features[0], e.features, layer, map, e) || [])
+				.then(data => {
+						map.getCanvas().style.cursor = data.length ? 'pointer' : '';
 
-			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
+				    if (popover.pinned) return;
 
-	    if (popover.pinned) return;
-
-      this.updatePopover({
-      	pos: [e.point.x, e.point.y],
-      	data,
-				layer: this
-      })
+			      this.updatePopover({
+			      	pos: [e.point.x, e.point.y],
+			      	data,
+							layer: this
+			      })
+				})
     }
 	}
 	_mouseleave(e, layer) {

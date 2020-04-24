@@ -82,13 +82,12 @@ const PopoverBlockContainer = styled.div`
 
 export class MapPopover extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      isMouseOver: false,
-      width: 380,
-      height: 160
-    };
+  state = {
+    isMouseOver: false,
+    width: 380,
+    height: 160,
+    promise: null,
+    data: ["Loading..."]
   }
 
   componentDidMount() {
@@ -141,12 +140,12 @@ export class MapPopover extends Component {
       data,
       pos
     } = this.props;
-    const hidden = !data.length && !this.state.isMouseOver;
-    // const { width } = this.state;
 
     if (!data.length) {
       return null;
     }
+
+    const hidden = !data.length && !this.state.isMouseOver;
 
     const [x, y] = pos;
 
@@ -160,12 +159,8 @@ export class MapPopover extends Component {
         ref={ comp => { this.popover = comp; } }
         className={ classnames('map-popover', {hidden}) }
         style={ { ...style } }
-        onMouseEnter={() => {
-          this.setState({ isMouseOver: true });
-        }}
-        onMouseLeave={() => {
-          this.setState({ isMouseOver: false });
-        }}>
+        onMouseEnter={ () => this.setState({ isMouseOver: true }) }
+        onMouseLeave={ () => this.setState({ isMouseOver: false }) }>
 
         { pinned ?
           <div className="map-popover__top">
