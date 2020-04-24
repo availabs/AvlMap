@@ -37,6 +37,10 @@ class MapLayer {
 		const options = { ...DEFAULT_OPTIONS, ..._options };
 
 		this.component = null;
+		this.map = null;
+
+		this.showPopover = false;
+		this.popoverTime = Date.now();
 
 		this.name = name;
 
@@ -423,6 +427,8 @@ class MapLayer {
 		})
 	}
 	_mousemove(e, layer) {
+		this.showPopover = true;
+
 		const { map, popover } = this.component.state,
 			zoom = map.getZoom(),
 			{ minZoom, dataFunc } = this.popover;
@@ -430,26 +436,36 @@ class MapLayer {
 		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features && e.features.length) {
+			const time = Date.now();
+
+			this.popoverTime = time;
+
 			Promise.resolve(dataFunc.call(this, e.features[0], e.features, layer, map, e) || [])
 				.then(data => {
-						map.getCanvas().style.cursor = data.length ? 'pointer' : '';
+					if (!this.showPopover) return;
+					if (time < this.popoverTime) return;
 
-				    if (popover.pinned) return;
+					map.getCanvas().style.cursor = data.length ? 'pointer' : '';
 
-			      this.updatePopover({
-			      	pos: [e.point.x, e.point.y],
-			      	data,
-							layer: this
-			      })
-				})
+			    if (popover.pinned) return;
+
+		      this.updatePopover({
+		      	pos: [e.point.x, e.point.y],
+		      	data,
+						layer: this
+		      })
+			})
     }
 	}
 	_mouseleave(e, layer) {
+		this.showPopover = false;
+		
 		const { map, popover } = this.component.state;
 
     map.getCanvas().style.cursor = '';
 
     if (popover.pinned) return;
+
 
     this.updatePopover({
         data: [],
