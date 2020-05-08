@@ -313,7 +313,7 @@ class MapLayer {
 
   doAction([action, ...args]) {
     if (this.component && this.component[action]) {
-      return this.component[action](this.name, ...args)
+      return this.component[action](this.name, ...args);
     }
   }
   forceUpdate() {
@@ -344,7 +344,7 @@ class MapLayer {
 	receiveDataOld(...args) {
 		if (this.receiveData) {
 			console.warn("<AvlMap::MapLayer> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
-			this.receiveData.call(this, ...args);
+			this.receiveData(...args);
 		}
 	}
 
@@ -450,15 +450,10 @@ class MapLayer {
 
 					this.doAction(["updatePopover", {
 		      	pos: [e.point.x, e.point.y],
-		      	data,
-						layer: this
+						layer: this,
+		      	data
 		      }])
-		      // this.updatePopover({
-		      // 	pos: [e.point.x, e.point.y],
-		      // 	data,
-					// 	layer: this
-		      // })
-			})
+				})
     }
 	}
 	_mouseleave(e, layer) {
@@ -471,13 +466,9 @@ class MapLayer {
     if (popover.pinned) return;
 
 		this.doAction(["updatePopover", {
-        data: [],
-				layer: null
+				layer: null,
+        data: []
     }])
-    // this.updatePopover({
-    //     data: [],
-		// 		layer: null
-    // })
 	}
 	_clearPinnedState() {
 		if (!this.map) return;
@@ -522,21 +513,12 @@ class MapLayer {
     				data,
 						layer: this
     			}])
-    			// this.updatePopover({
-    			// 	pos: [e.point.x, e.point.y],
-    			// 	data,
-					// 	layer: this
-    			// })
     		}
     		else {
 					this.doAction(["updatePopover", {
     				pinned: true,
 						layer: this
     			}])
-    			// this.updatePopover({
-    			// 	pinned: true,
-					// 	layer: this
-    			// })
     		}
     	}
     	// else {

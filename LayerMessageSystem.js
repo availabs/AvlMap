@@ -13,17 +13,18 @@ export const unlisten = layer => {
 }
 
 export class FilterMessage {
-  constructor(layerName, filterName, oldValue, newValue) {
+  constructor(layerName, filterName, oldValue, newValue, data) {
     this.type = "FilterMessage";
     this.layerName = layerName;
     this.filterName = filterName;
     this.oldValue = oldValue;
     this.newValue = newValue;
+    this.data = data;
   }
 }
 
 export const dispatchMessage = (layerName, message) => {
-  console.log("DISPATCH:", layerName, message);
+console.log("<LayerMessageSystem.dispatchMessage>", layerName, message);
   if (listeners.has(layerName)) {
     for (const listener of listeners.get(layerName)) {
       listener.receiveLayerMessage(message)

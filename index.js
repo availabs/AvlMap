@@ -325,6 +325,7 @@ class AvlMap extends React.Component {
       id: getUniqueId(),
       duration: data.onConfirm ? 0 : 6000,
       ...data,
+			Message: data.msg || data.message || data.Message,
       update: false,
       layer: this.getLayer(layerName)
     }
@@ -350,6 +351,11 @@ class AvlMap extends React.Component {
     this.setState({ messages });
   }
 
+	renderLayer(layerName) {
+		const layer = this.getLayer(layerName);
+		layer && layer.active && layer.render(this.state.map);
+	}
+
   setContainerSize() {
     const div = this.container.current,
       width = div.scrollWidth,
@@ -363,7 +369,8 @@ class AvlMap extends React.Component {
   	return [
 			...this.props.layers,
 			...this.state.dynamicLayers
-		].reduce((a, c) => c.name === layerName ? c : a, null);
+		]
+		.reduce((a, c) => c.name === layerName ? c : a, null);
   }
 
   _addLayer(map, newLayer, activeLayers=this.state.activeLayers) {
@@ -570,13 +577,21 @@ class AvlMap extends React.Component {
   	++layer.loading;
   	this.forceUpdate();
 
-		Promise.resolve(onChange())
-			.then(() => layer.onFilterFetch(filterName, oldValue, value))
-      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), ((data !== false) && layer.render(this.state.map))))
+		// Promise.resolve(onChange())
+		// 	.then(() => layer.onFilterFetch(filterName, oldValue, value))
+		layer.onFilterFetch(filterName, oldValue, value)
+      .then(data => {
+				if (layer.active) {
+					onChange();
+					layer.receiveDataOld(this.state.map, data);
+					(data !== false) && layer.render(this.state.map);
+				}
+			})
       .then(() => --layer.loading)
 			.then(() => {
 					if (filter.dispatchMessage) {
-						dispatchMessage(layerName, new FilterMessage(layerName, filterName, oldValue, value));
+						const data = filter.dispatchFunc ? filter.dispatchFunc.call(layer) : null;
+						dispatchMessage(layerName, new FilterMessage(layerName, filterName, oldValue, value, data));
 					}
 			})
       .then(() => this.forceUpdate());
