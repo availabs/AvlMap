@@ -10,14 +10,14 @@ import {
   ArrowDown,
   Trash,
   Clock
-} from 'components/common/icons';
+} from '../common/icons';
 
-import {Tooltip} from 'components/common/styled-components';
 
 import {
     //InlineInput,
-    StyledPanelHeader
-} from 'components/common/styled-components';
+    StyledPanelHeader,
+    Tooltip
+} from '../common/styled-components';
 
 const defaultProps = {
   isDragNDropEnabled: true,

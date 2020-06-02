@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import get from "lodash.get"
 // import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import {CenterFlexbox} from 'components/common/styled-components';
-import {Pin, Layers} from 'components/common/icons';
+import {CenterFlexbox} from '../common/styled-components';
+import {Pin, Layers} from '../common/icons';
 
 const MAX_WIDTH = 400;
 const MAX_HEIGHT = 600;

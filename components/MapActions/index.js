@@ -4,7 +4,7 @@ import styled from "styled-components"
 
 import classnames from "classnames"
 
-import { Tooltip } from 'components/common/styled-components';
+import { Tooltip } from '../common/styled-components';
 
 const ActionContainer = styled.div`
 	position: absolute;

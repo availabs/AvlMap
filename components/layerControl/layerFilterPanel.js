@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
-import { Button  } from 'components/common/styled-components'; // StyledPanelHeader
+import { Button  } from '../common/styled-components'; // StyledPanelHeader
 
 //import * as Filters from 'components/filters';
 import {
@@ -8,7 +8,7 @@ import {
   MultiSelectFilter,
   DateFilter,
   // Switch
-} from 'components/filters'
+} from '../filters'
 import TimeRangeSldier from "../time-range-slider/time-range-slider"
 import BigEpochSlider from "../big-epoch-slider"
 

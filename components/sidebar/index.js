@@ -5,11 +5,11 @@ import SidebarHeader from './SidebarHeader'
 import LayerSelector from './LayerSelector'
 import ActiveLayers from './ActiveLayers'
 
-import { Layers } from "components/common/icons"
+import { Layers } from "../common/icons"
 
-import { Tooltip } from 'components/common/styled-components';
+import { Tooltip } from '../common/styled-components';
 
-import AccordionSelector from "components/AvlStuff/AccordionSelector"
+import AccordionSelector from "../AccordianSelector.js"
 
 import deepequal from "deep-equal"
 import styled from "styled-components"

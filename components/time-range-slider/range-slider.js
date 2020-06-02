@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import RangePlot from './range-plot';
 import Slider from '../slider/slider';
-import { Input } from 'components/common/styled-components';
+import { Input } from '../common/styled-components';
 
 import { roundValToStep } from './utils';
 

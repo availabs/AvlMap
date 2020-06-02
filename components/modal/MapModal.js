@@ -2,7 +2,7 @@ import React from 'react';
 
 import styled from 'styled-components';
 
-import DraggableModal from "components/AvlStuff/DraggableModal"
+import DraggableModal from "../DraggableModal"
 
 const ModalWrapper = styled.div`
 	${ props => props.theme.scrollBar };

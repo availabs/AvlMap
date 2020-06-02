@@ -22,7 +22,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import styled from 'styled-components';
-import {Tooltip} from 'components/common/styled-components';
+import {Tooltip} from '../common/styled-components';
 
 const HeaderActionWrapper = styled.div`
   margin-left: ${props => (props.flush ? 0 : 8)}px;

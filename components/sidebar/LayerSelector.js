@@ -2,7 +2,7 @@ import React from 'react';
 
 import styled from "styled-components"
 
-import ItemSelector from "components/common/item-selector/item-selector"
+import ItemSelector from "../common/item-selector/item-selector"
 
 const Container = styled.div`
   padding: 0px 5px;

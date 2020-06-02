@@ -1,7 +1,7 @@
 import React from "react"
 
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl'
-import { MAPBOX_TOKEN } from 'store/config'
+//import { MAPBOX_TOKEN } from 'store/config'
 
 import deepequal from "deep-equal"
 import get from "lodash.get"
@@ -15,7 +15,7 @@ import MapModal from "./components/modal/MapModal"
 import MapActions from "./components/MapActions"
 import MapMessages from "./components/MapMessages"
 
-import { ScalableLoading } from "components/loading/loadingPage"
+import { ScalableLoading } from "components/loading/LoadingPage"
 
 import './avlmap.css'
 
@@ -24,7 +24,7 @@ import {
 	FilterMessage
 } from "./LayerMessageSystem"
 
-mapboxgl.accessToken = MAPBOX_TOKEN
+
 
 let UNIQUE_ID = 0;
 const getUniqueId = (str = "unique-id") =>
@@ -75,7 +75,8 @@ class AvlMap extends React.Component {
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
 		layerProps: {},
-		preserveDrawingBuffer: false
+		preserveDrawingBuffer: false,
+    MAPBOX_TOKEN: ''
 	}
 
   static ActiveMaps = {};
@@ -134,6 +135,7 @@ class AvlMap extends React.Component {
 			, props.styles[0])
   	}
     this.MOUNTED = false;
+    mapboxgl.accessToken = props.MAPBOX_TOKEN
     this.container = React.createRef();
   }
 

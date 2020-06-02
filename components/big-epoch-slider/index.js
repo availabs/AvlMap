@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import throttle from 'lodash.throttle';
 import styled from 'styled-components';
-import { Play, Reset, Pause } from 'components/common/icons';
-import { Button, ButtonGroup } from 'components/common/styled-components';
+import { Play, Reset, Pause } from '../common/icons';
+import { Button, ButtonGroup } from '../common/styled-components';
 import BigSlider from './big-slider';
 import TimeSliderMarker from './time-slider-marker';
 
