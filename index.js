@@ -1,7 +1,7 @@
 import React from "react"
 
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl'
-//import { MAPBOX_TOKEN } from 'store/config'
+import { MAPBOX_TOKEN } from 'store/config'
 
 import deepequal from "deep-equal"
 import get from "lodash.get"
@@ -15,7 +15,7 @@ import MapModal from "./components/modal/MapModal"
 import MapActions from "./components/MapActions"
 import MapMessages from "./components/MapMessages"
 
-import { ScalableLoading } from "components/loading/LoadingPage"
+import { ScalableLoading } from "./components/loading/LoadingPage"
 
 import './avlmap.css'
 
@@ -76,7 +76,7 @@ class AvlMap extends React.Component {
 	  sidebarPages: ["layers", "basemaps"],
 		layerProps: {},
 		preserveDrawingBuffer: false,
-    MAPBOX_TOKEN: ''
+    MAPBOX_TOKEN: MAPBOX_TOKEN
 	}
 
   static ActiveMaps = {};
