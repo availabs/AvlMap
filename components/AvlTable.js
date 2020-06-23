@@ -26,7 +26,7 @@ const StringEqualityFilter = (key, value) => {
 }
 const NotEqualFilter = (key, value) => {
 	function filter(data) {
-		return data.filter(d => get(d, [key], undefined) != value);
+		return data.filter(d => get(d, [key], undefined) !== value);
 	}
 	filter.id = getFilterId();
 	filter.display = `${ key } != ${ value }`;
@@ -34,7 +34,7 @@ const NotEqualFilter = (key, value) => {
 }
 const EqualityFilter = (key, value) => {
 	function filter(data) {
-		return data.filter(d => get(d, [key], undefined) == value);
+		return data.filter(d => get(d, [key], undefined) === value);
 	}
 	filter.id = getFilterId();
 	filter.display = `${ key } == ${ value }`;
@@ -190,7 +190,7 @@ export default class AvlTable extends React.Component {
 				filter = NumericLessThanEqualToFilter(searchKey, argsString.slice(2).trim());
 			}
 			else if ((args[0] === "range") || (args[0] === "in")) {
-				const value = argsString.slice(args[0].length).replace("/\s/g", ""),
+				const value = argsString.slice(args[0].length).replace("//g", ""),
 					match = NumericRangeFilterRegex.exec(value);
 
 				if (match) {
@@ -539,7 +539,7 @@ const StyledFilterItem = styled.div`
 	}
 `
 
-const _MultiSelectFilter = styled.div`
+const StyledMultiSelectFilter = styled.div`
 
 	/*padding: 2px 2px 2px 10px;*/
 	margin: 0px !important;
@@ -631,7 +631,7 @@ const NavigationBar = ({
                 </div>
                 <div style={{width: "40%"}}>
                     {(isMulti) ?
-                        <_MultiSelectFilter>
+                        <StyledMultiSelectFilter>
                             <MultiSelectFilter
                                 filter={{
                                     domain: searchKey ? _.uniqBy(data, searchKey).map(d => d[searchKey]).filter(f => f) : [],
@@ -641,7 +641,7 @@ const NavigationBar = ({
                                     setSearchString(e.join(';'));
                                 }}
                             />
-                        </_MultiSelectFilter> :
+                        </StyledMultiSelectFilter> :
                         <Input type="text" value={searchString}
                                disabled={!Boolean(searchKey)}
                                onChange={({target: {value}}) => setSearchString(value)}

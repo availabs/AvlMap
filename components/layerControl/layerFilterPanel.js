@@ -9,8 +9,6 @@ import {
   DateFilter,
   // Switch
 } from '../filters'
-import TimeRangeSldier from "../time-range-slider/time-range-slider"
-import BigEpochSlider from "../big-epoch-slider"
 
 import SliderFilter from "./slider-filter"
 // import Slider from "../slider/slider"
@@ -54,15 +52,6 @@ const StyledFilterContent = styled.div`
   padding: 12px;
 `;
 
-const TimeRangeSliderContainer = styled.div`
-  background-color: ${ props => props.theme.panelBackground };
-  padding: 20px;
-  z-index: 1000;
-  position: fixed;
-  bottom: 30px;
-  right: 50px;
-  width: 750px;
-`
 
 // const CheckboxContainer = styled.div`
 //   margin-top: 15px;
@@ -131,41 +120,6 @@ const TimeRangeSliderContainer = styled.div`
               filter={ filter }
               />
             );
-          case "time-range":
-            return (
-              <TimeRangeSliderContainer>
-                <TimeRangeSldier
-                  onChange={ dispatchUpdateFilter }
-                  histogram={ filter.histogram }
-                  domain={ filter.domain }
-                  value={ filter.value }
-                  step={ filter.step }
-                  toggleAnimation={ () => console.log("toggleAnimation") }
-                  isEnlarged={ true }
-                  isAnimatable={ true }
-                  speed={ filter.speed || 1 }
-                  hideTitle={ filter.hideTitle }
-                  Title={ filter.Title }/>
-              </TimeRangeSliderContainer>
-            )
-          case "big-epoch-slider":
-            return (
-              <TimeRangeSliderContainer>
-                <BigEpochSlider
-                  onChange={ dispatchUpdateFilter }
-                  bargraph={ filter.bargraph }
-                  domain={ filter.domain }
-                  value={ filter.value }
-                  step={ filter.step }
-                  toggleAnimation={ () => console.log("toggleAnimation") }
-                  isEnlarged={ true }
-                  isAnimatable={ true }
-                  speed={ filter.speed || 1 }
-                  hideTitle={ filter.hideTitle }
-                  Comp={ filter.Comp }
-                  Title={ filter.Title }/>
-              </TimeRangeSliderContainer>
-            )
           default:
             return (<span >Invalid Filter Type { filter.type }</span>);
         }

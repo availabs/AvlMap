@@ -14,6 +14,7 @@ const MessageContainer = styled.div`
 	height: 100%;
 	z-index: 50;
 	pointer-events: none;
+	outline: 0;
 
 	display: flex;
 	flex-direction: column;

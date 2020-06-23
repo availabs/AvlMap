@@ -191,7 +191,7 @@ class BaseMapsSelector extends React.Component {
   }
   render() {
     const { styles, style } = this.props,
-      options = styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url }/> }));
+      options = styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url } alt="basemap"/> }));
     return (
       <div>
         <AccordionSelector value={ style.name }

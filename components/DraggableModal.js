@@ -115,19 +115,21 @@ export default class DraggableModal extends React.Component {
 
       if (typeof props.startPos === "string") {
         switch (props.startPos) {
-          case "top":
-            return { pos: [clientWidth * 0.5 - width * 0.5, 20] };
-          case "bottom":
-            return { pos: [clientWidth * 0.5 - width * 0.5, clientHeight - height - 20] };
-					case "bottom-right":
-						return { pos: [clientWidth - width - 50, clientHeight - height - 20] };
+          	case "top":
+            	return { pos: [clientWidth * 0.5 - width * 0.5, 20] };
+          	case "bottom":
+            	return { pos: [clientWidth * 0.5 - width * 0.5, clientHeight - height - 20] };
+			case "bottom-right":
+				return { pos: [clientWidth - width - 50, clientHeight - height - 20] };
+			default:
+				return { pos: [...props.startPos] };
         }
       }
       else {
         return { pos: [...props.startPos] };
       }
 
-      return null;
+      
     })
 	}
 	componentWillUnmount() {
@@ -160,9 +162,13 @@ export default class DraggableModal extends React.Component {
             pos = [clientWidth * 0.5 - width * 0.5, clientHeight - height - 20];
             break;
           }
-					case "bottom-right":
-						pos = [clientWidth - width - 50, clientHeight - height - 20];
-						break;
+			case "bottom-right":
+			pos = [clientWidth - width - 50, clientHeight - height - 20];
+			break;
+			default: {
+				pos = [...startPos];
+				break;
+			}
         }
       }
       else {

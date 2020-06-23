@@ -123,6 +123,7 @@ class AvlMap extends React.Component {
   			data: [],
 				layer: null
   		},
+      dragPan: true,
   		dragging: null,
   		dragover: null,
       width: 0,
@@ -184,6 +185,10 @@ class AvlMap extends React.Component {
     if(!this.props.scrollZoom) {
       map.scrollZoom.disable();
     };
+
+    if(!this.props.dragPan) {
+      map.dragPan.disable();
+    }
 
     ([...document.getElementsByClassName("mapboxgl-ctrl-logo")])
       .forEach(logo => {
@@ -277,7 +282,7 @@ class AvlMap extends React.Component {
           , false)
 
       if (adjustName) {
-          const regExpStr = newLayerName + " " + "\\((\\d+)\\)",
+          const regExpStr = newLayerName + " \\((\\d+)\\)",
               regex = new RegExp(regExpStr),
               num = allLayers.reduce((a, c) => {
                   const match = regex.exec(c.name);
@@ -740,7 +745,7 @@ class AvlMap extends React.Component {
 			url: getStaticImageUrl(s.style.slice(23))
 		}))
 		return (
-			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container }>
+			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container } className='z-30 focus:outline-none active:outline-none'>
 
 				{ !this.props.sidebar ? null :
           <Sidebar isOpen={ this.state.isOpen }
@@ -813,6 +818,8 @@ const LoadingContainer = styled.div`
 	flex-direction: column;
   pointer-events: none;
   color: ${ props => props.theme.textColorHl };
+  outline: 0;
+
 
   > * {
     margin-bottom: 10px;

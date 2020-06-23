@@ -8,7 +8,7 @@ export const listen = (layer, otherLayerName) => {
 }
 export const unlisten = layer => {
   for (let [, value] of listeners) {
-    value = value.filter(l => l != layer);
+    value = value.filter(l => l !== layer);
   }
 }
 
