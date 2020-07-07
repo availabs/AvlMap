@@ -164,7 +164,7 @@ export class MapPopover extends Component {
 
         { pinned ?
           <div className="map-popover__top">
-            <StyledPin className="popover-pin" onClick={e => this.props.updatePopover({ pinned: false, data: [] })}>
+            <StyledPin className="popover-pin" onClick={e => this.props.updatePopover(this.props.layer, { layer: null, pinned: false, data: [] })}>
               <Pin height="16px" />
             </StyledPin>
             <div style={ { height: "10px" } }/>
