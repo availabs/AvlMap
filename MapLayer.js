@@ -91,12 +91,15 @@ class MapLayer {
 
 			if (!get(this, 'component.props.sidebar', false) ||
 					!get(this, 'component.props.sidebarPages', []).includes("layers")) {
-				this.mapActions = {
+				this.mapActions =
+					get(this, 'component.props.hideAttributes', false) ?
+					{...this.mapActions} :
+						{
 					...this.mapActions,
 					"avl-attributes": {
-						Icon: ({ layer }) => <span className={ `fa fa-lg fa-eye` }/>,
+						Icon: ({layer}) => <span className={`fa fa-lg fa-eye`}/>,
 						tooltip: "Toggle Attributes",
-						action: function() {
+						action: function () {
 							this.doAction(["toggleModal", "avl-attributes"]);
 						}
 					}
@@ -104,14 +107,19 @@ class MapLayer {
 			}
 			else {
 				const actions = this.actions || [];
-				this.actions = [
-					...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
-			    {
-			      Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
-			      action: ["toggleModal", "avl-attributes"],
-			      tooltip: "Toggle Attributes"
-			    }
-				]
+				this.actions =
+					get(this, 'component.props.hideAttributes', false) ?
+						[
+							...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
+						] :
+						[
+							...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
+							{
+								Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
+								action: ["toggleModal", "avl-attributes"],
+								tooltip: "Toggle Attributes"
+							}
+						]
 			}
 		}
   }
