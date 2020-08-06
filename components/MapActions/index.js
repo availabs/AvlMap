@@ -6,6 +6,8 @@ import classnames from "classnames"
 
 import { Tooltip } from '../common/styled-components';
 
+import MapStyleControl from "./MapStyleControl"
+
 const ActionContainer = styled.div`
 	position: absolute;
 	top: ${ props => props.sidebar ? 50 : 20 }px;
@@ -142,7 +144,13 @@ class MapActions extends React.Component {
 			}, [])
 		return (
 			<ActionContainer sidebar={ this.props.sidebar } isOpen={ this.props.isOpen }>
-				{
+				{ !this.props.showStyleControl ? null :
+					<MapStyleControl setMapStyle={ this.props.actionMap["setMapStyle"] }
+						getStaticImageUrl={ this.props.getStaticImageUrl }
+						mapStyles={ this.props.mapStyles }
+						style={ this.props.style }/>
+				}
+				{ !this.props.showMapActions ? null :
 					actions.map(({ Icon, id, tooltip, action, disabled, layer }) =>
 						<ActionItem key={ id }
 							data-tip data-for={ id }

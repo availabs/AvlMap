@@ -327,7 +327,7 @@ export default class AvlTable extends React.Component {
 		page = Math.min(maxPage, page);
 
 		data = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-console.log("???", keys, data, this.props.expandable)
+// console.log("???", keys, data, this.props.expandable)
 		return (
 			<DivContainer>
 

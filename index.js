@@ -38,9 +38,9 @@ const getUniqueId = (str = "unique-id") =>
 //     `${ size.join('x') }?` +
 //     `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
 // }
-const getStaticImageUrl = style =>
+const getStaticImageUrl = (style, size = [60, 40]) =>
   `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
-    `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
+    `${ -74.2179 },${ 43.2994 },1.5/${ size.join("x") }?` +
     `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`
 
 export const DEFAULT_STYLES = [
@@ -71,6 +71,7 @@ class AvlMap extends React.Component {
     boxZoom: true,
 	  sidebar: true,
     mapactions: true,
+		showStyleControl: false,
 	  update: [],
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
@@ -736,7 +737,8 @@ class AvlMap extends React.Component {
 		const actionMap = {
 			toggleModal: this.toggleModal.bind(this),
       updateModal: this.updateModal.bind(this),
-			toggleInfoBox: this.toggleInfoBox.bind(this)
+			toggleInfoBox: this.toggleInfoBox.bind(this),
+			setMapStyle: this.setMapStyle.bind(this)
 		}
 		const allLayers = [
 			...this.props.layers,
@@ -790,13 +792,16 @@ class AvlMap extends React.Component {
 					activeLayers={ this.state.activeLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-        { !this.props.mapactions ? null :
-          <MapActions layers={ allLayers }
-						activeLayers={ this.state.activeLayers }
-            sidebar={ this.props.sidebar }
-            isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }
-            actionMap={ actionMap }/>
-				}
+        <MapActions layers={ allLayers }
+					activeLayers={ this.state.activeLayers }
+          sidebar={ this.props.sidebar }
+          isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }
+          actionMap={ actionMap }
+          mapStyles={ mapStyles }
+					style={ this.state.style }
+					showStyleControl={ this.props.showStyleControl }
+					getStaticImageUrl={ getStaticImageUrl }
+					showMapActions={ this.props.mapactions }/>
 
         <MapMessages
           messages={ this.state.messages }
