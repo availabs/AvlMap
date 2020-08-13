@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
-import { Link } from "react-router-dom"
 import styled from 'styled-components';
-import get from "lodash.get"
 // import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import {CenterFlexbox} from '../common/styled-components';
@@ -14,7 +12,7 @@ const StyledMapPopover = styled.div`
   ${props => props.theme.scrollBar}
   font-size: 11px;
   font-weight: 500;
-  background-color: ${props => props.theme.panelBackground};
+  background-color: ${props => props.theme.panelBackground || '#fefefe'};
   color: ${props => props.theme.textColor};
   z-index: 1001;
   position: absolute;
@@ -199,13 +197,7 @@ export class MapPopover extends Component {
 }
 
 const PopoverRow = (row, i) =>
-  get(row, "type", null) === "link" ?
-    <tr key={ "link-" + i }>
-      <td colSpan={ 2 } className="row__value">
-        <Link to={ row.href }>{ row.link }</Link>
-      </td>
-    </tr>
-  : row.length === 2 ?
+  row.length === 2 ?
     <tr key={ "row2-" + i }>
       <td className="row__name">{ row[0] }</td>
       <td className="row__value">{ row[1] }</td>
