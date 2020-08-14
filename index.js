@@ -188,7 +188,7 @@ class AvlMap extends React.Component {
       map.scrollZoom.disable();
     };
 
-    if(!this.props.dragPan) {
+    if(this.props.dragPan === false) {
       console.log('dragPan disable')
       map.dragPan.disable();
     }
