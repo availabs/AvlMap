@@ -50,11 +50,13 @@ const HorizontalLegend = ({ type, format, scale, range, domain, subText, title, 
     width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%'
   }
   const subTextBlock = {
-    width: subText ? ((100) / (type === 'linear' ? scale.ticks(5).length : range.length)) * Math.floor((type === 'linear' ? scale.ticks(5).length : range.length) / subText.length) + '%' : ''
+    width: subText ? ((100) / (type === 'linear' ? scale.ticks(5).length : range.length)) * Math.floor((type === 'linear' ? scale.ticks(5).length : range.length) / subText.length) + '%' : '',
+    textAlign: 'center'
   }
   const subTextBlockMiddle = {
     width: subText ? (((100) / (type === 'linear' ? scale.ticks(5).length : range.length)) * Math.floor((type === 'linear' ? scale.ticks(5).length : range.length) / subText.length)) +
-        (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%' : ''
+        (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%' : '',
+      textAlign: 'center'
   }
   const subTextDiv = (i, r = undefined) =>
       <TextBlock key={ i } style={
