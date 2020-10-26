@@ -5,11 +5,11 @@ import SidebarHeader from './SidebarHeader'
 import LayerSelector from './LayerSelector'
 import ActiveLayers from './ActiveLayers'
 
-import { Layers, Crosshairs } from "components/common/icons"
+import { Layers } from "../common/icons"
 
-import { Tooltip } from 'components/common/styled-components';
+import { Tooltip } from '../common/styled-components';
 
-import AccordionSelector from "components/AvlStuff/AccordionSelector"
+import AccordionSelector from "../AccordianSelector.js"
 
 import deepequal from "deep-equal"
 import styled from "styled-components"
@@ -146,13 +146,6 @@ class Sidebar extends Component {
     })
   }
   render() {
-    let sidebarContentStyle = {
-      flexGrow: 1,
-      padding: 0,
-      overflowY: 'auto',
-      overflowX: 'hidden'
-    }
-
     const { pages } = this.state;
 
     return (
@@ -199,8 +192,8 @@ class BaseMapsSelector extends React.Component {
     this.props.setMapStyle(style);
   }
   render() {
-    const { styles, style, setMapStyle } = this.props,
-      options = styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url }/> }));
+    const { styles, style } = this.props,
+      options = styles.map(({ name, url }) => ({ label: name, Icon: () => <img src={ url } alt="basemap"/> }));
     return (
       <div>
         <AccordionSelector value={ style.name }

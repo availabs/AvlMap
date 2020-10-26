@@ -4,16 +4,17 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import {
   PanelLabel,
-  StyledPanelDropdown
-} from 'components/common/styled-components';
+  StyledPanelDropdown,
+  Tooltip
+} from '../common/styled-components';
 import onClickOutside from 'react-onclickoutside';
 
-import SingleSelectFilter from 'components/filters/single-select-filter'
+import SingleSelectFilter from '../filters/single-select-filter'
 
-import { Tooltip } from "components/common/styled-components"
+
 
 import ColorPalette from "./colorPalette"
-import COLOR_RANGES from "constants/color-ranges"
+import COLOR_RANGES from "../constants/color-ranges"
 
 import deepequal from "deep-equal"
 import get from "lodash.get"

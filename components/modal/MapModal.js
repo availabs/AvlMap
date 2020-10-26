@@ -1,12 +1,8 @@
 import React from 'react';
 
-import { VertDots } from "components/common/icons"
-
-import { Tooltip } from 'components/common/styled-components';
-
 import styled from 'styled-components';
 
-import DraggableModal from "components/AvlStuff/DraggableModal"
+import DraggableModal from "../DraggableModal"
 
 const ModalWrapper = styled.div`
 	${ props => props.theme.scrollBar };

@@ -6,6 +6,7 @@ import { MAPBOX_TOKEN } from 'store/config'
 import deepequal from "deep-equal"
 import get from "lodash.get"
 import styled from "styled-components"
+import { format as d3format } from "d3-format"
 
 import Sidebar from './components/sidebar'
 import Infobox from './components/infobox/Infobox'
@@ -14,27 +15,32 @@ import MapModal from "./components/modal/MapModal"
 import MapActions from "./components/MapActions"
 import MapMessages from "./components/MapMessages"
 
-import { ScalableLoading } from "components/loading/loadingPage"
+import { ScalableLoading } from "./components/loading/LoadingPage"
 
 import './avlmap.css'
 
-mapboxgl.accessToken = MAPBOX_TOKEN
+import {
+	dispatchMessage,
+	FilterMessage
+} from "./LayerMessageSystem"
+
+
 
 let UNIQUE_ID = 0;
 const getUniqueId = (str = "unique-id") =>
 	`${ str }-${ ++UNIQUE_ID }`
 
-const getMapPreview = (map, style, size=[60, 40]) => {
-  if (!Boolean(map)) return "";
-
-  return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
-    `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
-    `${ size.join('x') }?` +
-    `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
-}
-const getStaticImageUrl = style =>
+// const getMapPreview = (map, style, size=[60, 40]) => {
+//   if (!Boolean(map)) return "";
+//
+//   return `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
+//     `${ map.getCenter().toArray().join(',') },${ map.getZoom() },0,0/` +
+//     `${ size.join('x') }?` +
+//     `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`;
+// }
+const getStaticImageUrl = (style, size = [60, 40]) =>
   `https://api.mapbox.com/styles/v1/am3081/${ style }/static/` +
-    `${ -74.2179 },${ 43.2994 },1.5/60x40?` +
+    `${ -74.2179 },${ 43.2994 },1.5/${ size.join("x") }?` +
     `attribution=false&logo=false&access_token=${ mapboxgl.accessToken }`
 
 export const DEFAULT_STYLES = [
@@ -65,11 +71,13 @@ class AvlMap extends React.Component {
     boxZoom: true,
 	  sidebar: true,
     mapactions: true,
+		showStyleControl: false,
 	  update: [],
 		header: "AVAIL Map",
 	  sidebarPages: ["layers", "basemaps"],
 		layerProps: {},
-		preserveDrawingBuffer: false
+		preserveDrawingBuffer: false,
+    MAPBOX_TOKEN: MAPBOX_TOKEN
 	}
 
   static ActiveMaps = {};
@@ -86,9 +94,15 @@ class AvlMap extends React.Component {
     }
   }
   static doAction = ([id, action, ...args]) => {
+      console.log('in do action')
     if (id in AvlMap.ActiveMaps) {
       const { component } = AvlMap.ActiveMaps[id];
-      component && component[action] && component[action].call(component, ...args);
+      if(component && component[action]) {
+          console.log('do action', id, action, ...args)
+          let result = component[action].call(component, ...args);
+          console.log('action result ', result)
+          return result
+      }
     }
   }
 	sta
@@ -110,6 +124,7 @@ class AvlMap extends React.Component {
   			data: [],
 				layer: null
   		},
+      dragPan: true,
   		dragging: null,
   		dragover: null,
       width: 0,
@@ -122,6 +137,7 @@ class AvlMap extends React.Component {
 			, props.styles[0])
   	}
     this.MOUNTED = false;
+    mapboxgl.accessToken = props.MAPBOX_TOKEN
     this.container = React.createRef();
   }
 
@@ -168,8 +184,14 @@ class AvlMap extends React.Component {
     }
 
     if(!this.props.scrollZoom) {
+      console.log('scroll zoom disable')
       map.scrollZoom.disable();
     };
+
+    if(this.props.dragPan === false) {
+      console.log('dragPan disable')
+      map.dragPan.disable();
+    }
 
     ([...document.getElementsByClassName("mapboxgl-ctrl-logo")])
       .forEach(logo => {
@@ -240,57 +262,59 @@ class AvlMap extends React.Component {
   }
 
 	addDynamicLayer(layerName, layerFactory) {
-		if (!this.state.map) return;
+  	return new Promise((resolve, reject) => {
+      if (!this.state.map) return resolve();
 
-		const layer = this.getLayer(layerName);
+      const layer = this.getLayer(layerName);
 
-		if (!layer) return;
+      if (!layer) return resolve();
 
-		const newLayer = layerFactory.call(null, layer),
-			newLayerName = newLayer.name,
-			allLayers = [
-				...this.props.layers,
-				...this.state.dynamicLayers
-			];
+      const newLayer = layerFactory.call(null, layer),
+          newLayerName = newLayer.name,
+          allLayers = [
+              ...this.props.layers,
+              ...this.state.dynamicLayers
+          ];
 
-		newLayer._isDynamic = true;
-		newLayer.initComponent(this);
-		newLayer.initMap(this.state.map);
+      newLayer._isDynamic = true;
+      newLayer.initComponent(this);
+      newLayer.initMap(this.state.map);
 
-		const adjustName = allLayers.reduce((a, c) =>
-			a || c.name === newLayerName
-		, false)
+      const adjustName = allLayers.reduce((a, c) =>
+          a || c.name === newLayerName
+          , false)
 
-		if (adjustName) {
-			const regExpStr = newLayerName + " " + "\\((\\d+)\\)",
-				regex = new RegExp(regExpStr),
-				num = allLayers.reduce((a, c) => {
-					const match = regex.exec(c.name);
-					if (match) {
-						return Math.max(a, +match[1]);
-					}
-					return a;
-				}, 1);
-			newLayer.name = `${ newLayerName } (${ num + 1 })`;
-		}
-  	if (newLayer.active) {
-      this._addLayer(this.state.map, newLayer);
-      ++newLayer.loading;
-      newLayer._onAdd(this.state.map);
+      if (adjustName) {
+          const regExpStr = newLayerName + " \\((\\d+)\\)",
+              regex = new RegExp(regExpStr),
+              num = allLayers.reduce((a, c) => {
+                  const match = regex.exec(c.name);
+                  if (match) {
+                      return Math.max(a, +match[1]);
+                  }
+                  return a;
+              }, 1);
+          newLayer.name = `${newLayerName} (${num + 1})`;
+      }
+      if (newLayer.active) {
+          this._addLayer(this.state.map, newLayer);
+          ++newLayer.loading;
+          newLayer._onAdd(this.state.map);
 
-			const layerProps = get(this.props.layerProps, newLayer.name, {});
-      Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
-        .then(() => --newLayer.loading)
-        .then(() => newLayer.render(this.state.map))
-        .then(() => this.setState({ activeLayers: [...this.state.activeLayers, newLayer.name] }));
-  	}
-
-		this.setState({
-			dynamicLayers: [
-				...this.state.dynamicLayers,
-				newLayer
-			]
-		})
+          const layerProps = get(this.props.layerProps, newLayer.name, {});
+          Promise.resolve(newLayer.onAdd(this.state.map, layerProps))
+              .then(() => --newLayer.loading)
+              .then(() => newLayer.render(this.state.map))
+              .then(() => this.setState({activeLayers: [...this.state.activeLayers, newLayer.name]}));
+      }
+      this.setState({
+          dynamicLayers: [
+              ...this.state.dynamicLayers,
+              newLayer
+          ]
+      })
+      resolve(newLayer)
+    })
 	}
 	deleteDynamicLayer(layerName, otherLayerName=false) {
 		layerName = otherLayerName || layerName;
@@ -311,6 +335,7 @@ class AvlMap extends React.Component {
       id: getUniqueId(),
       duration: data.onConfirm ? 0 : 6000,
       ...data,
+			Message: data.msg || data.message || data.Message,
       update: false,
       layer: this.getLayer(layerName)
     }
@@ -336,6 +361,11 @@ class AvlMap extends React.Component {
     this.setState({ messages });
   }
 
+	renderLayer(layerName) {
+		const layer = this.getLayer(layerName);
+		layer && layer.active && layer.render(this.state.map);
+	}
+
   setContainerSize() {
     const div = this.container.current,
       width = div.scrollWidth,
@@ -349,7 +379,8 @@ class AvlMap extends React.Component {
   	return [
 			...this.props.layers,
 			...this.state.dynamicLayers
-		].reduce((a, c) => c.name === layerName ? c : a, null);
+		]
+		.reduce((a, c) => c.name === layerName ? c : a, null);
   }
 
   _addLayer(map, newLayer, activeLayers=this.state.activeLayers) {
@@ -470,7 +501,7 @@ class AvlMap extends React.Component {
   	}
   }
 
-  updatePopover(update) {
+  updatePopover(layerName, update) {
 		if ((update.pinned === false) && this.state.popover.pinned) {
 			const func = this.state.popover.layer.popover.onUnPinned;
 			(typeof func === "function") && func.call(this.state.popover.layer);
@@ -533,7 +564,7 @@ class AvlMap extends React.Component {
   	this.forceUpdate();
   }
 
-  updateFilter(layerName, filterName, value) {
+  updateFilter(layerName, filterName, value = null) {
     if (!this.state.map) return;
 
   	const layer = this.getLayer(layerName),
@@ -541,56 +572,71 @@ class AvlMap extends React.Component {
   		oldValue = filter.value,
       domain = filter.domain;
 
-	  filter.value = value;
+	  (value !== null) && (filter.value = value);
 
+		let onChange = () => {};
   	if (layer.filters[filterName].onChange) {
       if (layer.version >= 2) {
-        layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
+				onChange = () => layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
       }
       else {
-        layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
+        onChange = () => layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
       }
   	}
 
   	++layer.loading;
   	this.forceUpdate();
 
-  	layer.onFilterFetch(filterName, oldValue, value)
-      .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
+		// Promise.resolve(onChange())
+		// 	.then(() => layer.onFilterFetch(filterName, oldValue, value))
+		layer.onFilterFetch(filterName, oldValue, value)
+      .then(data => {
+				if (layer.active) {
+					onChange();
+					layer.receiveDataOld(this.state.map, data);
+					(data !== false) && layer.render(this.state.map);
+				}
+			})
       .then(() => --layer.loading)
+			.then(() => {
+					if (filter.dispatchMessage) {
+						const data = filter.dispatchFunc ? filter.dispatchFunc.call(layer) : null;
+						dispatchMessage(layerName, new FilterMessage(layerName, filterName, oldValue, value, data));
+					}
+			})
       .then(() => this.forceUpdate());
 
-    if (layer.filters[filterName].refLayers) {
-      layer.filters[filterName].refLayers.forEach(refLayerName => {
-
-      	const layer = this.getLayer(refLayerName),
-          filter = layer.filters[filterName],
-      		oldValue = filter.value,
-          domain = filter.domain;
-
-        filter.value = value;
-
-        if (layer.active) {
-
-          if (layer.filters[filterName].onChange) {
-            if (layer.version >= 2) {
-              layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
-            }
-            else {
-              layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
-            }
-          }
-
-          ++layer.loading;
-          this.forceUpdate();
-
-          layer.onFilterFetch(filterName, oldValue, value)
-            .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
-            .then(() => --layer.loading)
-            .then(() => this.forceUpdate());
-        }
-      })
-    }
+    // if (layer.filters[filterName].refLayers) {
+    //   layer.filters[filterName].refLayers.forEach(refLayerName => {
+		//
+    //   	const layer = this.getLayer(refLayerName),
+    //       filter = layer.filters[filterName],
+    //   		oldValue = filter.value,
+    //       domain = filter.domain;
+		//
+    //     (value !== null) && (filter.value = value);
+		//
+    //     if (layer.active) {
+		//
+    //       if (layer.filters[filterName].onChange) {
+    //         if (layer.version >= 2) {
+    //           layer.filters[filterName].onChange.call(layer, oldValue, value, domain);
+    //         }
+    //         else {
+    //           layer.filters[filterName].onChange(this.state.map, layer, value, oldValue);
+    //         }
+    //       }
+		//
+    //       ++layer.loading;
+    //       this.forceUpdate();
+		//
+    //       layer.onFilterFetch(filterName, oldValue, value)
+    //         .then(data => layer.active && (layer.receiveDataOld(this.state.map, data), layer.render(this.state.map)))
+    //         .then(() => --layer.loading)
+    //         .then(() => this.forceUpdate());
+    //     }
+    //   })
+    // }
   }
 
   updateLegend(layerName, update) {
@@ -691,7 +737,8 @@ class AvlMap extends React.Component {
 		const actionMap = {
 			toggleModal: this.toggleModal.bind(this),
       updateModal: this.updateModal.bind(this),
-			toggleInfoBox: this.toggleInfoBox.bind(this)
+			toggleInfoBox: this.toggleInfoBox.bind(this),
+			setMapStyle: this.setMapStyle.bind(this)
 		}
 		const allLayers = [
 			...this.props.layers,
@@ -712,7 +759,7 @@ if (this.state.map) {
 }
 
 		return (
-			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container }>
+			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container } className='z-30 focus:outline-none active:outline-none'>
 
 				<div style={ {
 						position: "absolute",
@@ -776,9 +823,30 @@ if (this.state.map) {
 					activeLayers={ this.state.activeLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
+<<<<<<< HEAD
         <MapMessages
           messages={ this.state.messages }
           dismiss={ this.dismissMessage.bind(this) }/>
+=======
+        <MapActions layers={ allLayers }
+					activeLayers={ this.state.activeLayers }
+          sidebar={ this.props.sidebar }
+          isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }
+          actionMap={ actionMap }
+          mapStyles={ mapStyles }
+					style={ this.state.style }
+					showStyleControl={ this.props.showStyleControl }
+					getStaticImageUrl={ getStaticImageUrl }
+					showMapActions={ this.props.mapactions }/>
+
+        <MapMessages
+          messages={ this.state.messages }
+          dismiss={ this.dismissMessage.bind(this) }/>
+
+        <LoadingLayers layers={ allLayers }
+          sidebar={ this.props.sidebar }
+          isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }/>
+>>>>>>> 529d64fe7586bed912f1f56ab186c822d1648e8d
 			</div>
 		)
 	}
@@ -794,42 +862,74 @@ const LoadingContainer = styled.div`
 	flex-direction: column;
   pointer-events: none;
   color: ${ props => props.theme.textColorHl };
+  outline: 0;
+
 
   > * {
     margin-bottom: 10px;
     min-width: 300px;
     background-color: ${ props => props.theme.sidePanelBg };
     border-radius: 4px;
-    border-top-left-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
-    border-bottom-left-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
+    border-top-right-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
+    border-bottom-right-radius: ${ props => (props.height + props.padding * 2) * 0.5 }px;
     font-size: 1rem;
   }
-  > *:last-child {
-    margin-bottom: 0px;
-  }
+	> *:last-child {
+		margin-bottom: 0px;
+	}
 `
+class LoadingIndicator extends React.Component {
+	state = {
+		progress: null
+	}
+	format = d3format(".0%");
 
-const LoadingLayers = ({ layers, sidebar, isOpen }) => {
-  const loadingLayers = layers.reduce((a, c) => {
-    if (c.loading) a.push(c.name);
-    return a;
-  }, [])
-  const height = 40,
-    padding = 10;
-  return (
-    <LoadingContainer sidebar={ sidebar } isOpen={ isOpen } height={ height } padding={ padding }>
-      {
-        loadingLayers.map((name, i) => (
-          <div key={ name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
-            <ScalableLoading scale={ height * 0.01 }/>
-            <div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "right", width: `calc(100% - ${ height }px)` } }>
-              { name }
-            </div>
-          </div>
-        ))
-      }
-    </LoadingContainer>
-  )
+	componentDidMount() {
+		this.props.layer.registerLoadingIndicator(this.setState.bind(this));
+	}
+	componentWillUnmount() {
+		this.props.layer.unregisterLoadingIndicator();
+	}
+	render() {
+		const { layer } = this.props,
+			height = 40,
+			padding = 10;
+		return (
+			<div key={ layer.name } style={ { height: `${ height + 20 }px`, padding: `${ padding }px`, display: "flex" } }>
+
+				<div style={ { height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `65%` } }>
+					 { layer.name }
+				</div>
+
+				<div style={ { paddingLeft: `${ padding }px`, height: `${ height }px`, lineHeight: `${ height }px`, textAlign: "left", width: `calc(35% - ${ height }px)` } }>
+
+					{ this.state.progress === null ? null :
+						`${ this.format(this.state.progress) }`
+					}
+
+				</div>
+
+				<ScalableLoading scale={ height * 0.01 }/>
+			</div>
+		)
+	}
+}
+class LoadingLayers extends React.Component {
+	render() {
+	  const { layers, sidebar, isOpen } = this.props,
+			loadingLayers = layers.reduce((a, c) => {
+		    c.loading && a.push(c);
+				// a.push(c);
+		    return a;
+		  }, []),
+			height = 40,
+			padding = 10;
+		return (
+	    <LoadingContainer sidebar={ sidebar } isOpen={ isOpen } height={ height } padding={ padding }>
+	      { loadingLayers.map((l, i) => <LoadingIndicator key={ l.name } layer={ l }/>) }
+	    </LoadingContainer>
+		)
+	}
 }
 
 export default AvlMap

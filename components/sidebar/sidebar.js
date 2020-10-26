@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {ArrowRight} from 'components/common/icons';
+import {ArrowRight} from '../common/icons';
 
-import { Tooltip } from 'components/common/styled-components';
+import { Tooltip } from '../common/styled-components';
 
 const StyledSidePanelContainer = styled.div`
   z-index: 99;
@@ -74,7 +74,7 @@ class SideBar extends Component {
   };
 
   render() {
-    const { isOpen, transitioning, minifiedWidth, width } = this.props;
+    const { isOpen, transitioning, width } = this.props;
 
     const _width = isOpen && transitioning ? 0
                   : isOpen && !transitioning ? width

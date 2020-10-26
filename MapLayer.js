@@ -37,12 +37,17 @@ class MapLayer {
 		const options = { ...DEFAULT_OPTIONS, ..._options };
 
 		this.component = null;
+		this.map = null;
+
+		this.showPopover = false;
+		this.latestPopoverId = 0;
 
 		this.name = name;
 
     for (const key in options) {
       this[key] = options[key];
     }
+		this.LoadingIndicator = () => {};
 
     this.boundFunctions = {};
     this.hoverSourceData = {};
@@ -61,9 +66,16 @@ class MapLayer {
     this.onHoverLeave = this.onHoverLeave.bind(this);
 	}
 
+	registerLoadingIndicator(func) {
+		this.LoadingIndicator = func;
+	}
+	unregisterLoadingIndicator() {
+		this.LoadingIndicator = () => {};
+	}
+
   initComponent(component) {
     this.component = component;
-    this.updatePopover = component.updatePopover.bind(component);
+    // this.updatePopover = component.updatePopover.bind(component);
 		if (this.showAttributesModal !== false) {
 			const modals = this.modals || {};
 			this.modals = {
@@ -79,12 +91,15 @@ class MapLayer {
 
 			if (!get(this, 'component.props.sidebar', false) ||
 					!get(this, 'component.props.sidebarPages', []).includes("layers")) {
-				this.mapActions = {
+				this.mapActions =
+					get(this, 'component.props.hideAttributes', false) ?
+					{...this.mapActions} :
+						{
 					...this.mapActions,
 					"avl-attributes": {
-						Icon: ({ layer }) => <span className={ `fa fa-lg fa-eye` }/>,
+						Icon: ({layer}) => <span className={`fa fa-lg fa-eye`}/>,
 						tooltip: "Toggle Attributes",
-						action: function() {
+						action: function () {
 							this.doAction(["toggleModal", "avl-attributes"]);
 						}
 					}
@@ -92,14 +107,19 @@ class MapLayer {
 			}
 			else {
 				const actions = this.actions || [];
-				this.actions = [
-					...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
-			    {
-			      Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
-			      action: ["toggleModal", "avl-attributes"],
-			      tooltip: "Toggle Attributes"
-			    }
-				]
+				this.actions =
+					get(this, 'component.props.hideAttributes', false) ?
+						[
+							...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
+						] :
+						[
+							...actions.filter(({ tooltip }) => tooltip !== "Toggle Attributes"),
+							{
+								Icon: () => <span className={ `fa fa-lg fa-eye` }/>,
+								action: ["toggleModal", "avl-attributes"],
+								tooltip: "Toggle Attributes"
+							}
+						]
 			}
 		}
   }
@@ -154,7 +174,9 @@ class MapLayer {
 	}
 
 	receiveProps(oldProps, newProps) {
-
+		for (const key in newProps) {
+			this[key] = newProps[key];
+		}
 	}
 	onPropsChange(oldProps, newProps) {
     this.doAction(["fetchLayerData"]);
@@ -299,17 +321,19 @@ class MapLayer {
 
   doAction([action, ...args]) {
     if (this.component && this.component[action]) {
-      this.component[action](this.name, ...args)
+      return this.component[action](this.name, ...args);
     }
   }
   forceUpdate() {
     this.component && this.component.forceUpdate();
   }
 
-	toggleVisibility(map) {
+	toggleVisibility() {
+
+		//console.log('in map layer toggle visibility',map,this.layers)
 		this._isVisible = !this._isVisible;
 		this.layers.forEach(layer => {
-			map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
+			this.map.setLayoutProperty(layer.id, 'visibility', this._isVisible ? "visible" : "none");
 		})
 	}
 
@@ -327,8 +351,8 @@ class MapLayer {
   }
 	receiveDataOld(...args) {
 		if (this.receiveData) {
-			console.warn("<AvlMap> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
-			this.receiveData.call(this, ...args);
+			console.warn("<AvlMap::MapLayer> You are using the old fetchData / receiveData API. Use the new featchData / render API!");
+			this.receiveData(...args);
 		}
 	}
 
@@ -411,6 +435,8 @@ class MapLayer {
 		})
 	}
 	_mousemove(e, layer) {
+		this.showPopover = true;
+
 		const { map, popover } = this.component.state,
 			zoom = map.getZoom(),
 			{ minZoom, dataFunc } = this.popover;
@@ -418,30 +444,39 @@ class MapLayer {
 		if (minZoom && (minZoom > zoom)) return;
 
     if (e.features && e.features.length) {
-			const data = dataFunc.call(this, e.features[0], e.features, layer, map, e) || [];
 
-			map.getCanvas().style.cursor = data.length ? 'pointer' : '';
+			const popoverId = ++this.latestPopoverId;
 
-	    if (popover.pinned) return;
+			Promise.resolve(dataFunc.call(this, e.features[0], e.features, layer, map, e) || [])
+				.then(data => {
+					if (!this.showPopover) return;
+					if (popoverId < this.latestPopoverId) return;
 
-      this.updatePopover({
-      	pos: [e.point.x, e.point.y],
-      	data,
-				layer: this
-      })
+					map.getCanvas().style.cursor = data.length ? 'pointer' : '';
+
+			    if (popover.pinned) return;
+
+					this.doAction(["updatePopover", {
+		      	pos: [e.point.x, e.point.y],
+						layer: this,
+		      	data
+		      }])
+				})
     }
 	}
 	_mouseleave(e, layer) {
+		this.showPopover = false;
+
 		const { map, popover } = this.component.state;
 
     map.getCanvas().style.cursor = '';
 
     if (popover.pinned) return;
 
-    this.updatePopover({
-        data: [],
-				layer: null
-    })
+		this.doAction(["updatePopover", {
+				layer: null,
+        data: []
+    }])
 	}
 	_clearPinnedState() {
 		if (!this.map) return;
@@ -481,17 +516,17 @@ class MapLayer {
 				}
 
     		if (pinned) {
-    			this.updatePopover({
+					this.doAction(["updatePopover", {
     				pos: [e.point.x, e.point.y],
     				data,
 						layer: this
-    			})
+    			}])
     		}
     		else {
-    			this.updatePopover({
+					this.doAction(["updatePopover", {
     				pinned: true,
 						layer: this
-    			})
+    			}])
     		}
     	}
     	// else {

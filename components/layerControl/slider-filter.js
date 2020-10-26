@@ -1,6 +1,6 @@
 import React from "react"
 
-import { PanelLabel  } from 'components/common/styled-components';
+import { PanelLabel  } from '../common/styled-components';
 
 import styled from "styled-components"
 

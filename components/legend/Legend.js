@@ -52,11 +52,30 @@ const VerticalColorBlock = styled.div`
   height: ${ props => props.height || 20 }px;
 `
 
-const HorizontalLegend = ({ type, format, scale, range, domain, title, layer, compact = false }) => {
+const HorizontalLegend = ({ type, format, scale, range, domain, subText, title, layer compact = false }) => {
 
   const textBlock = {
     width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%'
   }
+  const subTextBlock = {
+    width: subText ? ((100) / (type === 'linear' ? scale.ticks(5).length : range.length)) * Math.floor((type === 'linear' ? scale.ticks(5).length : range.length) / subText.length) + '%' : '',
+    textAlign: 'center'
+  }
+  const subTextBlockMiddle = {
+    width: subText ? (((100) / (type === 'linear' ? scale.ticks(5).length : range.length)) * Math.floor((type === 'linear' ? scale.ticks(5).length : range.length) / subText.length)) +
+        (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%' : '',
+      textAlign: 'center'
+  }
+  const subTextDiv = (i, r = undefined) =>
+      <TextBlock key={ i } style={
+      subText.length % 2 !== 0 && i / Math.floor(range.length/subText.length) === Math.floor(subText.length/2) ?
+          {...subTextBlockMiddle} :
+          {...subTextBlock}
+  }>{
+      r && typeof scale.invertExtent(r)[1] === "number" ?
+          subText[i / Math.floor(range.length/subText.length)] : null }
+  </TextBlock>
+
   return (
     <MainContainer align={ "horizontal" } compact={ compact }>
       { !title ? null : <Title Title={ title } layer={ layer } compact={ compact }/> }
@@ -77,6 +96,16 @@ const HorizontalLegend = ({ type, format, scale, range, domain, title, layer, co
           :
             range.map((r, i) => <TextBlock key={ i } style={ textBlock }>{ typeof scale.invertExtent(r)[1] === "number" ? format(scale.invertExtent(r)[1]) : null }</TextBlock>)
         }
+      </div>
+        <div style={{width:'100%', position: 'relative', right: -3}}>
+            {
+                subText ?
+                type === "ordinal" ?
+                    domain.map((d, dI) => dI % Math.floor(scale.ticks(5).length/subText.length) === 0 ? subTextDiv(dI) : null)
+                    : type === "linear" ?
+                    scale.ticks(5).map((t, tI) => tI % Math.floor(scale.ticks(5).length/subText.length) === 0 ? subTextDiv(tI) : null)
+                    : range.map((r, i) => i % Math.floor(range.length/subText.length) === 0 ? subTextDiv(i,r) : null) : null
+            }
       </div>
     </MainContainer>
   )

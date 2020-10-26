@@ -3,7 +3,7 @@ import React from "react"
 import styled from "styled-components"
 import deepequal from "deep-equal"
 
-import AvlTable from "components/AvlStuff/AvlTable"
+import AvlTable from "../AvlTable"
 
 class AttributesTable extends React.Component {
 	static defaultProps = {
@@ -199,7 +199,10 @@ class AttributesTable extends React.Component {
 
 				<Container>
 					<AvlTable data={ data }
-						keys={ this.props.tableKeys.length ? this.props.tableKeys : keys }/>
+						keys={ this.props.tableKeys.length ? this.props.tableKeys : keys }
+							  expandable={this.props.expandable || []} // array of expandable columns
+							  isMulti={true} // multi select filter
+					/>
 				</Container>
 
 			</div>

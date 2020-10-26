@@ -1,11 +1,9 @@
 import React, {Component} from 'react';
-import { Link } from "react-router-dom"
 import styled from 'styled-components';
-import get from "lodash.get"
 // import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import {CenterFlexbox} from 'components/common/styled-components';
-import {Pin, Layers} from 'components/common/icons';
+import {CenterFlexbox} from '../common/styled-components';
+import {Pin, Layers} from '../common/icons';
 
 const MAX_WIDTH = 400;
 const MAX_HEIGHT = 600;
@@ -14,7 +12,7 @@ const StyledMapPopover = styled.div`
   ${props => props.theme.scrollBar}
   font-size: 11px;
   font-weight: 500;
-  background-color: ${props => props.theme.panelBackground};
+  background-color: ${props => props.theme.panelBackground || '#fefefe'};
   color: ${props => props.theme.textColor};
   z-index: 1001;
   position: absolute;
@@ -82,13 +80,12 @@ const PopoverBlockContainer = styled.div`
 
 export class MapPopover extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      isMouseOver: false,
-      width: 380,
-      height: 160
-    };
+  state = {
+    isMouseOver: false,
+    width: 380,
+    height: 160,
+    promise: null,
+    data: ["Loading..."]
   }
 
   componentDidMount() {
@@ -141,12 +138,12 @@ export class MapPopover extends Component {
       data,
       pos
     } = this.props;
-    const hidden = !data.length && !this.state.isMouseOver;
-    // const { width } = this.state;
 
     if (!data.length) {
       return null;
     }
+
+    const hidden = !data.length && !this.state.isMouseOver;
 
     const [x, y] = pos;
 
@@ -160,16 +157,12 @@ export class MapPopover extends Component {
         ref={ comp => { this.popover = comp; } }
         className={ classnames('map-popover', {hidden}) }
         style={ { ...style } }
-        onMouseEnter={() => {
-          this.setState({ isMouseOver: true });
-        }}
-        onMouseLeave={() => {
-          this.setState({ isMouseOver: false });
-        }}>
+        onMouseEnter={ () => this.setState({ isMouseOver: true }) }
+        onMouseLeave={ () => this.setState({ isMouseOver: false }) }>
 
         { pinned ?
           <div className="map-popover__top">
-            <StyledPin className="popover-pin" onClick={e => this.props.updatePopover({ pinned: false, data: [] })}>
+            <StyledPin className="popover-pin" onClick={e => this.props.updatePopover(this.props.layer, { layer: null, pinned: false, data: [] })}>
               <Pin height="16px" />
             </StyledPin>
             <div style={ { height: "10px" } }/>
@@ -205,12 +198,12 @@ export class MapPopover extends Component {
 
 const PopoverRow = (row, i) =>
   row.length === 2 ?
-    <tr key={ i }>
+    <tr key={ "row2-" + i }>
       <td className="row__name">{ row[0] }</td>
       <td className="row__value">{ row[1] }</td>
     </tr>
   :
-    <tr key={ i }>
+    <tr key={ "row1-" + i }>
       <td colSpan={ 2 } className="row__value">{ row[0] }</td>
     </tr>
 

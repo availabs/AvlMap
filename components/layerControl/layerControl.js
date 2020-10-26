@@ -6,7 +6,7 @@ import {
   // PanelLabel,
   // StyledPanelDropdown,
   Button
-} from 'components/common/styled-components';
+} from '../common/styled-components';
 
 import LayerHeader from './layerHeader'
 import LayerFilterPanel from './layerFilterPanel'
