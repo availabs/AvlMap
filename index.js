@@ -798,8 +798,17 @@ if (this.state.map) {
 							activeLayers={ this.state.activeLayers }
 							sidebar={ this.props.sidebar }
 							isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-							actionMap={ actionMap }/>
+							actionMap={ actionMap }
+		          mapStyles={ mapStyles }
+							style={ this.state.style }
+							showStyleControl={ this.props.showStyleControl }
+							getStaticImageUrl={ getStaticImageUrl }
+							showMapActions={ this.props.mapactions }/>
 					}
+
+	        <MapMessages
+	          messages={ this.state.messages }
+	          dismiss={ this.dismissMessage.bind(this) }/>
 
 					<LoadingLayers layers={ allLayers }
 						sidebar={ this.props.sidebar }
@@ -823,30 +832,6 @@ if (this.state.map) {
 					activeLayers={ this.state.activeLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-<<<<<<< HEAD
-        <MapMessages
-          messages={ this.state.messages }
-          dismiss={ this.dismissMessage.bind(this) }/>
-=======
-        <MapActions layers={ allLayers }
-					activeLayers={ this.state.activeLayers }
-          sidebar={ this.props.sidebar }
-          isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }
-          actionMap={ actionMap }
-          mapStyles={ mapStyles }
-					style={ this.state.style }
-					showStyleControl={ this.props.showStyleControl }
-					getStaticImageUrl={ getStaticImageUrl }
-					showMapActions={ this.props.mapactions }/>
-
-        <MapMessages
-          messages={ this.state.messages }
-          dismiss={ this.dismissMessage.bind(this) }/>
-
-        <LoadingLayers layers={ allLayers }
-          sidebar={ this.props.sidebar }
-          isOpen={ (this.state.isOpen && !this.state.transitioning) || (!this.state.isOpen && this.state.transitioning) }/>
->>>>>>> 529d64fe7586bed912f1f56ab186c822d1648e8d
 			</div>
 		)
 	}

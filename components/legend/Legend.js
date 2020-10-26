@@ -52,7 +52,7 @@ const VerticalColorBlock = styled.div`
   height: ${ props => props.height || 20 }px;
 `
 
-const HorizontalLegend = ({ type, format, scale, range, domain, subText, title, layer compact = false }) => {
+const HorizontalLegend = ({ type, format, scale, range, domain, subText, title, layer, compact = false }) => {
 
   const textBlock = {
     width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%'
