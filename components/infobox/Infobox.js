@@ -42,7 +42,7 @@ const SidebarContainer = styled.div`
   z-index: 99;
   display: flex;
   position: absolute;
-  padding: 20px;
+  padding: ${ props => props.compact ? 0 : 20 }px;
   top: 0px;
   right: 0px;
   max-height: calc(100vh - 100px);
@@ -59,7 +59,7 @@ const SidebarInner = styled.div`
 const SidebarContent = styled.div`
   ${ props => props.theme.scrollBar };
   flex-grow: 1;
-  padding: ${ props => props.isOpen ? 10 : 0 }px;
+  padding: ${ props => !props.isOpen || props.compact ? 0 : 10 }px;
 /*
   overflow-y: auto;
   overflow-x: hidden;
@@ -129,13 +129,16 @@ class InfoBox extends Component {
     }
 
     return (
-      <SidebarContainer className='sidebar-container' isOpen={ isOpen }>
+      <SidebarContainer className='sidebar-container' isOpen={ isOpen }
+        compact={ this.props.compact }>
         <div className='sidebar' style={sidebarStyle}>
           <SidebarInner className='sidebar-inner' isOpen={ isOpen }>
-            <SidebarContent className='sidebar-content' isOpen={ isOpen }>
+            <SidebarContent className='sidebar-content' isOpen={ isOpen }
+              compact={ this.props.compact }>
               {
                 activeLegends.map((l, i) =>
-                  <Legend key={ i } { ...l.legend } layer={ l.layer }/>
+                  <Legend key={ i } { ...l.legend } layer={ l.layer }
+                    compact={ this.props.compact }/>
                 )
               }
               {

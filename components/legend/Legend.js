@@ -8,14 +8,22 @@ import * as d3format from "d3-format"
 const MainContainer = styled.div`
   background-color: ${ props => props.theme.sidePanelHeaderBg };
   width: 100%;
-  padding: ${ props => props.align === "vertical" ? "10px" : "10px 10px 0px 10px" };
+  padding: ${
+    props => (
+      props.align === "vertical" ? (props.compact ? "5px" : "10px") :
+        (props.compact ? "5px 5px 0px 5px" : "10px 10px 0px 10px")
+    )
+  };
 `
 
-const StyledTitle = styled.h5`
+const StyledTitle = styled.div`
   color: ${ props => props.theme.textColorHl };
+  font-weight: bold;
+  font-size: ${ props => props.compact ? 1 : 1.25 }rem;
+  margin-bottom: ${ props => props.compact ? 0 : 0.25 }rem;
 `
-const Title = ({ Title, layer }) =>
-  <StyledTitle>
+const Title = ({ Title, layer, compact }) =>
+  <StyledTitle compact={ compact }>
     { typeof Title === "function" ?
       <Title layer={ layer }/>
       : Title
@@ -32,7 +40,7 @@ const LegendContainer = styled.div`
 const ColorBlock = styled.div`
   align-items: stretch;
   flex-grow: 1;
-  height: 20px;
+  height: ${ props => props.compact ? 10 : 20 }px;
 `
 const TextBlock = styled.div`
   color: ${ props => props.theme.textColor };
@@ -44,23 +52,23 @@ const VerticalColorBlock = styled.div`
   height: ${ props => props.height || 20 }px;
 `
 
-const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) => {
+const HorizontalLegend = ({ type, format, scale, range, domain, title, layer, compact = false }) => {
 
   const textBlock = {
     width: (100 / (type === 'linear' ? scale.ticks(5).length : range.length)) + '%'
   }
   return (
-    <MainContainer align={ "horizontal" }>
-      { !title ? null : <Title Title={ title } layer={ layer }/> }
-      <LegendContainer className='legend-container'>
+    <MainContainer align={ "horizontal" } compact={ compact }>
+      { !title ? null : <Title Title={ title } layer={ layer } compact={ compact }/> }
+      <LegendContainer className='legend-container' compact={ compact }>
         {
           type === "linear" ?
-            scale.ticks(5).map(t => <ColorBlock key={ t } style={ { backgroundColor: scale(t), ...textBlock } }/>)
+            scale.ticks(5).map(t => <ColorBlock compact={ compact } key={ t } style={ { backgroundColor: scale(t), ...textBlock } }/>)
           :
-            range.map((r, i) => <ColorBlock key={ i } style={ { backgroundColor: r, ...textBlock } }/>)
+            range.map((r, i) => <ColorBlock compact={ compact } key={ i } style={ { backgroundColor: r, ...textBlock } }/>)
         }
       </LegendContainer>
-      <div style={{width:'100%', position: 'relative', right: -3}}>
+      <div style={ { width:'100%', position: 'relative', right: compact ? 0 : -3 } }>
         {
           type === "ordinal" ?
             domain.map(d => <TextBlock key={ d } style={ textBlock } >{ format(d) }</TextBlock>)
@@ -74,10 +82,10 @@ const HorizontalLegend = ({ type, format, scale, range, domain, title, layer }) 
   )
 }
 
-const VerticalLegend = ({ type, format, scale, range, domain, title, layer }) => {
+const VerticalLegend = ({ type, format, scale, range, domain, title, layer, compact = false }) => {
   range = (type === "linear") ? scale.ticks(5).map(t => scale(t)) : range
   return (
-    <MainContainer align={ "vertical" }>
+    <MainContainer align={ "vertical" } compact={ compact }>
       { !title ? null : <Title Title={ title } layer={ layer }/> }
       <table>
         <tbody>

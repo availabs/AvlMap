@@ -27,7 +27,7 @@ const Pages = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  padding: 10px 10px 10px 10px;
+  padding: 10px 10px 0px 10px;
   color: ${ props => props.theme.inputPlaceholderColor };
 
   > * {
@@ -165,11 +165,13 @@ class Sidebar extends Component {
           <SidebarHeader header={ this.props.header }/>
         }
 
-        <Pages>
-          {
-            pages.map(({ page, Icon }) => <Icon key={ page }/>)
-          }
-        </Pages>
+        { pages.length <= 1 ? null :
+          <Pages>
+            {
+              pages.map(({ page, Icon }) => <Icon key={ page }/>)
+            }
+          </Pages>
+        }
 
         <SidebarContent className='sidebar-content' theme={ this.props.theme }>
 

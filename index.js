@@ -701,38 +701,69 @@ class AvlMap extends React.Component {
 			...s,
 			url: getStaticImageUrl(s.style.slice(23))
 		}))
+
+let useCompact = false;
+let hideInfobar = false;
+if (this.state.map) {
+	const { width, height } = this.state.map.transform;
+	// console.log("SIZE:", width, height)
+	useCompact = (width < 920);// || (height < 800);
+	hideInfobar = (width < 400)
+}
+
 		return (
 			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container }>
 
-				{ !this.props.sidebar ? null :
-          <Sidebar isOpen={ this.state.isOpen }
-            transitioning={ this.state.transitioning }
-            onOpenOrClose={ this.onOpenOrClose.bind(this) }
-            onTransitionStart={ this.onTransitionStart.bind(this) }
-            layers={ allLayers }
-  					activeLayers={ this.state.activeLayers }
-  					addLayer={ this.addLayer.bind(this) }
-  					removeLayer={ this.removeLayer.bind(this) }
-						deleteDynamicLayer={ this.deleteDynamicLayer.bind(this) }
-  					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
-  					actionMap= { actionMap }
-  					header={ this.props.header }
-  					toggleModal={ this.toggleModal.bind(this) }
-            updateModal={ this.updateModal.bind(this) }
-  					updateFilter={ this.updateFilter.bind(this) }
-  					updateLegend={ this.updateLegend.bind(this) }
-  					fetchLayerData={ this.fetchLayerData.bind(this) }
-  					updateDrag={ this.updateDrag.bind(this) }
-  					dropLayer={ this.dropLayer.bind(this) }
-            pages={ this.props.sidebarPages }
-            mapStyles={ mapStyles }
-            style={ this.state.style }
-            setMapStyle={ this.setMapStyle.bind(this) }
-            map={ this.state.map }/>
-        }
+				<div style={ {
+						position: "absolute",
+						left: "0px",
+						top: useCompact ? "50px" : "0px",
+						height: `calc(100% - ${ useCompact ? 50 : 0 }px)`
+					} }>
+					{ !this.props.sidebar ? null :
+	          <Sidebar isOpen={ this.state.isOpen }
+	            transitioning={ this.state.transitioning }
+	            onOpenOrClose={ this.onOpenOrClose.bind(this) }
+	            onTransitionStart={ this.onTransitionStart.bind(this) }
+	            layers={ allLayers }
+	  					activeLayers={ this.state.activeLayers }
+	  					addLayer={ this.addLayer.bind(this) }
+	  					removeLayer={ this.removeLayer.bind(this) }
+							deleteDynamicLayer={ this.deleteDynamicLayer.bind(this) }
+	  					toggleLayerVisibility={ this.toggleLayerVisibility.bind(this) }
+	  					actionMap= { actionMap }
+	  					header={ this.props.header }
+	  					toggleModal={ this.toggleModal.bind(this) }
+	            updateModal={ this.updateModal.bind(this) }
+	  					updateFilter={ this.updateFilter.bind(this) }
+	  					updateLegend={ this.updateLegend.bind(this) }
+	  					fetchLayerData={ this.fetchLayerData.bind(this) }
+	  					updateDrag={ this.updateDrag.bind(this) }
+	  					dropLayer={ this.dropLayer.bind(this) }
+	            pages={ this.props.sidebarPages }
+	            mapStyles={ mapStyles }
+	            style={ this.state.style }
+	            setMapStyle={ this.setMapStyle.bind(this) }
+	            map={ this.state.map }/>
+	        }
+					{ !this.props.mapactions ? null :
+						<MapActions layers={ allLayers }
+							activeLayers={ this.state.activeLayers }
+							sidebar={ this.props.sidebar }
+							isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
+							actionMap={ actionMap }/>
+					}
 
-				<Infobox layers={ allLayers }
-					activeLayers={ this.state.activeLayers }/>
+					<LoadingLayers layers={ allLayers }
+						sidebar={ this.props.sidebar }
+						isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }/>
+				</div>
+
+				{ hideInfobar ? null :
+					<Infobox layers={ allLayers }
+						activeLayers={ this.state.activeLayers }
+						compact={ useCompact }/>
+				}
 
 				<MapPopover { ...this.state.popover }
 					updatePopover={ this.updatePopover.bind(this) }
@@ -745,21 +776,9 @@ class AvlMap extends React.Component {
 					activeLayers={ this.state.activeLayers }
 					toggleModal={ this.toggleModal.bind(this) }/>
 
-        { !this.props.mapactions ? null :
-          <MapActions layers={ allLayers }
-						activeLayers={ this.state.activeLayers }
-            sidebar={ this.props.sidebar }
-            isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }
-            actionMap={ actionMap }/>
-				}
-
         <MapMessages
           messages={ this.state.messages }
           dismiss={ this.dismissMessage.bind(this) }/>
-
-        <LoadingLayers layers={ allLayers }
-          sidebar={ this.props.sidebar }
-          isOpen={ this.state.isOpen && !this.state.transitioning || !this.state.isOpen && this.state.transitioning }/>
 			</div>
 		)
 	}
