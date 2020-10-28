@@ -769,7 +769,7 @@ class AvlMap extends React.Component {
 
 				<div style={ {
 						position: "absolute",
-						left: "0px",
+						left: "0px", top: "0px",
 						top: useCompact ? "50px" : "0px",
 						height: `calc(100% - ${ useCompact ? 50 : 0 }px)`
 					} }>
