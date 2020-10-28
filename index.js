@@ -77,7 +77,9 @@ class AvlMap extends React.Component {
 	  sidebarPages: ["layers", "basemaps"],
 		layerProps: {},
 		preserveDrawingBuffer: false,
-    MAPBOX_TOKEN: MAPBOX_TOKEN
+    MAPBOX_TOKEN: MAPBOX_TOKEN,
+		compactThreshold: 700,
+		forceCompact: false
 	}
 
   static ActiveMaps = {};
@@ -104,10 +106,6 @@ class AvlMap extends React.Component {
           return result
       }
     }
-  }
-	sta
-  testFunc(...args) {
-    console.log("TEST FUNCTION:", ...[...args].map(arg => arg.toString()));
   }
 
   constructor(props) {
@@ -137,7 +135,7 @@ class AvlMap extends React.Component {
 			, props.styles[0])
   	}
     this.MOUNTED = false;
-    mapboxgl.accessToken = props.MAPBOX_TOKEN
+    mapboxgl.accessToken = props.MAPBOX_TOKEN;
     this.container = React.createRef();
   }
 
@@ -174,8 +172,7 @@ class AvlMap extends React.Component {
 			preserveDrawingBuffer
     });
 
-
-    if(mapControl) {
+    if (mapControl) {
       map.addControl(new mapboxgl.NavigationControl(), mapControl);
     }
 
@@ -184,12 +181,10 @@ class AvlMap extends React.Component {
     }
 
     if(!this.props.scrollZoom) {
-      console.log('scroll zoom disable')
       map.scrollZoom.disable();
     };
 
     if(this.props.dragPan === false) {
-      console.log('dragPan disable')
       map.dragPan.disable();
     }
 
@@ -204,9 +199,21 @@ class AvlMap extends React.Component {
       layer.initComponent(this);
     });
 
+		// map.on("zoom", e => console.log("ZOOM:", map.getZoom()))
+		// map.on("error", error => {
+		// 	console.log("MAP ERROR:", error);
+		// })
+		// map.on("dataloading", (...args) => {
+		// 	console.log(this.state.id, "LOADING??????????????????????????", ...args)
+		// })
+		// map.on("data", (...args) => {
+		// 	console.log(this.state.id, "DATA??????????????????????????", ...args)
+		// })
+
     map.on('load',  () => {
       const activeLayers = [];
 
+// console.log("LOADED??????????")
       this.props.layers.forEach(layer => {
 
         layer.initMap(map);
@@ -233,7 +240,7 @@ class AvlMap extends React.Component {
 
       AvlMap.addActiveMap(id, this, map);
     })
-    // map.on('sourcedata', () => this.foceUpdate());
+
     this.setContainerSize();
   }
   componentWillUnmount() {
@@ -371,7 +378,7 @@ class AvlMap extends React.Component {
       width = div.scrollWidth,
       height = div.scrollHeight;
     if ((width !== this.state.width) || (height !== this.state.height)) {
-      this.setState({ width, height })
+      this.setState({ width, height });
     }
   }
 
@@ -749,14 +756,13 @@ class AvlMap extends React.Component {
 			url: getStaticImageUrl(s.style.slice(23))
 		}))
 
-let useCompact = false;
-let hideInfobar = false;
-if (this.state.map) {
-	const { width, height } = this.state.map.transform;
-	// console.log("SIZE:", width, height)
-	useCompact = (width < 920);// || (height < 800);
-	hideInfobar = (width < 400)
-}
+		let useCompact = false;
+		let hideInfobar = false;
+		if (this.state.map) {
+			const { width, height } = this.state.map.transform;
+			useCompact = (width < this.props.compactThreshold);
+			hideInfobar = (width < 400)
+		}
 
 		return (
 			<div id={ this.state.id } style={ { height: this.props.height } } ref={ this.container } className='z-30 focus:outline-none active:outline-none'>
@@ -818,7 +824,7 @@ if (this.state.map) {
 				{ hideInfobar ? null :
 					<Infobox layers={ allLayers }
 						activeLayers={ this.state.activeLayers }
-						compact={ useCompact }/>
+						compact={ useCompact || this.props.forceCompact }/>
 				}
 
 				<MapPopover { ...this.state.popover }
