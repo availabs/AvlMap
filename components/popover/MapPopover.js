@@ -102,8 +102,8 @@ export class MapPopover extends Component {
       return;
     }
 
-    const width = Math.min(node.scrollWidth, MAX_WIDTH);
-    const height = Math.min(node.scrollHeight, MAX_HEIGHT);
+    const width = Math.min(node.clientWidth, MAX_WIDTH);
+    const height = Math.min(node.clientHeight, MAX_HEIGHT);
 
     if (width !== this.state.width || height !== this.state.height) {
       this.setState({width, height});
@@ -117,14 +117,15 @@ export class MapPopover extends Component {
     const {width, height} = this.state;
 
     const pos = {};
-    if (x + leftOffset + width > mapSize.width) {
+    if (x + 10 + leftOffset + width > mapSize.width) {
       pos.right = mapSize.width - x + leftOffset;
+      // pos.left = mapSize.width - width - 10;
     } else {
       pos.left = x + leftOffset;
     }
 
-    if (y + topOffset + height > mapSize.height) {
-      pos.bottom = 10;
+    if ((y + 10 + topOffset + height) > mapSize.height) {
+      pos.top = mapSize.height - height - 10;
     } else {
       pos.top = y + topOffset;
     }

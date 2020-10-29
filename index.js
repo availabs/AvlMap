@@ -69,6 +69,7 @@ class AvlMap extends React.Component {
 	  mapControl: 'bottom-right',
 	  scrollZoom: true,
     boxZoom: true,
+		dragPan: true,
 	  sidebar: true,
     mapactions: true,
 		showStyleControl: false,
@@ -122,7 +123,6 @@ class AvlMap extends React.Component {
   			data: [],
 				layer: null
   		},
-      dragPan: true,
   		dragging: null,
   		dragover: null,
       width: 0,
@@ -176,15 +176,15 @@ class AvlMap extends React.Component {
       map.addControl(new mapboxgl.NavigationControl(), mapControl);
     }
 
-    if(!this.props.boxZoom){
+    if (!this.props.boxZoom){
       map.boxZoom.disable();
     }
 
-    if(!this.props.scrollZoom) {
+    if (!this.props.scrollZoom) {
       map.scrollZoom.disable();
     };
 
-    if(this.props.dragPan === false) {
+    if (!this.props.dragPan) {
       map.dragPan.disable();
     }
 
@@ -199,21 +199,9 @@ class AvlMap extends React.Component {
       layer.initComponent(this);
     });
 
-		// map.on("zoom", e => console.log("ZOOM:", map.getZoom()))
-		// map.on("error", error => {
-		// 	console.log("MAP ERROR:", error);
-		// })
-		// map.on("dataloading", (...args) => {
-		// 	console.log(this.state.id, "LOADING??????????????????????????", ...args)
-		// })
-		// map.on("data", (...args) => {
-		// 	console.log(this.state.id, "DATA??????????????????????????", ...args)
-		// })
-
     map.on('load',  () => {
       const activeLayers = [];
 
-// console.log("LOADED??????????")
       this.props.layers.forEach(layer => {
 
         layer.initMap(map);
