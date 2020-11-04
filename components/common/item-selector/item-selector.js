@@ -39,7 +39,7 @@ import DropdownList, {ListItem} from './dropdown-list';
  * @param {*} item
  * @returns {array} boom! much array. very indexed. so useful.
  */
-function _toArray(item) {
+export function _toArray(item) {
   if (Array.isArray(item)) {
     return item;
   }
@@ -79,7 +79,7 @@ const DropdownSelectErase = styled.div`
   display: flex;
 `;
 
-const DropdownWrapper = styled.div`
+export const DropdownWrapper = styled.div`
   background: ${props => props.theme.selectBackgroundLT};;
   border: 0;
   width: 100%;
@@ -109,7 +109,7 @@ const DropdownWrapper = styled.div`
 
 `;
 //.list__item__anchor:hover
-class ItemSelector extends Component {
+export class ItemSelector extends Component {
   static propTypes = {
     // required properties
     selectedItems: PropTypes.oneOfType([
@@ -211,7 +211,7 @@ class ItemSelector extends Component {
     );
 
     //console.log('item', item, getValue)
-    
+
 
     const previousSelected = _toArray(this.props.selectedItems);
 

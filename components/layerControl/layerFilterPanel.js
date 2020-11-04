@@ -7,6 +7,7 @@ import {
   SingleSelectFilter,
   MultiSelectFilter,
   DateFilter,
+  GroupedSelector,
   // Switch
 } from '../filters'
 
@@ -79,6 +80,10 @@ const StyledFilterContent = styled.div`
         if (filter.active === false) return null;
 
         switch(filter.type) {
+          case "grouped":
+            return <GroupedSelector
+              setFilter={ dispatchUpdateFilter }
+              filter={ filter }/>;
           case 'dropdown':
           case 'single':
             return <SingleSelectFilter

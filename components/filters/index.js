@@ -24,3 +24,4 @@ export {default as MultiSelectFilter} from './multi-select-filter';
 // export {default as RangeFilter} from './range-filter';
 export {default as DateFilter} from './date-filter';
 export {default as Switch} from './switch';
+export {default as GroupedSelector} from "./grouped-filter"
