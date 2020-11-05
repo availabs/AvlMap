@@ -89,23 +89,25 @@ export const DropdownWrapper = styled.div`
   bottom: ${props => props.placement === 'top' ? props.theme.inputBoxHeight : 'auto'};
   margin-top: ${props => (props.placement === 'bottom' ? '4px' : 'auto')};
   margin-bottom: ${props => (props.placement === 'top' ? '4px' : 'auto')};
-* {
+
+/* DO NOT PUT STYLING DIRECTLY IN COMPOENTS!!! */
+/* * {
   background-color: #ffffff;
   font: Arial;
   font-size: inherit;
   font-weight: inherit;
-  border: 2px; /*solid #dde2ec;*/
+  border: 2px;
   border-radius: 2px;
-}
+} */
 
-.list__item:hover {
+/* .list__item:hover {
   background-color: #037af7;
   color: #ffffff;
   .list__item__anchor {
     background-color: #037af7;
     color: #ffffff;
    }
-}
+} */
 
 `;
 //.list__item__anchor:hover
