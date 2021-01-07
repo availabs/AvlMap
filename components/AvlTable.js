@@ -136,10 +136,11 @@ export default class AvlTable extends React.Component {
 		keys: [],
 		rowsPerPage: 10,
 		pageSpread: 2,
-		downloadedFileName: "data.csv",
+		downloadedFileName: "data",
 		title: "",
 		showHelp: false,
-		expandable: []
+		expandable: [],
+		isMulti: false
 	}
 
 	state = {
@@ -303,20 +304,18 @@ export default class AvlTable extends React.Component {
 
 		const link = document.createElement('a');
 
-		if (link.download !== undefined) {
-			const url = URL.createObjectURL(blob);
-			link.setAttribute('href', url);
-			link.setAttribute('download', this.props.downloadedFileName);
-			link.style.visibility = 'hidden';
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-		}
+		const url = URL.createObjectURL(blob);
+		link.setAttribute('href', url);
+		link.setAttribute('download', `${ this.props.downloadedFileName }.csv`);
+		// link.style.visibility = 'hidden';
+		// document.body.appendChild(link);
+		link.click();
+		// document.body.removeChild(link);
 	}
 
 	render() {
 		let [keys, data] = this.getKeysAndData();
-		keys = keys.filter(key => this.props.expandable ? !this.props.expandable.includes(key) : true)
+		keys = keys.filter(key => !this.props.expandable.includes(key))
 		let { page, searchKey, searchString, sortKeys } = this.state;
 		const keyMap = sortKeys.reduce((a, c, i) => ({ ...a, [c.key]: { dir: c.dir, i } }), {});
 
@@ -327,7 +326,7 @@ export default class AvlTable extends React.Component {
 		page = Math.min(maxPage, page);
 
 		data = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-// console.log("???", keys, data, this.props.expandable)
+
 		return (
 			<DivContainer>
 

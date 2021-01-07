@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 
+import get from "lodash.get"
 import styled from "styled-components"
 
 import Legend from '../legend/Legend'
@@ -114,7 +115,8 @@ class InfoBox extends Component {
                   title: `${ c.name } ${ key }`,
                   ...c.infoBoxes[key],
                   id: `${ c.name }-${ key }`,
-                  layer: c
+                  layer: c,
+                  closable: get(c, ["infoBoxes", key, "closable"], true)
                 }))
                 .filter(i => i.show)
             )
@@ -158,8 +160,10 @@ class InfoBox extends Component {
                           <b.comp layer={ b.layer }/>
                         </>
                     }
-                    <ToggleButton className={ this.getToggleButton(b.id) }
-                      onClick={ () => this.toggleInfoBox(b.id) }/>
+                    { !b.closable ? null :
+                      <ToggleButton className={ this.getToggleButton(b.id) }
+                        onClick={ () => this.toggleInfoBox(b.id) }/>
+                    }
                   </InfoBoxContainer>
                 )
               }

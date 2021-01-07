@@ -12,7 +12,9 @@ class AttributesTable extends React.Component {
 		dataFunc: null,
 		tableKeys: [],
 		injectFunc: () => [],
-		filterKey: null
+		filterKey: null,
+		isulti: false,
+		expandable: []
 	}
 	constructor(props) {
 		super(props);
@@ -144,7 +146,7 @@ class AttributesTable extends React.Component {
 
 		const { dataFunc } = this.props;
 		if (dataFunc !== null) {
-			data = data.map(dataFunc);
+			data = data.map(dataFunc.bind(layer));
 		}
 
 		const queriedFeatures = data.length;
@@ -159,7 +161,7 @@ class AttributesTable extends React.Component {
 			injectedRows = injectedRows.filter(d => !keys[d[filterKey]]);
 		}
 		if (dataFunc !== null) {
-			injectedRows = injectedRows.map(dataFunc);
+			injectedRows = injectedRows.map(dataFunc.bind(layer));
 		}
 		if (injectedRows.length) {
 			data = [
@@ -168,7 +170,7 @@ class AttributesTable extends React.Component {
 			]
 		}
 
-		keys = injectedRows.reduce((keys, row) => ({
+		keys = data.reduce((keys, row) => ({
 			...keys,
 			...Object.keys(row).reduce((a, c) => ({ ...a, [c]: true }), {})
 		}), keys)
@@ -198,10 +200,10 @@ class AttributesTable extends React.Component {
 				</button>
 
 				<Container>
-					<AvlTable data={ data }
+					<AvlTable data={ data } showHelp={ true }
 						keys={ this.props.tableKeys.length ? this.props.tableKeys : keys }
-							  expandable={this.props.expandable || []} // array of expandable columns
-							  isMulti={true} // multi select filter
+							  expandable={ this.props.expandable } // array of expandable columns
+							  isMulti={ this.props.isMulti } // multi select filter
 					/>
 				</Container>
 

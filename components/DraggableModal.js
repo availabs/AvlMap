@@ -17,7 +17,7 @@ const DraggableContainer = styled.div`
 `
 const DraggableInner = styled.div`
 	${ props => props.theme.scrollBar };
-	overflow: auto;
+	overflow: show;
 	width: 100%;
 	height: 100%;
 	padding-top: 35px;
@@ -129,7 +129,7 @@ export default class DraggableModal extends React.Component {
         return { pos: [...props.startPos] };
       }
 
-      
+
     })
 	}
 	componentWillUnmount() {

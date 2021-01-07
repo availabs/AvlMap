@@ -82,10 +82,10 @@ class MapLayer {
 				...modals,
 				"avl-attributes": {
 					title: "Attributes",
-					comp: ({ layer }) => <AttributesTable layer={ layer }/>,
+					comp: ({ layer }) => <AttributesTable layer={ layer } { ...get(layer, ["attributesTableOptions"], {}) }/>,
 					show: false,
-					position: "bottom",
-					startSize: [800, 500]
+					position: "top",
+					startSize: [800, 800]
 				}
 			};
 
