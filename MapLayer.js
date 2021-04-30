@@ -395,7 +395,7 @@ class MapLayer {
     })
   }
   _mapClick(e, layer) {
-    this.onClick.dataFunc.call(this, e.features, e.point, e.lngLat, layer);
+    this.onClick.dataFunc.call(this, e.features, e.point, e.lngLat, layer, e);
   }
 
 	addPopover(map) {
