@@ -84,6 +84,10 @@ const StyledFilterContent = styled.div`
             return <GroupedSelector
               setFilter={ dispatchUpdateFilter }
               filter={ filter }/>;
+          case "multi-grouped":
+            return <GroupedSelector multi
+              setFilter={ dispatchUpdateFilter }
+              filter={ filter }/>;
           case 'dropdown':
           case 'single':
             return <SingleSelectFilter

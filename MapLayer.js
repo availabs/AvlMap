@@ -281,9 +281,11 @@ class MapLayer {
     this.onHoverLeave(e, layer, map);
 
 		const hover = id => {
-			(id !== undefined) && (map.getCanvas().style.cursor = 'pointer');
-			(id !== undefined) && this.hoveredFeatureIds.add(`${ layer }.${ id }`);
-			(id !== undefined) && map.setFeatureState({ id, ...data }, { hover: true });
+			if (id !== undefined) {
+				map.getCanvas().style.cursor = 'pointer';
+				this.hoveredFeatureIds.add(`${ layer }.${ id }`);
+				map.setFeatureState({ id, ...data }, { hover: true });
+			}
 		}
 		const hoverFeature = () => {
 			const { id } = e.features[0];
